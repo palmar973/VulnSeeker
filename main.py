@@ -1,32 +1,35 @@
 import sys
 from core.engine import VulnSeekerEngine
-from modules.dummy_module import DummyScanner
+# from modules.dummy_module import DummyScanner # Lo comento, ya no jugamos.
+from modules.sqli_module import SQLInjectionScanner
 
 
 def main() -> None:
     print("\n" + "=" * 60)
     print(" VULNSEEKER - Automated Vulnerability Scanner")
-    print(" Arquitectura: Modular Microkernel | Crawler: BFS Integration")
+    print(" Fase 2: SQL Injection Module Test")
     print("=" * 60 + "\n")
 
-    # 1. Inicialización del Motor (El Cerebro)
+    # 1. Inicialización
     engine = VulnSeekerEngine()
 
-    # 2. Carga de Módulos (El Arsenal)
-    # Cargo el módulo Dummy para verificar que el pipeline de datos fluye bien.
-    dummy = DummyScanner()
-    engine.register_module(dummy)
+    # 2. Carga del Arsenal Real
+    sqli_module = SQLInjectionScanner()
+    engine.register_module(sqli_module)
 
     # 3. Definición del Objetivo
-    # Uso el sandbox 'books.toscrape.com' para validar el crawling real sin riesgos legales.
-    target_url: str = "http://books.toscrape.com/index.html"
+    # CAMBIO IMPORTANTE: Usamos un sitio intencionalmente vulnerable a SQLi.
+    # http://testphp.vulnweb.com/listproducts.php?cat=1 es un clásico para estas pruebas.
+    target_url: str = "http://testphp.vulnweb.com/listproducts.php?cat=1"
 
     try:
-        # 4. Ejecución (Crawling + Scanning)
-        # El engine mapeará el sitio y luego atacará cada página encontrada.
-        results = engine.scan(target_url, crawl=True)
+        # 4. Ejecución
+        # Desactivo el crawling (crawl=False) para probar el módulo SQLi directo al grano
+        # sobre la URL que sé que tiene parámetros.
+        print(f"[TEST] Lanzando ataque directo contra: {target_url}")
+        results = engine.scan(target_url, crawl=False)
 
-        # 5. Reporte Final en Consola
+        # 5. Reporte
         print("\n" + "=" * 60)
         print(f" RESUMEN DE EJECUCIÓN: {len(results)} hallazgos totales")
         print("=" * 60)
@@ -35,17 +38,15 @@ def main() -> None:
             for i, v in enumerate(results):
                 print(f"#{i + 1} [{v.severity.value}] {v.name}")
                 print(f"    Ubicación: {v.target_url}")
-                # Imprimo la evidencia solo si existe.
-                if v.evidence:
-                    print(f"    Evidencia: {v.evidence}")
+                print(f"    Evidencia: {v.evidence}")
         else:
-            print("No se encontraron vulnerabilidades.")
+            print("No se encontraron vulnerabilidades (¿El sitio se arregló o falló la lógica?).")
 
     except KeyboardInterrupt:
-        print("\n[!] Operación abortada por el usuario.")
+        print("\n[!] Abortado.")
         sys.exit(0)
     except Exception as e:
-        print(f"\n[!] Error fatal no controlado: {e}")
+        print(f"\n[!] Error fatal: {e}")
         sys.exit(1)
 
 
