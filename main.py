@@ -1,46 +1,54 @@
 import sys
+# Desactivamos advertencias de SSL para que no ensucien la consola en sitios HTTPS de prueba
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 from core.engine import VulnSeekerEngine
-# from modules.dummy_module import DummyScanner # Lo comento, ya no jugamos.
 from modules.sqli_module import SQLInjectionScanner
+from modules.xss_module import XSSScanner
 
 
 def main() -> None:
     print("\n" + "=" * 60)
     print(" VULNSEEKER - Automated Vulnerability Scanner")
-    print(" Fase 2: SQL Injection Module Test")
+    print(" Fase 3: Prueba de Fuego XSS (Google Target)")
     print("=" * 60 + "\n")
 
     # 1. Inicialización
     engine = VulnSeekerEngine()
 
-    # 2. Carga del Arsenal Real
-    sqli_module = SQLInjectionScanner()
-    engine.register_module(sqli_module)
+    # 2. Carga del Arsenal
+    engine.register_module(SQLInjectionScanner())
+    engine.register_module(XSSScanner())
 
-    # 3. Definición del Objetivo
-    # CAMBIO IMPORTANTE: Usamos un sitio intencionalmente vulnerable a SQLi.
-    # http://testphp.vulnweb.com/listproducts.php?cat=1 es un clásico para estas pruebas.
-    target_url: str = "http://testphp.vulnweb.com/listproducts.php?cat=1"
+    # 3. Definición del Objetivo (NUEVO)
+    # Usamos el Nivel 1 del juego XSS de Google.
+    # Es un objetivo HTTPS, así que probaremos también la capacidad SSL de tu motor.
+    # El parámetro 'query' es vulnerable y refleja todo.
+    target_url: str = "https://xss-game.appspot.com/level1/frame?query=test"
 
     try:
         # 4. Ejecución
-        # Desactivo el crawling (crawl=False) para probar el módulo SQLi directo al grano
-        # sobre la URL que sé que tiene parámetros.
-        print(f"[TEST] Lanzando ataque directo contra: {target_url}")
+        print(f"[TEST] Lanzando ataque contra: {target_url}")
+
+        # crawl=False para ir directo al grano.
         results = engine.scan(target_url, crawl=False)
 
-        # 5. Reporte
+        # 5. Reporte Consolidado
         print("\n" + "=" * 60)
         print(f" RESUMEN DE EJECUCIÓN: {len(results)} hallazgos totales")
         print("=" * 60)
 
         if results:
             for i, v in enumerate(results):
+                # Uso colores básicos si la terminal lo soporta, o formato claro
                 print(f"#{i + 1} [{v.severity.value}] {v.name}")
                 print(f"    Ubicación: {v.target_url}")
                 print(f"    Evidencia: {v.evidence}")
+                print("-" * 40)
         else:
-            print("No se encontraron vulnerabilidades (¿El sitio se arregló o falló la lógica?).")
+            print("No se encontraron vulnerabilidades.")
 
     except KeyboardInterrupt:
         print("\n[!] Abortado.")
