@@ -1,5 +1,4 @@
 import sys
-# Desactivamos advertencias de SSL para que no ensucien la consola en sitios HTTPS de prueba
 import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -7,48 +6,37 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from core.engine import VulnSeekerEngine
 from modules.sqli_module import SQLInjectionScanner
 from modules.xss_module import XSSScanner
+from reports.report_generator import ReportGenerator
 
 
 def main() -> None:
     print("\n" + "=" * 60)
     print(" VULNSEEKER - Automated Vulnerability Scanner")
-    print(" Fase 3: Prueba de Fuego XSS (Google Target)")
+    print(" Fase 4: Generación de Reportes JSON")
     print("=" * 60 + "\n")
 
-    # 1. Inicialización
     engine = VulnSeekerEngine()
-
-    # 2. Carga del Arsenal
     engine.register_module(SQLInjectionScanner())
     engine.register_module(XSSScanner())
 
-    # 3. Definición del Objetivo (NUEVO)
-    # Usamos el Nivel 1 del juego XSS de Google.
-    # Es un objetivo HTTPS, así que probaremos también la capacidad SSL de tu motor.
-    # El parámetro 'query' es vulnerable y refleja todo.
+    # Usamos el objetivo XSS que sabemos que funciona
     target_url: str = "https://xss-game.appspot.com/level1/frame?query=test"
 
     try:
-        # 4. Ejecución
-        print(f"[TEST] Lanzando ataque contra: {target_url}")
-
-        # crawl=False para ir directo al grano.
+        print(f"[TEST] Escaneando: {target_url}")
         results = engine.scan(target_url, crawl=False)
 
-        # 5. Reporte Consolidado
         print("\n" + "=" * 60)
-        print(f" RESUMEN DE EJECUCIÓN: {len(results)} hallazgos totales")
+        print(f" RESUMEN: {len(results)} hallazgos.")
         print("=" * 60)
 
+        # --- NUEVA LÓGICA DE REPORTE ---
         if results:
-            for i, v in enumerate(results):
-                # Uso colores básicos si la terminal lo soporta, o formato claro
-                print(f"#{i + 1} [{v.severity.value}] {v.name}")
-                print(f"    Ubicación: {v.target_url}")
-                print(f"    Evidencia: {v.evidence}")
-                print("-" * 40)
+            reporter = ReportGenerator()
+            json_path = reporter.export_json(results, target_url)
+            print(f"\n[+] Reporte guardado exitosamente en:\n    {json_path}")
         else:
-            print("No se encontraron vulnerabilidades.")
+            print("No hay vulnerabilidades para reportar.")
 
     except KeyboardInterrupt:
         print("\n[!] Abortado.")
