@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Dict, List, Optional
 
 class Severity(Enum):
+    """Niveles de criticidad siguiendo estándares de industria."""
     INFO = "INFO"
     LOW = "LOW"
     MEDIUM = "MEDIUM"
@@ -12,8 +13,8 @@ class Severity(Enum):
 @dataclass(frozen=True)
 class PageElement:
     """
-    Representa un elemento interactivo descubierto en una página.
-    Esto permite al motor saber si debe enviar un GET simple o construir un POST.
+    Representa un punto de ataque descubierto (URL o Formulario).
+    Lo marqué como frozen=True para evitar errores de mutabilidad entre hilos.
     """
     url: str
     method: str = "GET"
@@ -23,19 +24,18 @@ class PageElement:
 @dataclass
 class Target:
     """
-    Representa el objetivo a escanear.
-    Evolucionado para contener elementos descubiertos por el crawler.
+    Estructura que reciben los módulos de ataque.
+    Mantenemos compatibilidad con los módulos SQLi y XSS iniciales.
     """
     url: str
     method: str = "GET"
     headers: Dict[str, str] = field(default_factory=dict)
+    # Lista de elementos internos descubiertos si se requiere un análisis profundo.
     elements: List[PageElement] = field(default_factory=list)
 
 @dataclass
 class Vulnerability:
-    """
-    Estructura estándar para un hallazgo de seguridad.
-    """
+    """Define un hallazgo de seguridad."""
     name: str
     severity: Severity
     description: str

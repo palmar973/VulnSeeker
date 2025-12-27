@@ -1,96 +1,99 @@
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from core.interfaces import ScannerModule
 from core.scanner_types import Target, Vulnerability, PageElement
 from core.crawler import WebCrawler
 from core.config import GlobalConfig
 
-# Configuración de logging.
-# NOTA DEL SENIOR: En el futuro, esto se conectará a la GUI para mostrar barras de progreso.
+# Configuración básica de logeo.
+# Aquí decidí no usar f-strings en el logger por convención de performance.
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
 class VulnSeekerEngine:
     """
-    Orquestador central del sistema.
-    Adaptado para manejar la nueva estructura 'PageElement' (Links y Formularios).
+    Orquestador de VulnSeeker.
+    Se encarga de coordinar el Crawling y la fase de ataque concurrente.
     """
 
     def __init__(self) -> None:
         self.modules: list[ScannerModule] = []
         self.results: list[Vulnerability] = []
-        logger.info("VulnSeeker Engine: Sistema listo (Soporte Estructural Activado).")
+        logger.info("VulnSeeker Engine: Sistema Multihilo Inicializado correctamente.")
 
     def register_module(self, module: ScannerModule) -> None:
-        """Registra un módulo en el arsenal."""
+        """Añade un módulo de seguridad al motor de escaneo."""
         if not isinstance(module, ScannerModule):
-            raise TypeError(f"Error de tipo: {type(module)} no es un ScannerModule válido.")
-
+            raise TypeError(f"El objeto {type(module)} no cumple con la interfaz ScannerModule.")
         self.modules.append(module)
-        logger.debug(f"Módulo cargado: {module.name}")
+        logger.debug(f"Módulo registrado: {module.name}")
 
     def scan(self, start_url: str, crawl: bool = True) -> list[Vulnerability]:
         """
-        Método principal de orquestación.
+        Punto de entrada principal para el proceso de auditoría.
         """
-        logger.info(f"--- Iniciando operación sobre {start_url} ---")
+        logger.info(f"--- Iniciando Auditoría: {start_url} ---")
 
-        # Lista de elementos a atacar. Ahora no son solo strings, son objetos PageElement.
         target_elements: list[PageElement] = []
 
+        # FASE 1: Reconocimiento (Crawling)
         if crawl:
-            logger.info("Modo: BÚSQUEDA PROFUNDA (Crawling Links + Forms)")
-            # Usamos la configuración global para el límite de páginas
+            logger.info("Ejecutando reconocimiento estructural...")
             crawler = WebCrawler(start_url, max_pages=GlobalConfig.MAX_CRAWL_PAGES)
             target_elements = crawler.start()
         else:
-            logger.info("Modo: OBJETIVO ÚNICO")
-            # Si no hay crawling, creamos un elemento manual simple (GET por defecto)
-            manual_element = PageElement(url=start_url, method="GET")
-            target_elements = [manual_element]
+            # Modo objetivo único: creamos un elemento manual para no romper el bucle.
+            target_elements = [PageElement(url=start_url, method="GET")]
 
-        logger.info(f"Superficie de ataque identificada: {len(target_elements)} puntos de entrada.")
+        # FASE 2: Fase de Ataque (Concurrente)
+        logger.info(
+            f"Iniciando fase de ataque sobre {len(target_elements)} elementos con {GlobalConfig.MAX_THREADS} hilos.")
 
-        # Fase de Ataque: Itero sobre cada elemento descubierto.
-        for element in target_elements:
-            self._analyze_single_element(element)
+        # Uso el context manager para asegurar que los hilos se limpien al terminar.
+        with ThreadPoolExecutor(max_workers=GlobalConfig.MAX_THREADS) as executor:
+            # Lanzo las tareas de análisis.
+            future_to_element = {
+                executor.submit(self._analyze_single_element, element): element
+                for element in target_elements
+            }
 
-        logger.info("Operación finalizada.")
+            # Recolecto los resultados a medida que cada hilo termina su trabajo.
+            for future in as_completed(future_to_element):
+                try:
+                    vulnerabilities_found = future.result()
+                    if vulnerabilities_found:
+                        # Extend es una operación segura en este contexto de CPython.
+                        self.results.extend(vulnerabilities_found)
+                except Exception as e:
+                    element = future_to_element[future]
+                    logger.error(f"Excepción en hilo al analizar {element.url}: {e}")
+
+        logger.info(f"Auditoría finalizada. Se detectaron {len(self.results)} vulnerabilidades.")
         return self.results
 
-    def _analyze_single_element(self, element: PageElement) -> None:
+    def _analyze_single_element(self, element: PageElement) -> list[Vulnerability]:
         """
-        Toma un elemento descubierto (Link o Formulario) y lo prepara para los módulos.
+        Lógica interna para correr todos los módulos sobre un elemento específico.
+        Este método corre dentro de un hilo individual.
         """
-        # Discriminación de Estrategia:
-        # Por ahora, nuestros módulos (SQLi, XSS) funcionan sobre parámetros URL.
-        # Si es un formulario POST, en el futuro necesitaremos lógica específica.
+        findings: list[Vulnerability] = []
 
-        logger.info(f"Analizando: [{element.method}] {element.url}")
-        if element.is_form:
-            logger.info(f"  -> Formulario detectado con campos: {list(element.params.keys())}")
-
-        # Adaptador: Convertimos PageElement -> Target
-        # Esto asegura que los módulos viejos sigan funcionando sin cambios.
+        # Mapeo de PageElement a Target para compatibilidad con el ecosistema de módulos.
         target = Target(
             url=element.url,
             method=element.method,
-            # Pasamos los headers globales definidos en config
             headers={'User-Agent': GlobalConfig.USER_AGENT}
         )
 
-        # Aquí podríamos inyectar los parámetros del formulario en el Target si fuera necesario.
-        # Por ahora, dejamos que los módulos analicen la URL.
-
         for module in self.modules:
             try:
-                # Lanzo el módulo.
-                found_vulns: list[Vulnerability] = module.run(target)
-
-                if found_vulns:
-                    # Log visual para la terminal (luego será para la GUI)
-                    logger.warning(f"  [!] {module.name} encontró {len(found_vulns)} fallos.")
-                    self.results.extend(found_vulns)
-
+                # Ejecución del módulo (aquí ocurre el I/O intenso).
+                vulns = module.run(target)
+                if vulns:
+                    findings.extend(vulns)
             except Exception as e:
-                logger.error(f"  [Error] Fallo en módulo {module.name}: {e}")
+                # Espero que un error en XSS no detenga el análisis de SQLi.
+                logger.error(f"Módulo {module.name} falló en {element.url}: {e}")
+
+        return findings

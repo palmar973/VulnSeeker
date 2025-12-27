@@ -4,17 +4,21 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class GlobalConfig:
     """
-    Configuración global inmutable del sistema.
-    Centraliza parámetros como timeouts, headers y concurrencia.
+    Configuración global del sistema VulnSeeker.
+    Centralizamos parámetros para facilitar la defensa académica de la tesis.
     """
-    # Identidad del escáner (User-Agent)
-    USER_AGENT: str = "VulnSeeker-Academic/1.0 (Educational Purpose)"
+    # Identidad del escáner
+    USER_AGENT: str = "VulnSeeker/1.0 (Academic Security Scanner)"
 
-    # Tiempo máximo de espera por petición (segundos)
+    # Límites del Crawler
+    MAX_CRAWL_PAGES: int = 50
+
+    # Límites del Motor (Performance)
+    # 10 hilos es el punto dulce entre velocidad y estabilidad.
+    MAX_THREADS: int = 10
+
+    # Timeouts de red (en segundos)
     REQUEST_TIMEOUT: int = 5
 
-    # Límite de profundidad o páginas para el crawler
-    MAX_CRAWL_PAGES: int = 20
-
-    # Carpeta donde se guardarán los reportes
+    # Directorio de salida para reportes (¡Recuperado!)
     REPORTS_DIR: str = "results"
