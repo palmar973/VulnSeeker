@@ -1,117 +1,136 @@
 import logging
 import requests
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, parse_qs
 from bs4 import BeautifulSoup
+from typing import Set, List, Dict, Optional
+from core.scanner_types import PageElement
 
-# Configuro el logger para este módulo específico.
+# Uso el logger del módulo para trazabilidad.
 logger = logging.getLogger(__name__)
 
 
 class WebCrawler:
     """
-    Responsable de mapear la aplicación web objetivo.
-    Utiliza un enfoque de descubrimiento recursivo (BFS) para encontrar
-    enlaces internos y construir el mapa de ataque.
+    Explorador estructural de la aplicación objetivo.
+    No solo busca URLs, cataloga formularios y puntos de entrada de datos.
     """
 
     def __init__(self, start_url: str, max_pages: int = 50) -> None:
-        # Guardo la URL inicial para definir el alcance (scope) del escaneo.
+        # Guardo la base para no terminar escaneando todo internet por accidente.
         self.start_url: str = start_url
-
-        # Defino el dominio base. Si empiezo en example.com, no quiero terminar atacando facebook.com
-        # urlparse me ayuda a extraer 'example.com' limpiamente.
         self.base_domain: str = urlparse(start_url).netloc
-
-        # Limito la cantidad de páginas para evitar que la tesis se convierta en un escáner infinito.
         self.max_pages: int = max_pages
 
-        # Uso un set (conjunto) para las URLs visitadas porque la búsqueda es O(1).
-        # Si usara una lista, el rendimiento caería drásticamente con muchas URLs.
-        self.visited_urls: set[str] = set()
+        # Uso un set para URLs porque la búsqueda aquí es instantánea.
+        # No quiero procesar la página de 'contacto' 500 veces.
+        self.visited_urls: Set[str] = set()
 
-        # Esta lista mantendrá las URLs únicas que descubra para devolverlas al Engine.
-        self.found_urls: list[str] = []
+        # Aquí guardo todo lo 'atacable' encontrado.
+        self.discovered_elements: List[PageElement] = []
 
-    def start(self) -> list[str]:
+    def start(self) -> List[PageElement]:
         """
-        Inicia el proceso de crawling.
-        Devuelve una lista de URLs únicas encontradas dentro del alcance.
+        Orquesta la navegación recursiva.
+        Retorna la lista de elementos (links y formularios) para el arsenal.
         """
-        logger.info(f"Iniciando Crawler en: {self.start_url} (Scope: {self.base_domain})")
+        logger.info(f"Iniciando fase de reconocimiento en: {self.start_url}")
 
-        # La cola de trabajo. Empiezo con la URL semilla.
-        queue: list[str] = [self.start_url]
+        queue: List[str] = [self.start_url]
 
         while queue and len(self.visited_urls) < self.max_pages:
-            # Saco la siguiente URL de la pila (FIFO).
             current_url: str = queue.pop(0)
 
             if current_url in self.visited_urls:
                 continue
 
-            # Marco como visitada antes de procesar para evitar condiciones de carrera lógicas.
+            # Registro esta URL para no volver a entrar en bucle.
             self.visited_urls.add(current_url)
-            self.found_urls.append(current_url)
 
-            # Intento extraer enlaces de esta página.
             try:
-                new_links: list[str] = self._extract_links_from(current_url)
+                html_content = self._fetch_page(current_url)
+                if not html_content:
+                    continue
 
-                # Añado los nuevos enlaces a la cola si no los he visto antes.
+                # Extraigo la estructura de ataque de la página actual.
+                new_links = self._parse_structure(current_url, html_content)
+
                 for link in new_links:
                     if link not in self.visited_urls and link not in queue:
                         queue.append(link)
 
             except Exception as e:
-                # Si una página falla (404, 500, timeout), lo registro y sigo.
-                # El show debe continuar.
-                logger.error(f"Error al procesar {current_url}: {e}")
+                # Me guardo el error en el log pero sigo, un 404 no debe tirar la tesis.
+                logger.error(f"Fallo en navegación sobre {current_url}: {e}")
 
-        logger.info(f"Crawling finalizado. Se mapearon {len(self.found_urls)} recursos.")
-        return self.found_urls
+        logger.info(f"Reconocimiento completo. {len(self.discovered_elements)} puntos de ataque mapeados.")
+        return self.discovered_elements
 
-    def _extract_links_from(self, url: str) -> list[str]:
+    def _fetch_page(self, url: str) -> Optional[str]:
         """
-        Método auxiliar privado. Descarga el HTML y extrae los hrefs.
+        Descargador con modales. Intenta obtener el HTML de la página.
         """
-        logger.debug(f"Crawling: {url}")
+        # Aquí decido usar un User-Agent fijo, luego podríamos rotarlo.
+        headers: Dict[str, str] = {'User-Agent': 'VulnSeeker/1.0 (Academic Project)'}
+        try:
+            response = requests.get(url, headers=headers, timeout=5)
+            if "text/html" in response.headers.get("Content-Type", ""):
+                return response.text
+        except requests.RequestException:
+            # Si el servidor no responde, me callo y sigo.
+            pass
+        return None
 
-        # Simulo ser un navegador real para evitar bloqueos simples.
-        headers: dict[str, str] = {
-            'User-Agent': 'VulnSeeker-Academic-Scanner/1.0'
-        }
+    def _parse_structure(self, url: str, html: str) -> List[str]:
+        """
+        Analizo el HTML buscando puertas de entrada (links y forms).
+        """
+        soup = BeautifulSoup(html, "html.parser")
+        found_links: List[str] = []
 
-        # Hago la petición HTTP. Configuro un timeout para no quedarme colgado eternamente.
-        response = requests.get(url, headers=headers, timeout=5)
-
-        # Si no es HTML (ej: es una imagen o PDF), no intento parsearlo.
-        if "text/html" not in response.headers.get("Content-Type", ""):
-            return []
-
-        soup = BeautifulSoup(response.text, "html.parser")
-        extracted_links: list[str] = []
-
-        # Busco todas las etiquetas <a> con atributo href.
-        for tag in soup.find_all("a", href=True):
-            href: str = tag["href"]
-
-            # Normalizo la URL. Esto convierte "/login.php" en "http://sitio.com/login.php".
-            full_url: str = urljoin(url, href)
-
-            # Limpio fragmentos (ej: #section1) porque apuntan a la misma página.
-            full_url = full_url.split("#")[0]
-
-            # Valido que la URL pertenezca al dominio objetivo.
+        # 1. Búsqueda de enlaces (GET points)
+        for a_tag in soup.find_all("a", href=True):
+            full_url = urljoin(url, a_tag["href"]).split("#")[0]
             if self._is_in_scope(full_url):
-                extracted_links.append(full_url)
+                # Extraigo parámetros si los tiene (ej: ?id=1)
+                parsed_query = urlparse(full_url).query
+                params = {k: v[0] for k, v in parse_qs(parsed_query).items()}
 
-        return extracted_links
+                self.discovered_elements.append(PageElement(
+                    url=full_url,
+                    params=params,
+                    is_form=False
+                ))
+                found_links.append(full_url)
+
+        # 2. Búsqueda de formularios (POST/GET points)
+        # Esto es vital porque aquí es donde suelen vivir el SQLi y XSS real.
+        for form in soup.find_all("form"):
+            action = form.get("action")
+            method = form.get("method", "get").upper()
+            form_url = urljoin(url, action)
+
+            if self._is_in_scope(form_url):
+                # Mapeo los inputs para que el motor sepa qué 'veneno' meter en cada uno.
+                inputs: Dict[str, str] = {}
+                for input_tag in form.find_all(["input", "textarea"]):
+                    name = input_tag.get("name")
+                    if name:
+                        # Guardo un valor vacío, el motor se encargará de fuzzerar.
+                        inputs[name] = input_tag.get("value", "")
+
+                self.discovered_elements.append(PageElement(
+                    url=form_url,
+                    method=method,
+                    params=inputs,
+                    is_form=True
+                ))
+
+        return found_links
 
     def _is_in_scope(self, url: str) -> bool:
         """
-        Valida si una URL pertenece al dominio que estamos atacando.
+        Filtro de seguridad para no terminar atacando dominios externos.
         """
         parsed = urlparse(url)
-        # Comparo el netloc (dominio) de la URL encontrada con el dominio base.
-        # También me aseguro de que sea http o https.
+        # Me aseguro de que el dominio sea el mismo y sea web (http/s).
         return parsed.netloc == self.base_domain and parsed.scheme in ["http", "https"]
