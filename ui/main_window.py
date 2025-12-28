@@ -1,8 +1,7 @@
 #!/usr/bin/env python3.14
 """
-Ventana principal de VulnSeeker Enterprise - FASE 11.2: UI 100% limpia sin SQL.
-Aquí eliminé TODO sqlite3 directo y uso exclusivamente DatabaseManager API.
-self.db_manager singleton para performance óptimo.
+Ventana principal de VulnSeeker Enterprise - FASE 12 + UI POLISH.
+Fix: Rotación de etiquetas en Bar Chart para evitar solapamiento en monitores 1280x1024.
 """
 
 import customtkinter as ctk
@@ -22,13 +21,15 @@ import matplotlib.pyplot as plt
 
 plt.style.use('dark_background')
 
-# Backend imports (SIN sqlite3)
+# Backend imports
 from core.engine import VulnSeekerEngine
 from modules.sqli_module import SQLInjectionScanner
 from modules.xss_module import XSSScanner
+from modules.header_analyzer import HeaderAnalyzer
+from modules.port_scanner import PortScanner
 from reports.report_generator import ReportGenerator
 from core.config import GlobalConfig
-from core.db_manager import DatabaseManager  # ← NUEVA DEPENDENCIA
+from core.db_manager import DatabaseManager
 
 # Configuración global de CustomTkinter (tema oscuro)
 ctk.set_appearance_mode("dark")
@@ -59,7 +60,7 @@ class GUILogHandler(logging.Handler):
 
 
 class VulnSeekerApp(ctk.CTk):
-    """Aplicación principal con Dashboard analítico 100% desacoplado."""
+    """Aplicación principal con Dashboard analítico y Scanner Integral."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -78,7 +79,7 @@ class VulnSeekerApp(ctk.CTk):
         self.crawl_checkbox: Optional[ctk.CTkCheckBox] = None
         self.nav_buttons: dict = {}
 
-        # ← NUEVO: Singleton DatabaseManager
+        # Singleton DatabaseManager
         self.db_manager = DatabaseManager()
 
         Path("ui/assets").mkdir(exist_ok=True)
@@ -130,7 +131,7 @@ class VulnSeekerApp(ctk.CTk):
             btn.configure(fg_color=("gray90", "gray30") if key == button_key else "transparent")
 
     def show_dashboard(self) -> None:
-        """FASE 11.2: Dashboard con DatabaseManager API pura."""
+        """Dashboard con DatabaseManager API pura."""
         self._select_nav_button("dashboard")
 
         dashboard_frame = ctk.CTkFrame(self.main_container)
@@ -142,11 +143,10 @@ class VulnSeekerApp(ctk.CTk):
         )
         title_label.grid(row=0, column=0, padx=20, pady=(30, 20))
 
-        # === KPIs (DatabaseManager API) ===
+        # === KPIs ===
         kpi_frame = ctk.CTkFrame(dashboard_frame)
         kpi_frame.grid(row=1, column=0, padx=20, pady=(0, 20), sticky="ew")
 
-        # ← LIMPIO: Solo una llamada a la API
         kpi_data = self.db_manager.get_kpis()
 
         kpi_configs = [
@@ -170,7 +170,7 @@ class VulnSeekerApp(ctk.CTk):
 
         kpi_frame.grid_columnconfigure((0, 1, 2), weight=1)
 
-        # === GRÁFICOS (DatabaseManager API) ===
+        # === GRÁFICOS ===
         charts_frame = ctk.CTkFrame(dashboard_frame)
         charts_frame.grid(row=2, column=0, padx=20, pady=(0, 20), sticky="nsew")
         charts_frame.grid_columnconfigure(1, weight=1)
@@ -201,13 +201,7 @@ class VulnSeekerApp(ctk.CTk):
 
         self.show_frame(dashboard_frame)
 
-    # ← LIMPIO: Solo una llamada a DatabaseManager
-    def _get_kpi_data(self) -> Dict[str, int]:
-        """KPIs delegados 100% a DatabaseManager."""
-        return self.db_manager.get_kpis()
-
     def _create_pie_chart(self, parent_frame: ctk.CTkFrame) -> None:
-        """Pie Chart usando DatabaseManager.get_severity_distribution()."""
         severity_data = self.db_manager.get_severity_distribution()
 
         if not severity_data:
@@ -233,7 +227,6 @@ class VulnSeekerApp(ctk.CTk):
         canvas.get_tk_widget().grid(row=1, column=0, pady=10)
 
     def _create_bar_chart(self, parent_frame: ctk.CTkFrame) -> None:
-        """Bar Chart usando DatabaseManager.get_top_vulnerabilities()."""
         vuln_data = self.db_manager.get_top_vulnerabilities(5)
 
         if not vuln_data:
@@ -245,17 +238,26 @@ class VulnSeekerApp(ctk.CTk):
             no_data_label.grid(row=1, column=0, pady=40)
             return
 
+        # Truncar un poco más para pantallas cuadradas
         names = [row[0][:15] + "..." if len(row[0]) > 15 else row[0] for row in vuln_data]
         counts = [row[1] for row in vuln_data]
 
         fig = Figure(figsize=(5, 4), facecolor='#2b2b2b')
+
+        # Ajuste de márgenes para que las etiquetas rotadas no se corten
+        fig.subplots_adjust(bottom=0.25)
+
         ax = fig.add_subplot(111)
         bars = ax.bar(names, counts, color=['#4facfe', '#00f2fe', '#fa709a', '#febefe', '#ffecd2'])
         ax.set_facecolor('#2b2b2b')
-        ax.tick_params(colors='white')
+
+        # Rotación de etiquetas 45 grados y alineación derecha
+        ax.tick_params(axis='x', colors='white', rotation=30, labelsize=9)
+        ax.tick_params(axis='y', colors='white')
+
+        # Título del eje
         ax.set_title("Top 5", color='white', fontsize=12)
 
-        # Labels en barras
         for bar, count in zip(bars, counts):
             height = bar.get_height()
             ax.text(bar.get_x() + bar.get_width() / 2., height + 0.1,
@@ -265,7 +267,6 @@ class VulnSeekerApp(ctk.CTk):
         canvas.draw()
         canvas.get_tk_widget().grid(row=1, column=0, pady=10)
 
-    # [Resto de métodos sin cambios]
     def show_scan(self) -> None:
         self._select_nav_button("scan")
         scan_frame = ctk.CTkFrame(self.main_container)
@@ -331,7 +332,6 @@ class VulnSeekerApp(ctk.CTk):
         )
         title_label.grid(row=0, column=0, padx=20, pady=(30, 20))
 
-        # ← YA USA DatabaseManager (correcto)
         scans: List[Tuple[int, str, str, int]] = self.db_manager.get_all_scans()
 
         table_container = ctk.CTkFrame(history_frame)
@@ -431,8 +431,10 @@ class VulnSeekerApp(ctk.CTk):
             engine = VulnSeekerEngine()
             engine.register_module(SQLInjectionScanner())
             engine.register_module(XSSScanner())
+            engine.register_module(HeaderAnalyzer())
+            engine.register_module(PortScanner())
 
-            logger.info("⚡ Motor de análisis iniciado...")
+            logger.info("⚡ Motor de análisis iniciado (4 módulos activos)...")
             results = engine.scan(target_url, crawl=use_crawler)
 
             logger.info(f"💾 Guardando {len(results)} resultados...")
@@ -441,7 +443,6 @@ class VulnSeekerApp(ctk.CTk):
             json_path = reporter.export_json(results, target_url)
             logger.info(f"📄 JSON: {json_path}")
 
-            # ← Usa el mismo singleton
             scan_id = self.db_manager.save_scan_results(target_url, results)
             logger.info(f"🗄️  SQLite: Scan ID {scan_id}")
 
