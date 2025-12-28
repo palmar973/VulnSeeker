@@ -1,8 +1,7 @@
 #!/usr/bin/env python3.14
 """
-DatabaseManager - FASE 11.1 + BUGFIX FINAL.
-Implementación "Duck Typing" para evitar conflictos de importación.
-Maneja objetos y diccionarios indiscriminadamente.
+DatabaseManager - FASE 14 FINAL.
+Gestión de persistencia SQLite + Métodos de recuperación para IA.
 """
 
 import sqlite3
@@ -11,15 +10,14 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Tuple, Dict, Any, Optional
 from core.config import GlobalConfig
-
-# Ya no necesitamos importar el modelo para validar tipos.
-# Usaremos detección dinámica de atributos.
+# Importamos el modelo para reconstruir objetos al leer de la DB
+from core.models import Vulnerability, Severity
 
 logger = logging.getLogger("VulnSeeker.DB")
 
 
 class DatabaseManager:
-    """Singleton analítico para KPIs, distribuciones y top vulnerabilidades."""
+    """Singleton analítico para KPIs, distribuciones y recuperación de datos para IA."""
 
     _instance = None
     _initialized = False
@@ -31,7 +29,6 @@ class DatabaseManager:
 
     def __init__(self) -> None:
         if not self._initialized:
-            # Usar GlobalConfig para la ruta correcta
             self.db_path = Path(GlobalConfig.REPORTS_DIR) / "vulns.db"
             self._init_db()
             self._initialized = True
@@ -110,8 +107,7 @@ class DatabaseManager:
 
     def save_scan_results(self, target_url: str, vulnerabilities: List[Any]) -> int:
         """
-        Método BLINDADO (Bulletproof).
-        Usa 'hasattr' para detectar si es objeto o dict. No falla por imports cruzados.
+        Método BLINDADO (Bulletproof - Duck Typing).
         """
         try:
             with sqlite3.connect(self.db_path) as conn:
@@ -124,20 +120,18 @@ class DatabaseManager:
                 )
                 scan_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
 
-                # Mapeo de severidad
+                # Mapeo de severidad a Enteros
                 sev_map = {"INFO": 0, "LOW": 1, "MEDIUM": 2, "HIGH": 3, "CRITICAL": 4}
 
                 for vuln in vulnerabilities:
                     # 1. EXTRACCIÓN DE DATOS (DUCK TYPING)
                     if hasattr(vuln, 'name'):
-                        # Es un objeto (Vulnerability o similar)
                         v_name = vuln.name
                         v_desc = vuln.description
                         v_sev = vuln.severity
                         v_target = getattr(vuln, 'target_url', target_url)
                         v_payload = getattr(vuln, 'payload', '')
                     else:
-                        # Es un diccionario
                         v_name = vuln.get('name', 'Unknown')
                         v_desc = vuln.get('description', '')
                         v_sev = vuln.get('severity', 'LOW')
@@ -145,7 +139,6 @@ class DatabaseManager:
                         v_payload = vuln.get('payload', '')
 
                     # 2. NORMALIZACIÓN DE SEVERIDAD
-                    # Maneja Enum, String o Int
                     if hasattr(v_sev, 'value'):  # Es un Enum
                         sev_str = v_sev.value.upper()
                     else:
@@ -229,4 +222,52 @@ class DatabaseManager:
                                     """, (limit,)).fetchall()
         except Exception as e:
             logger.error(f"Error top vulnerabilities: {e}")
+            return []
+
+    # --- NUEVOS MÉTODOS PARA FASE 14 (IA ANALYST) ---
+
+    def get_scan_target(self, scan_id: int) -> str:
+        """Recupera la URL objetivo de un scan específico."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                res = conn.execute("SELECT target_url FROM scans WHERE id = ?", (scan_id,)).fetchone()
+                return res[0] if res else "Unknown Target"
+        except Exception as e:
+            logger.error(f"Error fetching target: {e}")
+            return "Error"
+
+    def get_vulnerabilities_by_scan(self, scan_id: int) -> List[Vulnerability]:
+        """Recupera todas las vulnerabilidades de un scan y las convierte a objetos Vulnerability."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                rows = conn.execute("""
+                                    SELECT name, description, severity, target_url, payload
+                                    FROM vulnerabilities
+                                    WHERE scan_id = ?
+                                    """, (scan_id,)).fetchall()
+
+                # Mapeo inverso de Entero a Enum
+                int_to_sev = {
+                    0: Severity.INFO,
+                    1: Severity.LOW,
+                    2: Severity.MEDIUM,
+                    3: Severity.HIGH,
+                    4: Severity.CRITICAL
+                }
+
+                vuln_objects = []
+                for r in rows:
+                    name, desc, sev_int, url, payload = r
+                    vuln_objects.append(Vulnerability(
+                        name=name,
+                        description=desc,
+                        severity=int_to_sev.get(sev_int, Severity.LOW),
+                        target_url=url,
+                        payload=payload
+                    ))
+
+                return vuln_objects
+
+        except Exception as e:
+            logger.error(f"Error fetching vulns for AI: {e}")
             return []
