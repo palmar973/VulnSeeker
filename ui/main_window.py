@@ -1,7 +1,8 @@
 #!/usr/bin/env python3.14
 """
-Ventana principal de VulnSeeker Enterprise - FASE 12 + UI POLISH.
-Fix: Rotación de etiquetas en Bar Chart para evitar solapamiento en monitores 1280x1024.
+Ventana principal de VulnSeeker Enterprise - FASE 13 + OPTIMIZACIÓN DE LOGS.
+Fix: Implementación de Queue (Cola) para evitar congelamiento de UI por exceso de logs.
+Soporta monitores 1280x1024 con gráficos rotados.
 """
 
 import customtkinter as ctk
@@ -9,6 +10,7 @@ import logging
 import threading
 import sys
 import os
+import queue  # <--- IMPORT CRÍTICO PARA EL FIX
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, List, Tuple, Dict, Any
@@ -27,40 +29,38 @@ from modules.sqli_module import SQLInjectionScanner
 from modules.xss_module import XSSScanner
 from modules.header_analyzer import HeaderAnalyzer
 from modules.port_scanner import PortScanner
+from modules.path_fuzzer import PathFuzzer
 from reports.report_generator import ReportGenerator
 from core.config import GlobalConfig
 from core.db_manager import DatabaseManager
 
-# Configuración global de CustomTkinter (tema oscuro)
+# Configuración global de CustomTkinter
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 
 class GUILogHandler(logging.Handler):
-    """Handler personalizado que redirige logs a CTkTextbox en hilo seguro."""
+    """
+    Handler optimizado: En lugar de tocar la UI directamente (lo que congela),
+    envía los mensajes a una cola thread-safe.
+    """
 
-    def __init__(self, textbox: ctk.CTkTextbox) -> None:
+    def __init__(self, log_queue: queue.Queue) -> None:
         super().__init__()
-        self.textbox = textbox
-        self.lock = threading.Lock()
+        self.log_queue = log_queue
 
     def emit(self, record: logging.LogRecord) -> None:
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        message = self.format(record)
-        log_line = f"[{timestamp}] {message}\n"
-
-        def update_textbox():
-            with self.lock:
-                self.textbox.configure(state="normal")
-                self.textbox.insert("end", log_line)
-                self.textbox.see("end")
-                self.textbox.configure(state="disabled")
-
-        self.textbox.after(0, update_textbox)
+        try:
+            timestamp = datetime.now().strftime("%H:%M:%S")
+            message = self.format(record)
+            log_line = f"[{timestamp}] {message}\n"
+            self.log_queue.put(log_line)  # Solo pone en cola, no bloquea
+        except Exception:
+            pass
 
 
 class VulnSeekerApp(ctk.CTk):
-    """Aplicación principal con Dashboard analítico y Scanner Integral."""
+    """Aplicación principal con Sistema Anti-Congelamiento."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -68,6 +68,10 @@ class VulnSeekerApp(ctk.CTk):
         self.geometry("1100x680")
         self.minsize(900, 500)
         self.resizable(True, True)
+
+        # --- SISTEMA DE LOGS BUFFERED (ANTI-FREEZE) ---
+        self.log_queue = queue.Queue()
+        self.log_update_interval_ms = 100  # Actualizar GUI cada 100ms
 
         # Estado de la app
         self.current_frame: ctk.CTkFrame | None = None
@@ -84,6 +88,31 @@ class VulnSeekerApp(ctk.CTk):
 
         Path("ui/assets").mkdir(exist_ok=True)
         self._build_interface()
+
+        # Iniciar el loop de consumo de logs
+        self.after(self.log_update_interval_ms, self._process_log_queue)
+
+    def _process_log_queue(self) -> None:
+        """
+        Drena la cola de logs y actualiza la UI en lotes.
+        Esto previene que la interfaz se congele con miles de mensajes.
+        """
+        try:
+            if not self.log_queue.empty():
+                if self.scan_log_textbox:
+                    self.scan_log_textbox.configure(state="normal")
+                    # Procesar todos los mensajes pendientes de una vez
+                    while not self.log_queue.empty():
+                        msg = self.log_queue.get_nowait()
+                        self.scan_log_textbox.insert("end", msg)
+
+                    self.scan_log_textbox.see("end")
+                    self.scan_log_textbox.configure(state="disabled")
+        except Exception:
+            pass
+        finally:
+            # Reprogramar la siguiente actualización
+            self.after(self.log_update_interval_ms, self._process_log_queue)
 
     def _build_interface(self) -> None:
         self.sidebar = ctk.CTkFrame(self, width=220, corner_radius=0)
@@ -131,12 +160,10 @@ class VulnSeekerApp(ctk.CTk):
             btn.configure(fg_color=("gray90", "gray30") if key == button_key else "transparent")
 
     def show_dashboard(self) -> None:
-        """Dashboard con DatabaseManager API pura."""
         self._select_nav_button("dashboard")
 
         dashboard_frame = ctk.CTkFrame(self.main_container)
 
-        # Título
         title_label = ctk.CTkLabel(
             dashboard_frame, text="🚀 CENTRO DE CONTROL - ANALÍTICA DE SEGURIDAD",
             font=ctk.CTkFont(size=28, weight="bold")
@@ -188,7 +215,7 @@ class VulnSeekerApp(ctk.CTk):
                      ).grid(row=0, column=0, pady=(10, 5))
         self._create_pie_chart(pie_frame)
 
-        # Gráfico 2: Bar Chart
+        # Gráfico 2: Bar Chart (CON FIX DE ROTACIÓN)
         bar_frame = ctk.CTkFrame(charts_frame)
         bar_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
         bar_frame.grid_columnconfigure(0, weight=1)
@@ -238,24 +265,18 @@ class VulnSeekerApp(ctk.CTk):
             no_data_label.grid(row=1, column=0, pady=40)
             return
 
-        # Truncar un poco más para pantallas cuadradas
         names = [row[0][:15] + "..." if len(row[0]) > 15 else row[0] for row in vuln_data]
         counts = [row[1] for row in vuln_data]
 
         fig = Figure(figsize=(5, 4), facecolor='#2b2b2b')
-
-        # Ajuste de márgenes para que las etiquetas rotadas no se corten
-        fig.subplots_adjust(bottom=0.25)
+        fig.subplots_adjust(bottom=0.25)  # Margen para etiquetas rotadas
 
         ax = fig.add_subplot(111)
         bars = ax.bar(names, counts, color=['#4facfe', '#00f2fe', '#fa709a', '#febefe', '#ffecd2'])
         ax.set_facecolor('#2b2b2b')
 
-        # Rotación de etiquetas 45 grados y alineación derecha
         ax.tick_params(axis='x', colors='white', rotation=30, labelsize=9)
         ax.tick_params(axis='y', colors='white')
-
-        # Título del eje
         ax.set_title("Top 5", color='white', fontsize=12)
 
         for bar, count in zip(bars, counts):
@@ -411,7 +432,8 @@ class VulnSeekerApp(ctk.CTk):
         self.url_entry.configure(state="disabled")
         self.crawl_checkbox.configure(state="disabled")
 
-        self.log_handler = GUILogHandler(self.scan_log_textbox)
+        # --- LOG HANDLER CON QUEUE (ANTI-FREEZE) ---
+        self.log_handler = GUILogHandler(self.log_queue)
         logger = logging.getLogger("VulnSeeker")
         logger.setLevel(logging.INFO)
         logger.handlers.clear()
@@ -433,8 +455,9 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(XSSScanner())
             engine.register_module(HeaderAnalyzer())
             engine.register_module(PortScanner())
+            engine.register_module(PathFuzzer())
 
-            logger.info("⚡ Motor de análisis iniciado (4 módulos activos)...")
+            logger.info("⚡ Motor de análisis iniciado (5 módulos activos)...")
             results = engine.scan(target_url, crawl=use_crawler)
 
             logger.info(f"💾 Guardando {len(results)} resultados...")
