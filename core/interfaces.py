@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-from core.scanner_types import Target, Vulnerability
+from typing import List
+# IMPORTA EL MODELO UNIFICADO:
+from core.models import Vulnerability, Severity
 
 class ScannerModule(ABC):
     """
