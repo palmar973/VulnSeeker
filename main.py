@@ -1,8 +1,9 @@
 import sys
 import argparse
 import urllib3
+import logging
 
-# Desactivamos advertencias de SSL para pruebas en entornos locales o laboratorios
+# Desactivamos advertencias de SSL para pruebas en entornos locales
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from core.engine import VulnSeekerEngine
@@ -10,36 +11,24 @@ from modules.sqli_module import SQLInjectionScanner
 from modules.xss_module import XSSScanner
 from reports.report_generator import ReportGenerator
 from core.config import GlobalConfig
+from core.db_manager import DatabaseManager
+
+# Configuración de logging visual
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+logger = logging.getLogger("VulnSeeker")
 
 
 def parse_arguments():
-    """
-    Configura y procesa los argumentos de línea de comandos.
-    """
     parser = argparse.ArgumentParser(
-        description="VulnSeeker - Escáner de Vulnerabilidades Web Modular y Automatizado",
-        epilog="Ejemplo de uso: python main.py -u http://testphp.vulnweb.com --crawl"
+        description="VulnSeeker - Escáner de Vulnerabilidades Web (JSON + SQLite)",
+        epilog="Ejemplo: python main.py -u http://testphp.vulnweb.com --crawl"
     )
-
-    # Argumento obligatorio: La URL (-u o --url)
-    parser.add_argument(
-        "-u", "--url",
-        required=True,
-        help="URL objetivo completa (ej: http://sitio.com/pagina.php?id=1)"
-    )
-
-    # Argumento opcional: Activar Crawler (--crawl)
-    parser.add_argument(
-        "--crawl",
-        action="store_true",
-        help="Habilitar el Crawler para descubrir enlaces antes de atacar."
-    )
-
+    parser.add_argument("-u", "--url", required=True, help="URL objetivo completa")
+    parser.add_argument("--crawl", action="store_true", help="Habilitar Crawler")
     return parser.parse_args()
 
 
 def main() -> None:
-    # 1. Procesar argumentos de la terminal
     args = parse_arguments()
     target_url = args.url
     use_crawler = args.crawl
@@ -48,41 +37,50 @@ def main() -> None:
     print(" VULNSEEKER - Automated Vulnerability Scanner")
     print(f" Target: {target_url}")
     print(f" Mode: {'CRAWLING + SCAN' if use_crawler else 'SINGLE URL SCAN'}")
+    print(f" Threads: {GlobalConfig.MAX_THREADS}")
     print("=" * 70 + "\n")
 
-    # 2. Inicialización del Engine
+    # 1. Inicialización
     engine = VulnSeekerEngine()
 
-    # 3. Carga del Arsenal
+    # 2. Carga del Arsenal (Usando las clases correctas)
     engine.register_module(SQLInjectionScanner())
     engine.register_module(XSSScanner())
 
     try:
-        # 4. Ejecución
+        # 3. Ejecución (Multithreading)
         print(f"[*] Iniciando motor de análisis...")
-
-        # El engine recibe la URL y la decisión de usar crawler o no
         results = engine.scan(target_url, crawl=use_crawler)
 
-        # 5. Reporte en Consola
+        # 4. Reporte en Consola
         print("\n" + "=" * 70)
         print(f" RESUMEN DE EJECUCIÓN: {len(results)} hallazgos totales")
         print("=" * 70)
 
         if results:
-            for i, v in enumerate(results):
-                print(f"#{i + 1} [{v.severity.value}] {v.name}")
-                print(f"    Ubicación: {v.target_url}")
-                # Mostramos solo los primeros 100 caracteres de evidencia para no ensuciar la consola
-                evidence_preview = (v.evidence[:100] + '...') if v.evidence and len(v.evidence) > 100 else v.evidence
-                print(f"    Evidencia: {evidence_preview}")
-                print("-" * 50)
+            # Mostrar resumen breve en consola
+            severity_counts = {}
+            for v in results:
+                print(f"[{v.severity.value}] {v.name} -> {v.target_url}")
+                severity_counts[v.severity.value] = severity_counts.get(v.severity.value, 0) + 1
 
-            # 6. Generación de Reporte JSON
-            # Usamos la constante global para el directorio
+            print("-" * 50)
+            print("Desglose por Severidad:")
+            for sev, count in severity_counts.items():
+                print(f"  {sev}: {count}")
+
+            # 5. Persistencia Dual
+
+            # A) JSON (Usando tu ReportGenerator existente)
             reporter = ReportGenerator(output_dir=GlobalConfig.REPORTS_DIR)
             json_path = reporter.export_json(results, target_url)
-            print(f"\n[+] Reporte detallado guardado en:\n    {json_path}")
+            print(f"\n[+] Reporte JSON guardado en:\n    {json_path}")
+
+            # B) SQLite (La nueva integración)
+            print("[*] Guardando en Base de Datos Histórica...")
+            db = DatabaseManager()
+            scan_id = db.save_scan_results(target_url, results)
+            print(f"[+] Datos persistidos en SQLite (Scan ID: {scan_id})")
 
         else:
             print("[-] No se encontraron vulnerabilidades en el objetivo.")
