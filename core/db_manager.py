@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.14
 """
-DatabaseManager - FASE 17: Logger corregido + API Key persistente estable.
-Métodos granulares + Settings persistentes (groq_api_key).
+DatabaseManager - FASE 18: Soporte para Reportes PDF.
+Agregado: get_scan_date() para la portada del PDF.
 """
 
 import sqlite3
@@ -12,7 +12,6 @@ from typing import List, Tuple, Dict, Any, Optional
 from core.config import GlobalConfig
 from core.models import Vulnerability, Severity
 
-# FASE 17: FIX CRÍTICO - Logger definido a nivel módulo
 logger = logging.getLogger("VulnSeeker.DB")
 
 
@@ -34,52 +33,90 @@ class DatabaseManager:
             self._initialized = True
 
     def _init_db(self) -> None:
-        """Inicialización idempotente de esquema + FASE 16: settings table."""
+        """Inicialización idempotente de esquema."""
         self.db_path.parent.mkdir(exist_ok=True)
 
         with sqlite3.connect(self.db_path) as conn:
             conn.execute("PRAGMA foreign_keys = ON")
 
-            # Scans table
             conn.execute("""
                          CREATE TABLE IF NOT EXISTS scans
                          (
-                             id INTEGER PRIMARY KEY AUTOINCREMENT,
-                             target_url TEXT NOT NULL,
-                             scan_date TEXT NOT NULL,
-                             total_vulns INTEGER DEFAULT 0
+                             id
+                             INTEGER
+                             PRIMARY
+                             KEY
+                             AUTOINCREMENT,
+                             target_url
+                             TEXT
+                             NOT
+                             NULL,
+                             scan_date
+                             TEXT
+                             NOT
+                             NULL,
+                             total_vulns
+                             INTEGER
+                             DEFAULT
+                             0
                          )
                          """)
 
-            # Vulnerabilities table
             conn.execute("""
                          CREATE TABLE IF NOT EXISTS vulnerabilities
                          (
-                             id INTEGER PRIMARY KEY AUTOINCREMENT,
-                             scan_id INTEGER NOT NULL,
-                             name TEXT NOT NULL,
-                             description TEXT,
-                             severity INTEGER NOT NULL,
-                             target_url TEXT,
-                             payload TEXT,
-                             FOREIGN KEY (scan_id) REFERENCES scans(id)
+                             id
+                             INTEGER
+                             PRIMARY
+                             KEY
+                             AUTOINCREMENT,
+                             scan_id
+                             INTEGER
+                             NOT
+                             NULL,
+                             name
+                             TEXT
+                             NOT
+                             NULL,
+                             description
+                             TEXT,
+                             severity
+                             INTEGER
+                             NOT
+                             NULL,
+                             target_url
+                             TEXT,
+                             payload
+                             TEXT,
+                             FOREIGN
+                             KEY
+                         (
+                             scan_id
+                         ) REFERENCES scans
+                         (
+                             id
                          )
+                             )
                          """)
 
-            # FASE 16: Settings table (key-value persistente)
             conn.execute("""
                          CREATE TABLE IF NOT EXISTS settings
                          (
-                             key TEXT PRIMARY KEY,
-                             value TEXT NOT NULL
+                             key
+                             TEXT
+                             PRIMARY
+                             KEY,
+                             value
+                             TEXT
+                             NOT
+                             NULL
                          )
                          """)
 
             conn.commit()
-            logger.info(f"🗄️ DB inicializada: {self.db_path} (FASE 17: Logger FIX OK)")
+            logger.info(f"🗄️  DB inicializada: {self.db_path}")
 
     def save_scan_results(self, target_url: str, vulnerabilities: List[Any]) -> int:
-        """Método BLINDADO (Bulletproof - Duck Typing)."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 conn.execute("BEGIN TRANSACTION")
@@ -127,9 +164,8 @@ class DatabaseManager:
             logger.error(f"❌ Error CRÍTICO guardando en DB: {e}")
             raise
 
-    # FASE 16/17: API KEY PERSISTENTE (Logger ahora funciona)
+    # --- MÉTODOS DE CONFIGURACIÓN ---
     def save_api_key(self, api_key: str) -> None:
-        """Guarda/actualiza Groq API Key de forma segura."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 conn.execute(
@@ -137,13 +173,12 @@ class DatabaseManager:
                     ("groq_api_key", api_key)
                 )
                 conn.commit()
-                logger.info("🔑 Groq API Key guardada persistentemente (FASE 17)")
+                logger.info("🔑 Groq API Key guardada persistentemente")
         except Exception as e:
             logger.error(f"❌ Error guardando API Key: {e}")
             raise
 
     def get_api_key(self) -> Optional[str]:
-        """Recupera Groq API Key persistida. None si no existe."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 result = conn.execute(
@@ -155,8 +190,8 @@ class DatabaseManager:
             logger.error(f"❌ Error recuperando API Key: {e}")
             return None
 
+    # --- MÉTODOS DE LECTURA ---
     def get_all_scans(self) -> List[Tuple[int, str, str, int]]:
-        """Historial completo para UI."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 return conn.execute("""
@@ -168,9 +203,7 @@ class DatabaseManager:
             logger.error(f"Error fetching scans: {e}")
             return []
 
-    # FASE 15: MÉTODOS GRANULARES (INTACTOS)
     def get_unique_targets(self) -> List[str]:
-        """Targets únicos para filtro de historial."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 return [row[0] for row in conn.execute("""
@@ -183,7 +216,6 @@ class DatabaseManager:
             return []
 
     def get_scans_by_target(self, target_url: str) -> List[Tuple[int, str, str, int]]:
-        """Escaneos filtrados por target específico."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 return conn.execute("""
@@ -197,7 +229,6 @@ class DatabaseManager:
             return []
 
     def get_scan_stats(self, scan_id: int) -> Dict[str, int]:
-        """KPIs específicos de UN SOLO scan."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 total_vulns = conn.execute(
@@ -208,16 +239,48 @@ class DatabaseManager:
                     "SELECT COUNT(*) FROM vulnerabilities WHERE scan_id = ? AND severity >= 3", (scan_id,)
                 ).fetchone()[0]
 
+                # Para el PDF
+                medium_low = conn.execute(
+                    "SELECT COUNT(*) FROM vulnerabilities WHERE scan_id = ? AND severity < 3", (scan_id,)
+                ).fetchone()[0]
+
                 return {
                     "total_vulns": total_vulns,
-                    "critical_high": critical_high
+                    "critical_high": critical_high,
+                    "medium_low": medium_low
                 }
         except Exception as e:
             logger.error(f"Error fetching scan stats: {e}")
-            return {"total_vulns": 0, "critical_high": 0}
+            return {"total_vulns": 0, "critical_high": 0, "medium_low": 0}
+
+    def get_scan_target(self, scan_id: int) -> str:
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                res = conn.execute("SELECT target_url FROM scans WHERE id = ?", (scan_id,)).fetchone()
+                return res[0] if res else "Unknown Target"
+        except Exception as e:
+            logger.error(f"Error fetching target: {e}")
+            return "Error"
+
+    # FASE 18: MÉTODO FALTANTE PARA PDF
+    def get_scan_date(self, scan_id: int) -> str:
+        """Recupera la fecha del scan para el reporte."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                res = conn.execute("SELECT scan_date FROM scans WHERE id = ?", (scan_id,)).fetchone()
+                if res:
+                    try:
+                        # Formato amigable: "29-12-2025 14:30"
+                        dt = datetime.fromisoformat(res[0].replace('Z', '+00:00'))
+                        return dt.strftime("%d-%m-%Y %H:%M:%S")
+                    except:
+                        return res[0]
+                return "Fecha Desconocida"
+        except Exception as e:
+            logger.error(f"Error fetching scan date: {e}")
+            return "Error"
 
     def get_severity_distribution_by_scan(self, scan_id: int) -> List[Tuple[str, int]]:
-        """Pie Chart data para UN scan específico."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 sev_names = ['INFO', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
@@ -235,7 +298,6 @@ class DatabaseManager:
             return []
 
     def get_top_vulns_by_scan(self, scan_id: int, limit: int = 5) -> List[Tuple[str, int]]:
-        """Bar Chart data para UN scan específico."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 return conn.execute("""
@@ -249,65 +311,8 @@ class DatabaseManager:
             logger.error(f"Error top vulns by scan: {e}")
             return []
 
-    # MÉTODOS GLOBALES (LEGACY - para compatibilidad)
-    def get_kpis(self) -> Dict[str, int]:
-        """KPIs ejecutivos para Dashboard (global)."""
-        try:
-            with sqlite3.connect(self.db_path) as conn:
-                total_scans = conn.execute("SELECT COUNT(*) FROM scans").fetchone()[0]
-                total_vulns = conn.execute("SELECT COALESCE(SUM(total_vulns), 0) FROM scans").fetchone()[0]
-                critical_high = conn.execute("SELECT COUNT(*) FROM vulnerabilities WHERE severity >= 3").fetchone()[0]
-
-                return {
-                    "total_scans": total_scans,
-                    "total_vulns": total_vulns,
-                    "critical_high": critical_high
-                }
-        except Exception as e:
-            logger.error(f"Error fetching KPIs: {e}")
-            return {"total_scans": 0, "total_vulns": 0, "critical_high": 0}
-
-    def get_severity_distribution(self) -> List[Tuple[str, int]]:
-        """Pie Chart data (global)."""
-        try:
-            with sqlite3.connect(self.db_path) as conn:
-                sev_names = ['INFO', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
-                result = []
-                for idx, name in enumerate(sev_names):
-                    count = conn.execute("SELECT COUNT(*) FROM vulnerabilities WHERE severity = ?", (idx,)).fetchone()[0]
-                    if count > 0:
-                        result.append((name, count))
-                return result
-        except Exception as e:
-            logger.error(f"Error severity distribution: {e}")
-            return []
-
-    def get_top_vulnerabilities(self, limit: int = 5) -> List[Tuple[str, int]]:
-        """Bar Chart data (global)."""
-        try:
-            with sqlite3.connect(self.db_path) as conn:
-                return conn.execute("""
-                                    SELECT name, COUNT(*) as count
-                                    FROM vulnerabilities
-                                    GROUP BY name
-                                    ORDER BY count DESC LIMIT ?
-                                    """, (limit,)).fetchall()
-        except Exception as e:
-            logger.error(f"Error top vulnerabilities: {e}")
-            return []
-
-    def get_scan_target(self, scan_id: int) -> str:
-        """Recupera la URL objetivo de un scan específico."""
-        try:
-            with sqlite3.connect(self.db_path) as conn:
-                res = conn.execute("SELECT target_url FROM scans WHERE id = ?", (scan_id,)).fetchone()
-                return res[0] if res else "Unknown Target"
-        except Exception as e:
-            logger.error(f"Error fetching target: {e}")
-            return "Error"
-
-    def get_vulnerabilities_by_scan(self, scan_id: int) -> List[Vulnerability]:
-        """Recupera todas las vulnerabilidades de un scan."""
+    def get_vulnerabilities_by_scan(self, scan_id: int) -> List[Any]:
+        """Retorna objetos con atributos 'vuln_type' mapeado a 'name' para el PDF."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 rows = conn.execute("""
@@ -316,27 +321,20 @@ class DatabaseManager:
                                     WHERE scan_id = ?
                                     """, (scan_id,)).fetchall()
 
-                int_to_sev = {
-                    0: Severity.INFO,
-                    1: Severity.LOW,
-                    2: Severity.MEDIUM,
-                    3: Severity.HIGH,
-                    4: Severity.CRITICAL
-                }
+                int_to_sev = {0: "INFO", 1: "LOW", 2: "MEDIUM", 3: "HIGH", 4: "CRITICAL"}
 
-                vuln_objects = []
-                for r in rows:
-                    name, desc, sev_int, url, payload = r
-                    vuln_objects.append(Vulnerability(
-                        name=name,
-                        description=desc,
-                        severity=int_to_sev.get(sev_int, Severity.LOW),
-                        target_url=url,
-                        payload=payload
-                    ))
+                # Clase simple para el PDF generator (Duck Typing)
+                class PDFVuln:
+                    def __init__(self, name, desc, sev_int, url, payload):
+                        self.vuln_type = name  # Mapeo para que el PDF lo lea
+                        self.name = name
+                        self.description = desc
+                        self.severity = int_to_sev.get(sev_int, "INFO")
+                        self.url = url
+                        self.payload = payload
 
-                return vuln_objects
+                return [PDFVuln(*r) for r in rows]
 
         except Exception as e:
-            logger.error(f"Error fetching vulns for AI: {e}")
+            logger.error(f"Error fetching vulns for PDF: {e}")
             return []
