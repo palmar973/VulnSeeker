@@ -1,13 +1,12 @@
 #!/usr/bin/env python3.14
 """
-Ventana principal de VulnSeeker Enterprise - FASE 14: Llama 3.3 70B INTEGRADO.
-🤖 IA Ejecutiva + 5 Módulos + Queue Anti-Freeze + Gráficos Rotados.
-FIX 1: Eliminado parámetro inválido 'show_seperator' en CTkInputDialog.
-FIX 2: Corrección de Scope en manejo de errores de Threading (NameError 'e').
+VulnSeeker Enterprise - FASE 15: SCANNER-FIRST UX.
+Inicio directo en escaneo + Resultados contextuales + Filtro targets.
+FIX: Solucionado _tkinter.TclError (Race Condition) al finalizar escaneo.
 """
 
 import customtkinter as ctk
-from customtkinter import CTkInputDialog  # Para API Key
+from customtkinter import CTkInputDialog
 import logging
 import threading
 import sys
@@ -25,26 +24,25 @@ import matplotlib.pyplot as plt
 
 plt.style.use('dark_background')
 
-# Backend imports - FASE 14: + AI Analyst
+# Backend imports
 from core.engine import VulnSeekerEngine
 from modules.sqli_module import SQLInjectionScanner
 from modules.xss_module import XSSScanner
 from modules.header_analyzer import HeaderAnalyzer
 from modules.port_scanner import PortScanner
 from modules.path_fuzzer import PathFuzzer
-from modules.ai_analyst import GroqAIAnalyst  # ← FASE 14 NUEVO
+from modules.ai_analyst import GroqAIAnalyst
 from reports.report_generator import ReportGenerator
 from core.config import GlobalConfig
 from core.db_manager import DatabaseManager
 from core.models import Vulnerability
 
-# Configuración global de CustomTkinter
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 
 class GUILogHandler(logging.Handler):
-    """Handler optimizado con Queue (anti-freeze para 10k+ logs)."""
+    """Handler optimizado con Queue (anti-freeze)."""
 
     def __init__(self, log_queue: queue.Queue) -> None:
         super().__init__()
@@ -61,7 +59,7 @@ class GUILogHandler(logging.Handler):
 
 
 class VulnSeekerApp(ctk.CTk):
-    """Aplicación Enterprise con IA Ejecutiva Llama 3.3 70B."""
+    """FASE 15: Scanner-First UX + Resultados contextuales."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -70,11 +68,9 @@ class VulnSeekerApp(ctk.CTk):
         self.minsize(900, 500)
         self.resizable(True, True)
 
-        # Sistema de logs buffered (anti-freeze)
         self.log_queue = queue.Queue()
         self.log_update_interval_ms = 100
 
-        # Estado de la app
         self.current_frame: ctk.CTkFrame | None = None
         self.scan_thread: Optional[threading.Thread] = None
         self.ai_thread: Optional[threading.Thread] = None
@@ -83,17 +79,18 @@ class VulnSeekerApp(ctk.CTk):
         self.url_entry: Optional[ctk.CTkEntry] = None
         self.start_button: Optional[ctk.CTkButton] = None
         self.crawl_checkbox: Optional[ctk.CTkCheckBox] = None
-        self.ai_button: Optional[ctk.CTkButton] = None  # ← FASE 14
+        self.ai_button: Optional[ctk.CTkButton] = None
         self.nav_buttons: dict = {}
+        self.current_scan_id: Optional[int] = None  # ← FASE 15
 
-        # Singletons
         self.db_manager = DatabaseManager()
         self.ai_analyst = GroqAIAnalyst()
 
         Path("ui/assets").mkdir(exist_ok=True)
         self._build_interface()
 
-        # Loop de logs
+        # FASE 15: INICIO DIRECTO EN SCAN
+        self.show_scan()
         self.after(self.log_update_interval_ms, self._process_log_queue)
 
     def _process_log_queue(self) -> None:
@@ -120,10 +117,11 @@ class VulnSeekerApp(ctk.CTk):
         )
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
 
+        # FASE 15: Eliminar Dashboard de navegación principal
         self.nav_buttons = {
-            "dashboard": self._create_nav_button("🏠 Dashboard", 1, self.show_dashboard),
-            "scan": self._create_nav_button("🔍 Nuevo Escaneo", 2, self.show_scan),
-            "history": self._create_nav_button("📊 Historial", 3, self.show_history)
+            "scan": self._create_nav_button("🚀 Nuevo Escaneo", 1, self.show_scan),
+            "results": self._create_nav_button("📊 Resultados", 2, self.show_results),
+            "history": self._create_nav_button("📋 Historial", 3, self.show_history)
         }
 
         self.main_container = ctk.CTkFrame(self, corner_radius=0)
@@ -131,8 +129,6 @@ class VulnSeekerApp(ctk.CTk):
 
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
-
-        self.show_dashboard()
 
     def _create_nav_button(self, text: str, row: int, command) -> ctk.CTkButton:
         btn = ctk.CTkButton(
@@ -155,25 +151,32 @@ class VulnSeekerApp(ctk.CTk):
         for key, btn in self.nav_buttons.items():
             btn.configure(fg_color=("gray90", "gray30") if key == button_key else "transparent")
 
-    # Dashboard y gráficos (sin cambios - funcionan perfecto)
-    def show_dashboard(self) -> None:
-        self._select_nav_button("dashboard")
-        dashboard_frame = ctk.CTkFrame(self.main_container)
+    # FASE 15: NUEVA VISTA DE RESULTADOS CONTEXTUALES
+    def show_results(self) -> None:
+        self._select_nav_button("results")
+        if not self.current_scan_id:
+            self.show_message("ℹ️ Realice un escaneo primero.", "Info")
+            self.show_scan()
+            return
+
+        results_frame = ctk.CTkFrame(self.main_container)
 
         title_label = ctk.CTkLabel(
-            dashboard_frame, text="🚀 CENTRO DE CONTROL - ANALÍTICA DE SEGURIDAD",
+            results_frame, text=f"📊 RESULTADOS SCAN #{self.current_scan_id}",
             font=ctk.CTkFont(size=28, weight="bold")
         )
         title_label.grid(row=0, column=0, padx=20, pady=(30, 20))
 
-        kpi_frame = ctk.CTkFrame(dashboard_frame)
+        # KPIs específicos del scan
+        kpi_frame = ctk.CTkFrame(results_frame)
         kpi_frame.grid(row=1, column=0, padx=20, pady=(0, 20), sticky="ew")
 
-        kpi_data = self.db_manager.get_kpis()
+        scan_stats = self.db_manager.get_scan_stats(self.current_scan_id)
+        target_url = self.db_manager.get_scan_target(self.current_scan_id)
+
         kpi_configs = [
-            ("Total Escaneos", kpi_data["total_scans"], "🧾", "#4facfe"),
-            ("Total Vulnerabilidades", kpi_data["total_vulns"], "🐛", "#f0932b"),
-            ("Críticas/Alta", kpi_data["critical_high"], "🚨", "#eb4d4b")
+            ("Vulnerabilidades", scan_stats["total_vulns"], "🐛", "#f0932b"),
+            ("Críticas/Alta", scan_stats["critical_high"], "🚨", "#eb4d4b")
         ]
 
         for idx, (title, value, icon, color) in enumerate(kpi_configs):
@@ -187,13 +190,16 @@ class VulnSeekerApp(ctk.CTk):
                                                                                                    pady=(0, 10))
             ctk.CTkLabel(kpi_card, text=title, font=ctk.CTkFont(size=14)).grid(row=2, column=0, pady=(0, 15))
 
-        kpi_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        ctk.CTkLabel(kpi_frame, text=f"🎯 {target_url}", font=ctk.CTkFont(size=14)).grid(row=0, column=2, padx=20,
+                                                                                        pady=20)
+        kpi_frame.grid_columnconfigure((0, 1), weight=1)
 
-        charts_frame = ctk.CTkFrame(dashboard_frame)
+        # Gráficos contextuales del scan
+        charts_frame = ctk.CTkFrame(results_frame)
         charts_frame.grid(row=2, column=0, padx=20, pady=(0, 20), sticky="nsew")
         charts_frame.grid_columnconfigure(1, weight=1)
         charts_frame.grid_rowconfigure(0, weight=1)
-        dashboard_frame.grid_rowconfigure(2, weight=1)
+        results_frame.grid_rowconfigure(2, weight=1)
 
         pie_frame = ctk.CTkFrame(charts_frame)
         pie_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
@@ -204,75 +210,38 @@ class VulnSeekerApp(ctk.CTk):
                                                                                                                   pady=(
                                                                                                                       10,
                                                                                                                       5))
-        self._create_pie_chart(pie_frame)
+        self._create_pie_chart(pie_frame, self.current_scan_id)
 
         bar_frame = ctk.CTkFrame(charts_frame)
         bar_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
         bar_frame.grid_columnconfigure(0, weight=1)
         bar_frame.grid_rowconfigure(0, weight=1)
-        ctk.CTkLabel(bar_frame, text="Top 5 Vulnerabilidades", font=ctk.CTkFont(size=16, weight="bold")).grid(row=0,
-                                                                                                              column=0,
-                                                                                                              pady=(10,
-                                                                                                                    5))
-        self._create_bar_chart(bar_frame)
+        ctk.CTkLabel(bar_frame, text="Top Vulnerabilidades", font=ctk.CTkFont(size=16, weight="bold")).grid(row=0,
+                                                                                                            column=0,
+                                                                                                            pady=(10,
+                                                                                                                  5))
+        self._create_bar_chart(bar_frame, self.current_scan_id)
 
-        self.show_frame(dashboard_frame)
+        # FASE 15: Botón IA MOVIDO A RESULTADOS
+        ai_frame = ctk.CTkFrame(results_frame)
+        ai_frame.grid(row=3, column=0, padx=20, pady=20, sticky="ew")
 
-    def _create_pie_chart(self, parent_frame: ctk.CTkFrame) -> None:
-        severity_data = self.db_manager.get_severity_distribution()
-        if not severity_data:
-            ctk.CTkLabel(parent_frame, text="📊 Sin datos suficientes para graficar", font=ctk.CTkFont(size=14)).grid(
-                row=1, column=0, pady=40)
-            return
+        self.ai_button = ctk.CTkButton(
+            ai_frame, text="🤖 Generar Informe IA (Llama 3)", height=45,
+            font=ctk.CTkFont(size=16, weight="bold"),
+            command=self.generate_ai_report,
+            fg_color=("#8b5cf6", "#7c3aed"),
+            hover_color=("#7c3aed", "#6d28d9")
+        )
+        self.ai_button.pack(pady=10)
 
-        labels = [row[0] for row in severity_data]
-        sizes = [row[1] for row in severity_data]
-        colors = ['#ff9999', '#66b3ff', '#99ff99', '#ffcc99', '#ffd700']
-
-        fig = Figure(figsize=(5, 4), facecolor='#2b2b2b')
-        ax = fig.add_subplot(111)
-        ax.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
-        ax.set_facecolor('#2b2b2b')
-
-        canvas = FigureCanvasTkAgg(fig, parent_frame)
-        canvas.draw()
-        canvas.get_tk_widget().grid(row=1, column=0, pady=10)
-
-    def _create_bar_chart(self, parent_frame: ctk.CTkFrame) -> None:
-        vuln_data = self.db_manager.get_top_vulnerabilities(5)
-        if not vuln_data:
-            ctk.CTkLabel(parent_frame, text="📊 Sin datos suficientes para graficar", font=ctk.CTkFont(size=14)).grid(
-                row=1, column=0, pady=40)
-            return
-
-        names = [row[0][:15] + "..." if len(row[0]) > 15 else row[0] for row in vuln_data]
-        counts = [row[1] for row in vuln_data]
-
-        fig = Figure(figsize=(5, 4), facecolor='#2b2b2b')
-        fig.subplots_adjust(bottom=0.25)
-
-        ax = fig.add_subplot(111)
-        bars = ax.bar(names, counts, color=['#4facfe', '#00f2fe', '#fa709a', '#febefe', '#ffecd2'])
-        ax.set_facecolor('#2b2b2b')
-
-        ax.tick_params(axis='x', colors='white', rotation=30, labelsize=9)
-        ax.tick_params(axis='y', colors='white')
-        ax.set_title("Top 5", color='white', fontsize=12)
-
-        for bar, count in zip(bars, counts):
-            height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width() / 2., height + 0.1, f'{count}', ha='center', va='bottom',
-                    color='white', fontsize=10)
-
-        canvas = FigureCanvasTkAgg(fig, parent_frame)
-        canvas.draw()
-        canvas.get_tk_widget().grid(row=1, column=0, pady=10)
+        self.show_frame(results_frame)
 
     def show_scan(self) -> None:
         self._select_nav_button("scan")
         scan_frame = ctk.CTkFrame(self.main_container)
 
-        ctk.CTkLabel(scan_frame, text="🔍 Nuevo Escaneo", font=ctk.CTkFont(size=28, weight="bold")).grid(row=0, column=0,
+        ctk.CTkLabel(scan_frame, text="🚀 NUEVO ESCANEO", font=ctk.CTkFont(size=28, weight="bold")).grid(row=0, column=0,
                                                                                                         padx=20,
                                                                                                         pady=(30, 20))
 
@@ -322,101 +291,164 @@ class VulnSeekerApp(ctk.CTk):
         self.show_frame(scan_frame)
 
     def show_history(self) -> None:
-        """FASE 14: + Botón IA Violeta para Informes Ejecutivos."""
         self._select_nav_button("history")
         history_frame = ctk.CTkFrame(self.main_container)
 
-        title_label = ctk.CTkLabel(history_frame, text="📊 Historial de Escaneos",
+        title_label = ctk.CTkLabel(history_frame, text="📋 Historial de Escaneos",
                                    font=ctk.CTkFont(size=28, weight="bold"))
         title_label.grid(row=0, column=0, padx=20, pady=(30, 20))
 
-        scans: List[Tuple[int, str, str, int]] = self.db_manager.get_all_scans()
+        # FASE 15: FILTRO POR TARGET
+        filter_frame = ctk.CTkFrame(history_frame)
+        filter_frame.grid(row=1, column=0, padx=20, pady=(0, 20), sticky="ew")
+
+        ctk.CTkLabel(filter_frame, text="🎯 Filtrar por Target:", font=ctk.CTkFont(size=14, weight="bold")).pack(
+            side="left", padx=(20, 10), pady=15)
+
+        self.target_filter_var = ctk.StringVar(value="Todos")
+        targets = self.db_manager.get_unique_targets()
+        targets.insert(0, "Todos")
+
+        self.target_filter_menu = ctk.CTkOptionMenu(
+            filter_frame, values=targets, variable=self.target_filter_var,
+            command=self._on_target_filter_change, width=400
+        )
+        self.target_filter_menu.pack(side="left", pady=15)
 
         table_container = ctk.CTkFrame(history_frame)
-        table_container.grid(row=1, column=0, padx=20, pady=(0, 20), sticky="nsew")
+        table_container.grid(row=2, column=0, padx=20, pady=(0, 20), sticky="nsew")
         table_container.grid_columnconfigure(0, weight=1)
         table_container.grid_rowconfigure(0, weight=1)
-        history_frame.grid_rowconfigure(1, weight=1)
+        history_frame.grid_rowconfigure(2, weight=1)
+
+        self._refresh_history_table(table_container)
+
+        button_frame = ctk.CTkFrame(table_container)
+        button_frame.grid(row=1, column=0, padx=20, pady=(10, 20), sticky="ew")
+        button_frame.grid_columnconfigure(0, weight=1)
+
+        reports_dir = Path(GlobalConfig.REPORTS_DIR)
+        ctk.CTkButton(
+            button_frame, text="📂 Abrir Carpeta de Reportes", height=45,
+            font=ctk.CTkFont(size=16, weight="bold"),
+            command=lambda: self.open_reports_folder(reports_dir),
+            fg_color=("gray70", "gray25"), hover_color=("orange", "darkorange")
+        ).pack(pady=10)
+
+        self.show_frame(history_frame)
+
+    def _on_target_filter_change(self, selected_target: str) -> None:
+        """Actualiza tabla al cambiar filtro."""
+        if self.current_frame:
+            table_container = self.current_frame.winfo_children()[2]  # Hack para encontrar table_container
+            self._refresh_history_table(table_container, selected_target)
+
+    def _refresh_history_table(self, table_container: ctk.CTkFrame, target_filter: str = "Todos") -> None:
+        """Recarga tabla con filtro activo."""
+        for widget in table_container.winfo_children():
+            widget.destroy()
+
+        scans = self.db_manager.get_all_scans() if target_filter == "Todos" else self.db_manager.get_scans_by_target(
+            target_filter)
 
         if not scans:
             empty_label = ctk.CTkLabel(table_container, text="📭 No hay escaneos registrados aún.",
                                        font=ctk.CTkFont(size=18))
             empty_label.grid(row=0, column=0, padx=40, pady=40)
-        else:
-            header_frame = ctk.CTkFrame(table_container, fg_color=("gray70", "gray25"))
-            header_frame.grid(row=0, column=0, sticky="ew", padx=15, pady=(15, 5))
-
-            headers = ["🆔 ID", "📅 FECHA", "🎯 OBJETIVO", "🔍 HALLAZGOS"]
-            for col, header_text in enumerate(headers):
-                ctk.CTkLabel(header_frame, text=header_text, font=ctk.CTkFont(size=14, weight="bold")).grid(row=0,
-                                                                                                            column=col,
-                                                                                                            padx=12,
-                                                                                                            pady=12,
-                                                                                                            sticky="w")
-
-            scrollable_frame = ctk.CTkScrollableFrame(table_container, height=350)
-            scrollable_frame.grid(row=1, column=0, padx=15, pady=(5, 15), sticky="nsew")
-
-            for idx, (scan_id, scan_date, target_url, vuln_count) in enumerate(scans):
-                try:
-                    readable_date = datetime.fromisoformat(scan_date.replace('Z', '+00:00')).strftime("%d-%m-%Y %H:%M")
-                except:
-                    readable_date = scan_date[:16]
-
-                row_color = ("gray85", "gray20") if idx % 2 == 0 else ("gray95", "gray30")
-                row_frame = ctk.CTkFrame(scrollable_frame, fg_color=row_color)
-                row_frame.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
-
-                ctk.CTkLabel(row_frame, text=str(scan_id), font=ctk.CTkFont(size=13, weight="bold")).grid(row=0,
-                                                                                                          column=0,
-                                                                                                          padx=12,
-                                                                                                          pady=10,
-                                                                                                          sticky="w")
-                ctk.CTkLabel(row_frame, text=readable_date, font=ctk.CTkFont(size=13)).grid(row=0, column=1, padx=8,
-                                                                                            pady=10, sticky="w")
-                ctk.CTkLabel(row_frame, text=(target_url[:50] + "...") if len(target_url) > 50 else target_url,
-                             font=ctk.CTkFont(size=13)).grid(row=0, column=2, padx=8, pady=10, sticky="w")
-                ctk.CTkLabel(row_frame, text=str(vuln_count), font=ctk.CTkFont(size=13, weight="bold")).grid(row=0,
-                                                                                                             column=3,
-                                                                                                             padx=12,
-                                                                                                             pady=10,
-                                                                                                             sticky="ew")
-
-        # FASE 14: BOTONES INFERIORES
-        button_frame = ctk.CTkFrame(table_container)
-        button_frame.grid(row=2, column=0, padx=20, pady=(10, 20), sticky="ew")
-        button_frame.grid_columnconfigure((0, 1), weight=1)
-
-        # Botón Reportes (existente)
-        reports_dir = Path(GlobalConfig.REPORTS_DIR)
-        open_reports_btn = ctk.CTkButton(
-            button_frame, text="📂 Abrir Carpeta de Reportes", height=45,
-            font=ctk.CTkFont(size=16, weight="bold"),
-            command=lambda: self.open_reports_folder(reports_dir),
-            fg_color=("gray70", "gray25"), hover_color=("orange", "darkorange")
-        )
-        open_reports_btn.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
-
-        # FASE 14: BOTÓN IA VIOLETA ✨
-        self.ai_button = ctk.CTkButton(
-            button_frame, text="🤖 Generar Informe IA (Llama 3)", height=45,
-            font=ctk.CTkFont(size=16, weight="bold"),
-            command=self.generate_ai_report,
-            fg_color=("#8b5cf6", "#7c3aed"),  # Violeta Groq
-            hover_color=("#7c3aed", "#6d28d9")
-        )
-        self.ai_button.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
-
-        self.show_frame(history_frame)
-
-    def generate_ai_report(self) -> None:
-        """FASE 14: Llama 3.3 70B - Informe Ejecutivo en Thread."""
-        scans = self.db_manager.get_all_scans()
-        if not scans:
-            self.show_message("ℹ️ No hay escaneos para analizar.", "Info")
             return
 
-        # FIX: CTkInputDialog no tiene 'show_seperator'. Eliminado.
+        header_frame = ctk.CTkFrame(table_container, fg_color=("gray70", "gray25"))
+        header_frame.grid(row=0, column=0, sticky="ew", padx=15, pady=(15, 5))
+
+        headers = ["🆔 ID", "📅 FECHA", "🎯 OBJETIVO", "🔍 HALLAZGOS"]
+        for col, header_text in enumerate(headers):
+            ctk.CTkLabel(header_frame, text=header_text, font=ctk.CTkFont(size=14, weight="bold")).grid(
+                row=0, column=col, padx=12, pady=12, sticky="w")
+
+        scrollable_frame = ctk.CTkScrollableFrame(table_container, height=350)
+        scrollable_frame.grid(row=1, column=0, padx=15, pady=(5, 15), sticky="nsew")
+
+        for idx, (scan_id, scan_date, target_url, vuln_count) in enumerate(scans):
+            try:
+                readable_date = datetime.fromisoformat(scan_date.replace('Z', '+00:00')).strftime("%d-%m-%Y %H:%M")
+            except:
+                readable_date = scan_date[:16]
+
+            row_color = ("gray85", "gray20") if idx % 2 == 0 else ("gray95", "gray30")
+            row_frame = ctk.CTkFrame(scrollable_frame, fg_color=row_color)
+            row_frame.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
+
+            ctk.CTkLabel(row_frame, text=str(scan_id), font=ctk.CTkFont(size=13, weight="bold")).grid(row=0, column=0,
+                                                                                                      padx=12, pady=10,
+                                                                                                      sticky="w")
+            ctk.CTkLabel(row_frame, text=readable_date, font=ctk.CTkFont(size=13)).grid(row=0, column=1, padx=8,
+                                                                                        pady=10, sticky="w")
+            ctk.CTkLabel(row_frame, text=(target_url[:50] + "...") if len(target_url) > 50 else target_url,
+                         font=ctk.CTkFont(size=13)).grid(row=0, column=2, padx=8, pady=10, sticky="w")
+            ctk.CTkLabel(row_frame, text=str(vuln_count), font=ctk.CTkFont(size=13, weight="bold")).grid(row=0,
+                                                                                                         column=3,
+                                                                                                         padx=12,
+                                                                                                         pady=10,
+                                                                                                         sticky="ew")
+
+    # Gráficos contextuales (FASE 15)
+    def _create_pie_chart(self, parent_frame: ctk.CTkFrame, scan_id: int) -> None:
+        severity_data = self.db_manager.get_severity_distribution_by_scan(scan_id)
+        if not severity_data:
+            ctk.CTkLabel(parent_frame, text="📊 Sin datos para graficar", font=ctk.CTkFont(size=14)).grid(row=1,
+                                                                                                         column=0,
+                                                                                                         pady=40)
+            return
+
+        labels = [row[0] for row in severity_data]
+        sizes = [row[1] for row in severity_data]
+        colors = ['#ff9999', '#66b3ff', '#99ff99', '#ffcc99', '#ffd700']
+
+        fig = Figure(figsize=(5, 4), facecolor='#2b2b2b')
+        ax = fig.add_subplot(111)
+        ax.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+        ax.set_facecolor('#2b2b2b')
+
+        canvas = FigureCanvasTkAgg(fig, parent_frame)
+        canvas.draw()
+        canvas.get_tk_widget().grid(row=1, column=0, pady=10)
+
+    def _create_bar_chart(self, parent_frame: ctk.CTkFrame, scan_id: int) -> None:
+        vuln_data = self.db_manager.get_top_vulns_by_scan(scan_id, 5)
+        if not vuln_data:
+            ctk.CTkLabel(parent_frame, text="📊 Sin datos para graficar", font=ctk.CTkFont(size=14)).grid(row=1,
+                                                                                                         column=0,
+                                                                                                         pady=40)
+            return
+
+        names = [row[0][:15] + "..." if len(row[0]) > 15 else row[0] for row in vuln_data]
+        counts = [row[1] for row in vuln_data]
+
+        fig = Figure(figsize=(5, 4), facecolor='#2b2b2b')
+        fig.subplots_adjust(bottom=0.25)
+
+        ax = fig.add_subplot(111)
+        bars = ax.bar(names, counts, color=['#4facfe', '#00f2fe', '#fa709a', '#febefe', '#ffecd2'])
+        ax.set_facecolor('#2b2b2b')
+
+        ax.tick_params(axis='x', colors='white', rotation=30, labelsize=9)
+        ax.tick_params(axis='y', colors='white')
+        ax.set_title("Top 5", color='white', fontsize=12)
+
+        for bar, count in zip(bars, counts):
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width() / 2., height + 0.1, f'{count}', ha='center', va='bottom',
+                    color='white', fontsize=10)
+
+        canvas = FigureCanvasTkAgg(fig, parent_frame)
+        canvas.draw()
+        canvas.get_tk_widget().grid(row=1, column=0, pady=10)
+
+    def generate_ai_report(self) -> None:
+        if not self.current_scan_id:
+            self.show_message("ℹ️ Seleccione un scan primero.", "Info")
+            return
+
         dialog = CTkInputDialog(text="Ingrese su Groq Cloud API Key:", title="🤖 Llama 3.3 70B")
         api_key = dialog.get_input()
 
@@ -424,57 +456,42 @@ class VulnSeekerApp(ctk.CTk):
             self.show_message("❌ API Key requerida para análisis IA.", "Error")
             return
 
-        # Thread para no congelar UI
         self.ai_button.configure(state="disabled", text="⏳ Llama 3.3 Pensando...")
-        self.ai_thread = threading.Thread(target=self._run_ai_analysis, args=(api_key, scans[0][0]), daemon=True)
+        self.ai_thread = threading.Thread(target=self._run_ai_analysis, args=(api_key, self.current_scan_id),
+                                          daemon=True)
         self.ai_thread.start()
 
     def _run_ai_analysis(self, api_key: str, scan_id: int) -> None:
-        """Ejecuta IA en background y abre ventana resultado."""
         try:
-            # Obtener vulnerabilidades del scan
             vulns = self.db_manager.get_vulnerabilities_by_scan(scan_id)
             target_url = self.db_manager.get_scan_target(scan_id)
-
-            # Generar informe
             report = self.ai_analyst.generate_security_report(api_key, vulns, target_url)
-
-            # Mostrar en UI principal
             self.after(0, lambda: self.show_ai_report_window(report, scan_id))
-
         except Exception as e:
-            # FIX CRÍTICO: Capturar 'e' en una variable local string antes de pasarlo a la lambda
-            # para evitar 'NameError: variable e is not defined' por el cierre del scope.
             error_msg = str(e)
-            print(f"[DEBUG UI] Error en hilo IA: {error_msg}")  # Log en consola negra también
             self.after(0, lambda: self.show_message(f"Error IA: {error_msg}", "Error"))
         finally:
             self.after(0, lambda: self.ai_button.configure(state="normal", text="🤖 Generar Informe IA (Llama 3)"))
 
     def show_ai_report_window(self, report: str, scan_id: int) -> None:
-        """Ventana popup 800x600 con informe ejecutivo."""
         window = ctk.CTkToplevel(self)
         window.title(f"🤖 Informe IA Ejecutivo - Scan #{scan_id}")
         window.geometry("900x700")
         window.resizable(True, True)
-        window.grab_set()  # Modal
+        window.grab_set()
 
-        # Header
         header_frame = ctk.CTkFrame(window)
         header_frame.pack(fill="x", padx=20, pady=(20, 10))
 
         ctk.CTkLabel(header_frame, text="📄 INFORME EJECUTIVO - Llama 3.3 70B",
                      font=ctk.CTkFont(size=24, weight="bold")).pack(pady=15)
-        ctk.CTkLabel(header_frame, text="Análisis CISO automatizado para Directiva",
-                     font=ctk.CTkFont(size=14)).pack()
+        ctk.CTkLabel(header_frame, text="Análisis CISO automatizado para Directiva", font=ctk.CTkFont(size=14)).pack()
 
-        # Textbox scrollable
         textbox = ctk.CTkTextbox(window, font=ctk.CTkFont(family="Consolas", size=13), height=550)
         textbox.pack(fill="both", expand=True, padx=20, pady=10)
         textbox.insert("0.0", report)
         textbox.configure(state="disabled")
 
-        # Copy/Save buttons
         btn_frame = ctk.CTkFrame(window)
         btn_frame.pack(fill="x", padx=20, pady=(0, 20))
 
@@ -483,15 +500,13 @@ class VulnSeekerApp(ctk.CTk):
             self.clipboard_append(report)
             self.update()
 
-        ctk.CTkButton(btn_frame, text="📋 Copiar al Portapapeles",
-                      command=copy_to_clipboard, fg_color="green").pack(side="left", padx=10, pady=10)
-
+        ctk.CTkButton(btn_frame, text="📋 Copiar al Portapapeles", command=copy_to_clipboard, fg_color="green").pack(
+            side="left", padx=10, pady=10)
         ctk.CTkButton(btn_frame, text="💾 Guardar como TXT",
                       command=lambda: self.save_report(report, f"informe_ia_scan_{scan_id}.txt"),
                       fg_color="#4facfe").pack(side="right", padx=10, pady=10)
 
     def save_report(self, report: str, filename: str) -> None:
-        """Guarda informe IA como TXT."""
         filepath = Path("reports") / filename
         filepath.parent.mkdir(exist_ok=True)
         try:
@@ -501,7 +516,6 @@ class VulnSeekerApp(ctk.CTk):
             self.show_message(f"❌ Error guardando: {e}", "Error")
 
     def show_message(self, message: str, title: str) -> None:
-        """Notificación simple."""
         dialog = ctk.CTkToplevel(self)
         dialog.title(title)
         dialog.geometry("400x150")
@@ -570,15 +584,32 @@ class VulnSeekerApp(ctk.CTk):
 
             logger.info("✅ ESCANEO COMPLETADO EXITOSAMENTE")
 
+            # FASE 15: Guardar ID y redirigir a resultados
+            self.current_scan_id = scan_id
+            self.after(0, self._scan_completed_with_redirect)
+
         except Exception as e:
             logger.error(f"💥 Error en escaneo: {e}")
-        finally:
             self.after(0, self._scan_completed)
 
+    def _scan_completed_with_redirect(self) -> None:
+        """FASE 15: Redirigir automáticamente a resultados."""
+        self.show_results()
+        self._scan_completed()
+
     def _scan_completed(self) -> None:
-        self.start_button.configure(state="normal", text="🚀 INICIAR ATAQUE")
-        self.url_entry.configure(state="normal")
-        self.crawl_checkbox.configure(state="normal")
+        """Reactiva controles de forma segura (FIX: Race Condition)."""
+        try:
+            # FIX: Verificar si los widgets existen antes de configurarlos
+            # Esto evita _tkinter.TclError si la vista fue destruida
+            if self.start_button and self.start_button.winfo_exists():
+                self.start_button.configure(state="normal", text="🚀 INICIAR ATAQUE")
+            if self.url_entry and self.url_entry.winfo_exists():
+                self.url_entry.configure(state="normal")
+            if self.crawl_checkbox and self.crawl_checkbox.winfo_exists():
+                self.crawl_checkbox.configure(state="normal")
+        except Exception:
+            pass
 
 
 def main() -> None:
