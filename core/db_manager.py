@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.14
 """
-DatabaseManager - FASE 15: Scanner-First UX.
-Métodos granulares para vistas contextuales por scan/target.
+DatabaseManager - FASE 17: Logger corregido + API Key persistente estable.
+Métodos granulares + Settings persistentes (groq_api_key).
 """
 
 import sqlite3
@@ -12,11 +12,12 @@ from typing import List, Tuple, Dict, Any, Optional
 from core.config import GlobalConfig
 from core.models import Vulnerability, Severity
 
+# FASE 17: FIX CRÍTICO - Logger definido a nivel módulo
 logger = logging.getLogger("VulnSeeker.DB")
 
 
 class DatabaseManager:
-    """Singleton analítico con soporte granular para UX contextual."""
+    """Singleton analítico con soporte granular + settings persistentes."""
 
     _instance = None
     _initialized = False
@@ -33,74 +34,49 @@ class DatabaseManager:
             self._initialized = True
 
     def _init_db(self) -> None:
-        """Inicialización idempotente de esquema."""
+        """Inicialización idempotente de esquema + FASE 16: settings table."""
         self.db_path.parent.mkdir(exist_ok=True)
 
         with sqlite3.connect(self.db_path) as conn:
             conn.execute("PRAGMA foreign_keys = ON")
 
+            # Scans table
             conn.execute("""
                          CREATE TABLE IF NOT EXISTS scans
                          (
-                             id
-                             INTEGER
-                             PRIMARY
-                             KEY
-                             AUTOINCREMENT,
-                             target_url
-                             TEXT
-                             NOT
-                             NULL,
-                             scan_date
-                             TEXT
-                             NOT
-                             NULL,
-                             total_vulns
-                             INTEGER
-                             DEFAULT
-                             0
+                             id INTEGER PRIMARY KEY AUTOINCREMENT,
+                             target_url TEXT NOT NULL,
+                             scan_date TEXT NOT NULL,
+                             total_vulns INTEGER DEFAULT 0
                          )
                          """)
 
+            # Vulnerabilities table
             conn.execute("""
                          CREATE TABLE IF NOT EXISTS vulnerabilities
                          (
-                             id
-                             INTEGER
-                             PRIMARY
-                             KEY
-                             AUTOINCREMENT,
-                             scan_id
-                             INTEGER
-                             NOT
-                             NULL,
-                             name
-                             TEXT
-                             NOT
-                             NULL,
-                             description
-                             TEXT,
-                             severity
-                             INTEGER
-                             NOT
-                             NULL,
-                             target_url
-                             TEXT,
-                             payload
-                             TEXT,
-                             FOREIGN
-                             KEY
-                         (
-                             scan_id
-                         ) REFERENCES scans
-                         (
-                             id
+                             id INTEGER PRIMARY KEY AUTOINCREMENT,
+                             scan_id INTEGER NOT NULL,
+                             name TEXT NOT NULL,
+                             description TEXT,
+                             severity INTEGER NOT NULL,
+                             target_url TEXT,
+                             payload TEXT,
+                             FOREIGN KEY (scan_id) REFERENCES scans(id)
                          )
-                             )
+                         """)
+
+            # FASE 16: Settings table (key-value persistente)
+            conn.execute("""
+                         CREATE TABLE IF NOT EXISTS settings
+                         (
+                             key TEXT PRIMARY KEY,
+                             value TEXT NOT NULL
+                         )
                          """)
 
             conn.commit()
-            logger.info(f"🗄️  DB inicializada: {self.db_path}")
+            logger.info(f"🗄️ DB inicializada: {self.db_path} (FASE 17: Logger FIX OK)")
 
     def save_scan_results(self, target_url: str, vulnerabilities: List[Any]) -> int:
         """Método BLINDADO (Bulletproof - Duck Typing)."""
@@ -151,6 +127,34 @@ class DatabaseManager:
             logger.error(f"❌ Error CRÍTICO guardando en DB: {e}")
             raise
 
+    # FASE 16/17: API KEY PERSISTENTE (Logger ahora funciona)
+    def save_api_key(self, api_key: str) -> None:
+        """Guarda/actualiza Groq API Key de forma segura."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute(
+                    "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+                    ("groq_api_key", api_key)
+                )
+                conn.commit()
+                logger.info("🔑 Groq API Key guardada persistentemente (FASE 17)")
+        except Exception as e:
+            logger.error(f"❌ Error guardando API Key: {e}")
+            raise
+
+    def get_api_key(self) -> Optional[str]:
+        """Recupera Groq API Key persistida. None si no existe."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                result = conn.execute(
+                    "SELECT value FROM settings WHERE key = ?",
+                    ("groq_api_key",)
+                ).fetchone()
+                return result[0] if result else None
+        except Exception as e:
+            logger.error(f"❌ Error recuperando API Key: {e}")
+            return None
+
     def get_all_scans(self) -> List[Tuple[int, str, str, int]]:
         """Historial completo para UI."""
         try:
@@ -164,7 +168,7 @@ class DatabaseManager:
             logger.error(f"Error fetching scans: {e}")
             return []
 
-    # FASE 15: NUEVOS MÉTODOS GRANULARES
+    # FASE 15: MÉTODOS GRANULARES (INTACTOS)
     def get_unique_targets(self) -> List[str]:
         """Targets únicos para filtro de historial."""
         try:
@@ -270,8 +274,7 @@ class DatabaseManager:
                 sev_names = ['INFO', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
                 result = []
                 for idx, name in enumerate(sev_names):
-                    count = conn.execute("SELECT COUNT(*) FROM vulnerabilities WHERE severity = ?", (idx,)).fetchone()[
-                        0]
+                    count = conn.execute("SELECT COUNT(*) FROM vulnerabilities WHERE severity = ?", (idx,)).fetchone()[0]
                     if count > 0:
                         result.append((name, count))
                 return result

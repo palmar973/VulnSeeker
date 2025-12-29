@@ -1,8 +1,7 @@
 #!/usr/bin/env python3.14
 """
-VulnSeeker Enterprise - FASE 15: SCANNER-FIRST UX.
-Inicio directo en escaneo + Resultados contextuales + Filtro targets.
-FIX: Solucionado _tkinter.TclError (Race Condition) al finalizar escaneo.
+VulnSeeker Enterprise - FASE 17.5: FIX BUGS.
+Arreglos: Logger definido, Lambda Scope en Historial, Selección única (despintar anterior).
 """
 
 import customtkinter as ctk
@@ -40,6 +39,9 @@ from core.models import Vulnerability
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
+# FIX: Definir logger aquí para evitar NameError en generate_ai_report
+logger = logging.getLogger("VulnSeeker")
+
 
 class GUILogHandler(logging.Handler):
     """Handler optimizado con Queue (anti-freeze)."""
@@ -59,14 +61,16 @@ class GUILogHandler(logging.Handler):
 
 
 class VulnSeekerApp(ctk.CTk):
-    """FASE 15: Scanner-First UX + Resultados contextuales."""
+    """FASE 17: Historial interactivo + IA para scans antiguos + Ventana maximizada."""
 
     def __init__(self) -> None:
         super().__init__()
         self.title("VulnSeeker Enterprise")
-        self.geometry("1100x680")
         self.minsize(900, 500)
         self.resizable(True, True)
+
+        # FASE 17: MAXIMIZAR VENTANA AL INICIO (cross-platform)
+        self.after(100, self._maximize_window)
 
         self.log_queue = queue.Queue()
         self.log_update_interval_ms = 100
@@ -81,7 +85,11 @@ class VulnSeekerApp(ctk.CTk):
         self.crawl_checkbox: Optional[ctk.CTkCheckBox] = None
         self.ai_button: Optional[ctk.CTkButton] = None
         self.nav_buttons: dict = {}
-        self.current_scan_id: Optional[int] = None  # ← FASE 15
+        self.current_scan_id: Optional[int] = None
+
+        # FASE 17: Variables para historial interactivo
+        self.selected_history_scan_id: Optional[int] = None
+        self.history_row_cache: Dict[int, Dict[str, Any]] = {}  # Para restaurar colores
 
         self.db_manager = DatabaseManager()
         self.ai_analyst = GroqAIAnalyst()
@@ -92,6 +100,20 @@ class VulnSeekerApp(ctk.CTk):
         # FASE 15: INICIO DIRECTO EN SCAN
         self.show_scan()
         self.after(self.log_update_interval_ms, self._process_log_queue)
+
+    def _maximize_window(self) -> None:
+        """FASE 17: Maximiza ventana detectando SO."""
+        try:
+            if os.name == 'nt':  # Windows
+                self.state('zoomed')
+            elif sys.platform == 'darwin':  # macOS
+                self.attributes('-zoomed', True)
+            else:  # Linux
+                self.attributes('-fullscreen', False)
+                self.geometry("1400x900")
+            # Fallback
+        except Exception:
+            self.geometry("1400x900")
 
     def _process_log_queue(self) -> None:
         try:
@@ -117,7 +139,6 @@ class VulnSeekerApp(ctk.CTk):
         )
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
 
-        # FASE 15: Eliminar Dashboard de navegación principal
         self.nav_buttons = {
             "scan": self._create_nav_button("🚀 Nuevo Escaneo", 1, self.show_scan),
             "results": self._create_nav_button("📊 Resultados", 2, self.show_results),
@@ -151,7 +172,7 @@ class VulnSeekerApp(ctk.CTk):
         for key, btn in self.nav_buttons.items():
             btn.configure(fg_color=("gray90", "gray30") if key == button_key else "transparent")
 
-    # FASE 15: NUEVA VISTA DE RESULTADOS CONTEXTUALES
+    # FASE 15: VISTA DE RESULTADOS CONTEXTUALES
     def show_results(self) -> None:
         self._select_nav_button("results")
         if not self.current_scan_id:
@@ -222,14 +243,14 @@ class VulnSeekerApp(ctk.CTk):
                                                                                                                   5))
         self._create_bar_chart(bar_frame, self.current_scan_id)
 
-        # FASE 15: Botón IA MOVIDO A RESULTADOS
+        # FASE 16: Botón IA con estado persistente
         ai_frame = ctk.CTkFrame(results_frame)
         ai_frame.grid(row=3, column=0, padx=20, pady=20, sticky="ew")
 
         self.ai_button = ctk.CTkButton(
             ai_frame, text="🤖 Generar Informe IA (Llama 3)", height=45,
             font=ctk.CTkFont(size=16, weight="bold"),
-            command=self.generate_ai_report,
+            command=lambda: self.generate_ai_report(self.current_scan_id),
             fg_color=("#8b5cf6", "#7c3aed"),
             hover_color=("#7c3aed", "#6d28d9")
         )
@@ -290,9 +311,11 @@ class VulnSeekerApp(ctk.CTk):
 
         self.show_frame(scan_frame)
 
+    # FASE 17: HISTORIAL CON LAYOUT CORREGIDO + INTERACTIVO
     def show_history(self) -> None:
         self._select_nav_button("history")
         history_frame = ctk.CTkFrame(self.main_container)
+        history_frame.grid_rowconfigure(2, weight=1)  # ← FASE 17: Expandir tabla
 
         title_label = ctk.CTkLabel(history_frame, text="📋 Historial de Escaneos",
                                    font=ctk.CTkFont(size=28, weight="bold"))
@@ -315,16 +338,17 @@ class VulnSeekerApp(ctk.CTk):
         )
         self.target_filter_menu.pack(side="left", pady=15)
 
+        # FASE 17: FIX LAYOUT - Table en row=2
         table_container = ctk.CTkFrame(history_frame)
-        table_container.grid(row=2, column=0, padx=20, pady=(0, 20), sticky="nsew")
+        table_container.grid(row=2, column=0, padx=20, pady=(0, 10), sticky="nsew")
         table_container.grid_columnconfigure(0, weight=1)
         table_container.grid_rowconfigure(0, weight=1)
-        history_frame.grid_rowconfigure(2, weight=1)
 
         self._refresh_history_table(table_container)
 
-        button_frame = ctk.CTkFrame(table_container)
-        button_frame.grid(row=1, column=0, padx=20, pady=(10, 20), sticky="ew")
+        # FASE 17: Botones FIJOS en row=3 (no superpuestos)
+        button_frame = ctk.CTkFrame(history_frame)
+        button_frame.grid(row=3, column=0, padx=20, pady=(0, 20), sticky="ew")
         button_frame.grid_columnconfigure(0, weight=1)
 
         reports_dir = Path(GlobalConfig.REPORTS_DIR)
@@ -333,20 +357,35 @@ class VulnSeekerApp(ctk.CTk):
             font=ctk.CTkFont(size=16, weight="bold"),
             command=lambda: self.open_reports_folder(reports_dir),
             fg_color=("gray70", "gray25"), hover_color=("orange", "darkorange")
-        ).pack(pady=10)
+        ).pack(side="left", padx=10, pady=10)
+
+        # FASE 17: NUEVO BOTÓN IA
+        self.history_ai_button = ctk.CTkButton(
+            button_frame, text="🤖 Generar Informe IA", height=45,
+            font=ctk.CTkFont(size=16, weight="bold"),
+            command=lambda: self.generate_ai_report(self.selected_history_scan_id),
+            state="disabled",
+            fg_color=("gray60", "gray20"), hover_color=("gray50", "gray15")
+        )
+        self.history_ai_button.pack(side="right", padx=10, pady=10)
 
         self.show_frame(history_frame)
 
     def _on_target_filter_change(self, selected_target: str) -> None:
         """Actualiza tabla al cambiar filtro."""
         if self.current_frame:
-            table_container = self.current_frame.winfo_children()[2]  # Hack para encontrar table_container
-            self._refresh_history_table(table_container, selected_target)
+            for child in self.current_frame.winfo_children():
+                if child.grid_info()['row'] == 2:
+                    self._refresh_history_table(child, selected_target)
+                    break
 
+    # FASE 17: HISTORIAL INTERACTIVO CON SELECCIÓN VISUAL (FIX LAMBDA)
     def _refresh_history_table(self, table_container: ctk.CTkFrame, target_filter: str = "Todos") -> None:
-        """Recarga tabla con filtro activo."""
+        """Recarga tabla con filtro activo + eventos click interactivos."""
+        # Limpiar contenedor y cache de filas
         for widget in table_container.winfo_children():
             widget.destroy()
+        self.history_row_cache = {}  # Reset cache
 
         scans = self.db_manager.get_all_scans() if target_filter == "Todos" else self.db_manager.get_scans_by_target(
             target_filter)
@@ -375,21 +414,55 @@ class VulnSeekerApp(ctk.CTk):
                 readable_date = scan_date[:16]
 
             row_color = ("gray85", "gray20") if idx % 2 == 0 else ("gray95", "gray30")
-            row_frame = ctk.CTkFrame(scrollable_frame, fg_color=row_color)
+            row_frame = ctk.CTkFrame(scrollable_frame, fg_color=row_color, height=35)
             row_frame.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
+            row_frame.grid_columnconfigure(2, weight=1)
 
-            ctk.CTkLabel(row_frame, text=str(scan_id), font=ctk.CTkFont(size=13, weight="bold")).grid(row=0, column=0,
-                                                                                                      padx=12, pady=10,
-                                                                                                      sticky="w")
-            ctk.CTkLabel(row_frame, text=readable_date, font=ctk.CTkFont(size=13)).grid(row=0, column=1, padx=8,
-                                                                                        pady=10, sticky="w")
-            ctk.CTkLabel(row_frame, text=(target_url[:50] + "...") if len(target_url) > 50 else target_url,
-                         font=ctk.CTkFont(size=13)).grid(row=0, column=2, padx=8, pady=10, sticky="w")
-            ctk.CTkLabel(row_frame, text=str(vuln_count), font=ctk.CTkFont(size=13, weight="bold")).grid(row=0,
-                                                                                                         column=3,
-                                                                                                         padx=12,
-                                                                                                         pady=10,
-                                                                                                         sticky="ew")
+            # Guardar referencia para poder cambiar color luego
+            self.history_row_cache[scan_id] = {"frame": row_frame, "default_color": row_color}
+
+            # Labels con FIX DE LAMBDA (rf=row_frame congela la referencia correcta)
+            id_label = ctk.CTkLabel(row_frame, text=str(scan_id), font=ctk.CTkFont(size=13, weight="bold"))
+            id_label.grid(row=0, column=0, padx=12, pady=8, sticky="w")
+            id_label.bind("<Button-1>", lambda e, sid=scan_id: self._on_history_row_click(sid))
+
+            date_label = ctk.CTkLabel(row_frame, text=readable_date, font=ctk.CTkFont(size=13))
+            date_label.grid(row=0, column=1, padx=8, pady=8, sticky="w")
+            date_label.bind("<Button-1>", lambda e, sid=scan_id: self._on_history_row_click(sid))
+
+            url_label = ctk.CTkLabel(row_frame, text=(target_url[:50] + "...") if len(target_url) > 50 else target_url,
+                                     font=ctk.CTkFont(size=13))
+            url_label.grid(row=0, column=2, padx=8, pady=8, sticky="w")
+            url_label.bind("<Button-1>", lambda e, sid=scan_id: self._on_history_row_click(sid))
+
+            count_label = ctk.CTkLabel(row_frame, text=str(vuln_count), font=ctk.CTkFont(size=13, weight="bold"))
+            count_label.grid(row=0, column=3, padx=12, pady=8, sticky="e")
+            count_label.bind("<Button-1>", lambda e, sid=scan_id: self._on_history_row_click(sid))
+
+            # Click en el frame mismo
+            row_frame.bind("<Button-1>", lambda e, sid=scan_id: self._on_history_row_click(sid))
+
+    def _on_history_row_click(self, scan_id: int) -> None:
+        """FASE 17 FIX: Maneja click en fila, restaurando colores anteriores."""
+        self.selected_history_scan_id = scan_id
+
+        # 1. Restaurar color de TODAS las filas
+        for sid, data in self.history_row_cache.items():
+            try:
+                data["frame"].configure(fg_color=data["default_color"])
+            except:
+                pass  # Widget podría haber muerto
+
+        # 2. Resaltar la fila seleccionada
+        if scan_id in self.history_row_cache:
+            try:
+                self.history_row_cache[scan_id]["frame"].configure(fg_color=("#10b981", "#047857"))  # Verde éxito
+            except:
+                pass
+
+        # 3. Habilitar botón IA
+        if hasattr(self, 'history_ai_button') and self.history_ai_button.winfo_exists():
+            self.history_ai_button.configure(state="normal", fg_color=("#8b5cf6", "#7c3aed"))
 
     # Gráficos contextuales (FASE 15)
     def _create_pie_chart(self, parent_frame: ctk.CTkFrame, scan_id: int) -> None:
@@ -444,24 +517,51 @@ class VulnSeekerApp(ctk.CTk):
         canvas.draw()
         canvas.get_tk_widget().grid(row=1, column=0, pady=10)
 
-    def generate_ai_report(self) -> None:
-        if not self.current_scan_id:
+    # FASE 17: GENERATE_AI_REPORT GENERICO
+    def generate_ai_report(self, scan_id_override: Optional[int] = None) -> None:
+        """FASE 17: IA flexible para Resultados Y Historial."""
+        scan_id = scan_id_override or self.current_scan_id
+
+        if not scan_id:
             self.show_message("ℹ️ Seleccione un scan primero.", "Info")
             return
 
-        dialog = CTkInputDialog(text="Ingrese su Groq Cloud API Key:", title="🤖 Llama 3.3 70B")
+        # FASE 16: Verificar API Key persistida
+        saved_api_key = self.db_manager.get_api_key()
+        if saved_api_key:
+            logger.info("🔑 Usando API Key persistida (FASE 17)")
+            self._start_ai_analysis(saved_api_key, scan_id)
+            return
+
+        # FASE 16: Pedir nueva key y persistir
+        dialog = CTkInputDialog(text="Ingrese su Groq Cloud API Key:", title="🤖 Llama 3.3 70B - Primera vez")
         api_key = dialog.get_input()
 
         if not api_key or api_key.strip() == "":
             self.show_message("❌ API Key requerida para análisis IA.", "Error")
             return
 
-        self.ai_button.configure(state="disabled", text="⏳ Llama 3.3 Pensando...")
-        self.ai_thread = threading.Thread(target=self._run_ai_analysis, args=(api_key, self.current_scan_id),
-                                          daemon=True)
+        try:
+            # FASE 16: Guardar inmediatamente
+            self.db_manager.save_api_key(api_key)
+            logger.info("💾 API Key persistida exitosamente (FASE 17)")
+            self._start_ai_analysis(api_key, scan_id)
+        except Exception as e:
+            self.show_message(f"❌ Error guardando API Key: {e}", "Error")
+
+    def _start_ai_analysis(self, api_key: str, scan_id: int) -> None:
+        """Inicia análisis IA (común para persistida y nueva)."""
+        # Deshabilitar botones IA activos
+        if self.ai_button and self.ai_button.winfo_exists():
+            self.ai_button.configure(state="disabled", text="⏳ Llama 3.3 Pensando...")
+        if hasattr(self, 'history_ai_button') and self.history_ai_button.winfo_exists():
+            self.history_ai_button.configure(state="disabled", text="⏳ Llama 3.3 Pensando...")
+
+        self.ai_thread = threading.Thread(target=self._run_ai_analysis, args=(api_key, scan_id), daemon=True)
         self.ai_thread.start()
 
     def _run_ai_analysis(self, api_key: str, scan_id: int) -> None:
+        """Ejecuta análisis IA con manejo de errores de autenticación."""
         try:
             vulns = self.db_manager.get_vulnerabilities_by_scan(scan_id)
             target_url = self.db_manager.get_scan_target(scan_id)
@@ -469,9 +569,29 @@ class VulnSeekerApp(ctk.CTk):
             self.after(0, lambda: self.show_ai_report_window(report, scan_id))
         except Exception as e:
             error_msg = str(e)
-            self.after(0, lambda: self.show_message(f"Error IA: {error_msg}", "Error"))
+            # FASE 16: Detección específica de errores de autenticación
+            if "401" in error_msg or "authentication" in error_msg.lower() or "invalid api key" in error_msg.lower():
+                self.after(0, lambda: self.show_message(
+                    "🔑 API Key inválida/expirada. Se pedirá nuevamente.", "Auth Error"
+                ))
+                # FASE 16: Borrar key inválida
+                try:
+                    self.db_manager.save_api_key("")
+                except:
+                    pass
+            else:
+                self.after(0, lambda: self.show_message(f"Error IA: {error_msg}", "Error"))
         finally:
-            self.after(0, lambda: self.ai_button.configure(state="normal", text="🤖 Generar Informe IA (Llama 3)"))
+            self.after(0, lambda: self._reset_ai_buttons())
+
+    def _reset_ai_buttons(self) -> None:
+        """Reactiva todos los botones IA."""
+        if self.ai_button and self.ai_button.winfo_exists():
+            self.ai_button.configure(state="normal", text="🤖 Generar Informe IA (Llama 3)")
+        if hasattr(self, 'history_ai_button') and self.history_ai_button.winfo_exists():
+            if self.selected_history_scan_id:
+                self.history_ai_button.configure(state="normal")
+            self.history_ai_button.configure(text="🤖 Generar Informe IA")
 
     def show_ai_report_window(self, report: str, scan_id: int) -> None:
         window = ctk.CTkToplevel(self)
@@ -580,7 +700,7 @@ class VulnSeekerApp(ctk.CTk):
             logger.info(f"📄 JSON: {json_path}")
 
             scan_id = self.db_manager.save_scan_results(target_url, results)
-            logger.info(f"🗄️  SQLite: Scan ID {scan_id}")
+            logger.info(f"🗄️ SQLite: Scan ID {scan_id}")
 
             logger.info("✅ ESCANEO COMPLETADO EXITOSAMENTE")
 
