@@ -1,21 +1,20 @@
 #!/usr/bin/env python3.14
 """
-VulnSeeker Enterprise - FASE 20: FINAL STABLE.
-- FIX CRÍTICO: Eliminado error de sintaxis en ax.set_facecolor.
-- FIX CRÍTICO: Captura correcta de excepciones (variable 'e').
+VulnSeeker Enterprise - FASE 19: FINGERPRINTING UI.
+- Agregado: Panel de Tecnologías Detectadas en la vista de resultados.
+- Update: run_engine ahora guarda las tecnologías en DB.
 """
 
 import customtkinter as ctk
-from customtkinter import CTkInputDialog, filedialog
+from customtkinter import CTkInputDialog
 import logging
 import threading
-import sys
 import os
 import queue
 import traceback
 from pathlib import Path
 from datetime import datetime
-from typing import Optional, List, Tuple, Dict, Any
+from typing import Optional, Dict, Any
 import matplotlib
 
 matplotlib.use('TkAgg')
@@ -37,7 +36,6 @@ from reports.report_generator import ReportGenerator
 from reports.pdf_generator import PDFReportGenerator
 from core.config import GlobalConfig
 from core.db_manager import DatabaseManager
-from core.models import Vulnerability
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -194,10 +192,20 @@ class VulnSeekerApp(ctk.CTk):
                                                                                         pady=20)
         kpi_frame.grid_columnconfigure((0, 1), weight=1)
 
+        # 🆕 FASE 19: SECCIÓN DE FINGERPRINT (DETECTIVE)
+        tech_info = self.db_manager.get_scan_technologies(self.current_scan_id)
+        tech_frame = ctk.CTkFrame(results_frame, fg_color=("gray85", "gray17"))
+        tech_frame.grid(row=2, column=0, padx=20, pady=(0, 20), sticky="ew")
+
+        ctk.CTkLabel(tech_frame, text="🕵️ Tecnologías Detectadas:", font=ctk.CTkFont(size=14, weight="bold")).pack(
+            side="left", padx=20, pady=10)
+        ctk.CTkLabel(tech_frame, text=tech_info, font=ctk.CTkFont(size=14, family="Consolas"),
+                     text_color=("#00ff88")).pack(side="left", padx=10, pady=10)
+
         charts_frame = ctk.CTkFrame(results_frame)
-        charts_frame.grid(row=2, column=0, padx=20, pady=(0, 20), sticky="nsew")
+        charts_frame.grid(row=3, column=0, padx=20, pady=(0, 20), sticky="nsew")
         charts_frame.grid_columnconfigure(1, weight=1)
-        results_frame.grid_rowconfigure(2, weight=1)
+        results_frame.grid_rowconfigure(3, weight=1)
 
         pie_frame = ctk.CTkFrame(charts_frame)
         pie_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
@@ -217,7 +225,7 @@ class VulnSeekerApp(ctk.CTk):
         self._create_bar_chart(bar_frame, self.current_scan_id)
 
         buttons_frame = ctk.CTkFrame(results_frame)
-        buttons_frame.grid(row=3, column=0, padx=20, pady=20, sticky="ew")
+        buttons_frame.grid(row=4, column=0, padx=20, pady=20, sticky="ew")
         buttons_frame.grid_columnconfigure(1, weight=1)
 
         self.ai_button = ctk.CTkButton(buttons_frame, text="🤖 Generar Informe IA (Llama 3)", height=45,
@@ -285,7 +293,7 @@ class VulnSeekerApp(ctk.CTk):
             self.after(0, lambda: self.show_message(f"✅ PDF generado: {Path(output_path).name}", "Éxito"))
             self.after(0, lambda: self.open_reports_folder(Path(output_path).parent))
         except Exception as e:
-            err_msg = str(e)  # FIX: Capturar aquí
+            err_msg = str(e)
             self.after(0, lambda: self.show_message(f"❌ Error PDF: {err_msg}", "Error"))
         finally:
             self.after(0, self._reset_pdf_buttons)
@@ -477,7 +485,7 @@ class VulnSeekerApp(ctk.CTk):
         wedges, texts, autotexts = ax.pie(sizes, labels=None, colors=colors, autopct='%1.1f%%', startangle=90,
                                           pctdistance=0.8)
 
-        ax.set_facecolor('#2b2b2b')  # FIX: Sintaxis correcta
+        ax.set_facecolor('#2b2b2b')
         for autotext in autotexts:
             autotext.set_color('black')
 
@@ -488,6 +496,7 @@ class VulnSeekerApp(ctk.CTk):
         canvas.draw()
         canvas.get_tk_widget().grid(row=1, column=0, pady=10)
 
+    # FIX: UI Chart BAR con NÚMEROS VISIBLES
     def _create_bar_chart(self, parent_frame: ctk.CTkFrame, scan_id: int) -> None:
         vuln_data = self.db_manager.get_top_vulns_by_scan(scan_id, 5)
         if not vuln_data:
@@ -497,9 +506,11 @@ class VulnSeekerApp(ctk.CTk):
             return
         names = [row[0][:15] + "..." if len(row[0]) > 15 else row[0] for row in vuln_data]
         counts = [row[1] for row in vuln_data]
+
         fig = Figure(figsize=(5, 4), facecolor='#2b2b2b')
         fig.subplots_adjust(bottom=0.3)
         ax = fig.add_subplot(111)
+
         bars = ax.bar(names, counts, color=['#4facfe', '#00f2fe', '#fa709a', '#febefe', '#ffecd2'])
         ax.set_facecolor('#2b2b2b')
 
@@ -509,10 +520,16 @@ class VulnSeekerApp(ctk.CTk):
         ax.tick_params(axis='x', colors='white', rotation=30, labelsize=9)
         ax.tick_params(axis='y', colors='white')
         ax.set_title("Top 5", color='white', fontsize=12)
+
+        y_limit = ax.get_ylim()[1]
+        offset = y_limit * 0.01
+
         for bar, count in zip(bars, counts):
-            height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width() / 2., height + 0.1, f'{count}', ha='center', va='bottom',
-                    color='white', fontsize=10)
+            ax.text(bar.get_x() + bar.get_width() / 2., count + offset,
+                    f'{count}',
+                    ha='center', va='bottom', color='white', fontsize=10,
+                    clip_on=False, zorder=10)
+
         canvas = FigureCanvasTkAgg(fig, parent_frame)
         canvas.draw()
         canvas.get_tk_widget().grid(row=1, column=0, pady=10)
@@ -673,11 +690,20 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(PathFuzzer())
             logger.info("⚡ Motor de análisis iniciado (5 módulos activos)...")
             results = engine.scan(target_url, crawl=use_crawler)
-            logger.info(f"💾 Guardando {len(results)} resultados...")
+
+            # --- 🆕 FASE 19: GUARDAR FINGERPRINT EN DB ---
+            logger.info(f"💾 Guardando resultados...")
+
+            # Recuperamos el fingerprint desde el engine
+            technologies = getattr(engine, 'fingerprint_data', "Unknown")
+
             reporter = ReportGenerator(output_dir=GlobalConfig.REPORTS_DIR)
             json_path = reporter.export_json(results, target_url)
             logger.info(f"📄 JSON: {json_path}")
-            scan_id = self.db_manager.save_scan_results(target_url, results)
+
+            # Pasamos las tecnologías al DB Manager
+            scan_id = self.db_manager.save_scan_results(target_url, results, technologies)
+
             logger.info(f"🗄️ SQLite: Scan ID {scan_id}")
             logger.info("✅ ESCANEO COMPLETADO EXITOSAMENTE")
             self.current_scan_id = scan_id
