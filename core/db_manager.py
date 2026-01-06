@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.14
 """
-DatabaseManager - FASE 19: Soporte para Fingerprinting.
-Agregado: Columna 'technologies' en tabla scans y métodos para guardarla.
+DatabaseManager - FASE 20: Soporte para Subdomain Scanner.
+🆕 Nueva tabla 'subdomains' + método save_subdomains().
 """
 
 import sqlite3
@@ -30,103 +30,110 @@ class DatabaseManager:
             self._initialized = True
 
     def _init_db(self) -> None:
+        """Inicialización + migraciones automáticas."""
         self.db_path.parent.mkdir(exist_ok=True)
         with sqlite3.connect(self.db_path) as conn:
             conn.execute("PRAGMA foreign_keys = ON")
 
-            # Tabla SCANS con columna technologies
+            # Tabla SCANS (con technologies de Fase 19)
             conn.execute("""
-                         CREATE TABLE IF NOT EXISTS scans
-                         (
-                             id
-                             INTEGER
-                             PRIMARY
-                             KEY
-                             AUTOINCREMENT,
-                             target_url
-                             TEXT
-                             NOT
-                             NULL,
-                             scan_date
-                             TEXT
-                             NOT
-                             NULL,
-                             total_vulns
-                             INTEGER
-                             DEFAULT
-                             0,
-                             technologies
-                             TEXT
-                             DEFAULT
-                             'Unknown'
-                         )
-                         """)
+                CREATE TABLE IF NOT EXISTS scans (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    target_url TEXT NOT NULL,
+                    scan_date TEXT NOT NULL,
+                    total_vulns INTEGER DEFAULT 0,
+                    technologies TEXT DEFAULT 'Unknown'
+                )
+            """)
 
-            # Migración automática segura para usuarios existentes
+            # 🆕 FASE 20: Tabla SUBDOMAINS
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS subdomains (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    scan_id INTEGER NOT NULL,
+                    subdomain TEXT NOT NULL,
+                    status TEXT DEFAULT 'LIVE',
+                    FOREIGN KEY (scan_id) REFERENCES scans (id)
+                )
+            """)
+
+            # Tabla VULNERABILITIES
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS vulnerabilities (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    scan_id INTEGER NOT NULL,
+                    name TEXT NOT NULL,
+                    description TEXT,
+                    severity INTEGER NOT NULL,
+                    target_url TEXT,
+                    payload TEXT,
+                    FOREIGN KEY (scan_id) REFERENCES scans (id)
+                )
+            """)
+
+            # Tabla SETTINGS
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS settings (
+                    key TEXT PRIMARY KEY,
+                    value TEXT NOT NULL
+                )
+            """)
+
+            # Migraciones automáticas seguras
             try:
                 conn.execute("ALTER TABLE scans ADD COLUMN technologies TEXT DEFAULT 'Unknown'")
             except sqlite3.OperationalError:
-                pass  # La columna ya existe
+                pass  # Ya existe
 
-            conn.execute("""
-                         CREATE TABLE IF NOT EXISTS vulnerabilities
-                         (
-                             id
-                             INTEGER
-                             PRIMARY
-                             KEY
-                             AUTOINCREMENT,
-                             scan_id
-                             INTEGER
-                             NOT
-                             NULL,
-                             name
-                             TEXT
-                             NOT
-                             NULL,
-                             description
-                             TEXT,
-                             severity
-                             INTEGER
-                             NOT
-                             NULL,
-                             target_url
-                             TEXT,
-                             payload
-                             TEXT,
-                             FOREIGN
-                             KEY
-                         (
-                             scan_id
-                         ) REFERENCES scans
-                         (
-                             id
-                         )
-                             )
-                         """)
-
-            conn.execute("""
-                         CREATE TABLE IF NOT EXISTS settings
-                         (
-                             key
-                             TEXT
-                             PRIMARY
-                             KEY,
-                             value
-                             TEXT
-                             NOT
-                             NULL
-                         )
-                         """)
             conn.commit()
+            logger.info("🗄️ DB inicializada/migrada correctamente.")
 
-    def save_scan_results(self, target_url: str, vulnerabilities: List[Any], technologies: str = "Unknown") -> int:
-        """Guarda resultados incluyendo las tecnologías detectadas."""
+    # 🆕 FASE 20: MÉTODOS SUBDOMAINS
+    def save_subdomains(self, scan_id: int, subdomains: List[str]) -> None:
+        """Guarda subdominios encontrados vinculados al scan."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute("BEGIN TRANSACTION")
+                for subdomain in subdomains:
+                    conn.execute(
+                        "INSERT INTO subdomains (scan_id, subdomain, status) VALUES (?, ?, ?)",
+                        (scan_id, subdomain, 'LIVE')
+                    )
+                conn.commit()
+                logger.info(f"💾 {len(subdomains)} subdominios guardados para scan {scan_id}")
+        except Exception as e:
+            logger.error(f"❌ Error guardando subdominios: {e}")
+
+    def get_subdomain_count(self, scan_id: int) -> int:
+        """Retorna cantidad de subdominios para un scan."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                res = conn.execute(
+                    "SELECT COUNT(*) FROM subdomains WHERE scan_id = ?", (scan_id,)
+                ).fetchone()
+                return res[0] if res else 0
+        except Exception:
+            return 0
+
+    def get_subdomains_by_scan(self, scan_id: int) -> List[str]:
+        """Lista completa de subdominios de un scan."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                return [row[0] for row in conn.execute(
+                    "SELECT subdomain FROM subdomains WHERE scan_id = ?", (scan_id,)
+                ).fetchall()]
+        except Exception:
+            return []
+
+    def save_scan_results(self, target_url: str, vulnerabilities: List[Any],
+                         technologies: str = "Unknown") -> int:
+        """Guarda resultados incluyendo tecnologías (Fase 19)."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 conn.execute("BEGIN TRANSACTION")
                 conn.execute(
-                    "INSERT INTO scans (target_url, scan_date, total_vulns, technologies) VALUES (?, ?, ?, ?)",
+                    "INSERT INTO scans (target_url, scan_date, total_vulns, technologies) "
+                    "VALUES (?, ?, ?, ?)",
                     (target_url, datetime.utcnow().isoformat(), len(vulnerabilities), technologies)
                 )
                 scan_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
@@ -155,10 +162,10 @@ class DatabaseManager:
                     sev_int = sev_map.get(sev_str, 1)
 
                     conn.execute("""
-                                 INSERT INTO vulnerabilities
-                                     (scan_id, name, description, severity, target_url, payload)
-                                 VALUES (?, ?, ?, ?, ?, ?)
-                                 """, (scan_id, v_name, v_desc, sev_int, v_target, v_payload))
+                        INSERT INTO vulnerabilities
+                            (scan_id, name, description, severity, target_url, payload)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    """, (scan_id, v_name, v_desc, sev_int, v_target, v_payload))
 
                 conn.commit()
                 logger.info(f"💾 Scan {scan_id} guardado. Tech: {technologies}")
@@ -167,9 +174,8 @@ class DatabaseManager:
             logger.error(f"❌ Error CRÍTICO guardando en DB: {e}")
             raise
 
-    # --- NUEVO MÉTODO FASE 19 ---
+    # Métodos existentes (sin cambios)
     def get_scan_technologies(self, scan_id: int) -> str:
-        """Recupera las tecnologías detectadas para un scan."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 res = conn.execute("SELECT technologies FROM scans WHERE id = ?", (scan_id,)).fetchone()
@@ -177,11 +183,11 @@ class DatabaseManager:
         except Exception:
             return "Desconocido"
 
-    # --- MÉTODOS EXISTENTES (Mantener igual) ---
     def save_api_key(self, api_key: str) -> None:
         try:
             with sqlite3.connect(self.db_path) as conn:
-                conn.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", ("groq_api_key", api_key))
+                conn.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+                           ("groq_api_key", api_key))
                 conn.commit()
         except Exception:
             pass
@@ -198,7 +204,8 @@ class DatabaseManager:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 return conn.execute(
-                    "SELECT s.id, s.scan_date, s.target_url, s.total_vulns FROM scans s ORDER BY s.scan_date DESC").fetchall()
+                    "SELECT s.id, s.scan_date, s.target_url, s.total_vulns FROM scans s ORDER BY s.scan_date DESC"
+                ).fetchall()
         except Exception:
             return []
 
@@ -214,8 +221,9 @@ class DatabaseManager:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 return conn.execute(
-                    "SELECT s.id, s.scan_date, s.target_url, s.total_vulns FROM scans s WHERE s.target_url = ? ORDER BY s.scan_date DESC",
-                    (target_url,)).fetchall()
+                    "SELECT s.id, s.scan_date, s.target_url, s.total_vulns FROM scans s WHERE s.target_url = ? "
+                    "ORDER BY s.scan_date DESC", (target_url,)
+                ).fetchall()
         except Exception:
             return []
 
@@ -223,12 +231,17 @@ class DatabaseManager:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 total = conn.execute("SELECT total_vulns FROM scans WHERE id = ?", (scan_id,)).fetchone()
-                crit_high = conn.execute("SELECT COUNT(*) FROM vulnerabilities WHERE scan_id = ? AND severity >= 3",
-                                         (scan_id,)).fetchone()
-                med_low = conn.execute("SELECT COUNT(*) FROM vulnerabilities WHERE scan_id = ? AND severity < 3",
-                                       (scan_id,)).fetchone()
-                return {"total_vulns": total[0] if total else 0, "critical_high": crit_high[0] if crit_high else 0,
-                        "medium_low": med_low[0] if med_low else 0}
+                crit_high = conn.execute(
+                    "SELECT COUNT(*) FROM vulnerabilities WHERE scan_id = ? AND severity >= 3", (scan_id,)
+                ).fetchone()
+                med_low = conn.execute(
+                    "SELECT COUNT(*) FROM vulnerabilities WHERE scan_id = ? AND severity < 3", (scan_id,)
+                ).fetchone()
+                return {
+                    "total_vulns": total[0] if total else 0,
+                    "critical_high": crit_high[0] if crit_high else 0,
+                    "medium_low": med_low[0] if med_low else 0
+                }
         except Exception:
             return {"total_vulns": 0, "critical_high": 0, "medium_low": 0}
 
@@ -259,9 +272,11 @@ class DatabaseManager:
                 names = ['INFO', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
                 res = []
                 for idx, name in enumerate(names):
-                    c = conn.execute("SELECT COUNT(*) FROM vulnerabilities WHERE scan_id = ? AND severity = ?",
-                                     (scan_id, idx)).fetchone()[0]
-                    if c > 0: res.append((name, c))
+                    c = conn.execute(
+                        "SELECT COUNT(*) FROM vulnerabilities WHERE scan_id = ? AND severity = ?", (scan_id, idx)
+                    ).fetchone()[0]
+                    if c > 0:
+                        res.append((name, c))
                 return res
         except Exception:
             return []
@@ -270,8 +285,10 @@ class DatabaseManager:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 return conn.execute(
-                    "SELECT name, COUNT(*) as count FROM vulnerabilities WHERE scan_id = ? GROUP BY name ORDER BY count DESC LIMIT ?",
-                    (scan_id, limit)).fetchall()
+                    "SELECT name, COUNT(*) as count FROM vulnerabilities WHERE scan_id = ? "
+                    "GROUP BY name ORDER BY count DESC LIMIT ?",
+                    (scan_id, limit)
+                ).fetchall()
         except Exception:
             return []
 
@@ -280,11 +297,12 @@ class DatabaseManager:
             with sqlite3.connect(self.db_path) as conn:
                 rows = conn.execute(
                     "SELECT name, description, severity, target_url, payload FROM vulnerabilities WHERE scan_id = ?",
-                    (scan_id,)).fetchall()
+                    (scan_id,)
+                ).fetchall()
                 int_to_sev = {0: "INFO", 1: "LOW", 2: "MEDIUM", 3: "HIGH", 4: "CRITICAL"}
 
                 class PDFVuln:
-                    def __init__(self, name, desc, sev_int, url, payload):
+                    def __init__(self, name: str, desc: str, sev_int: int, url: str, payload: str) -> None:
                         self.vuln_type = name
                         self.name = name
                         self.description = desc

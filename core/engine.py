@@ -1,86 +1,131 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import List
+# FIX: Agregado el import que faltaba
+from urllib.parse import urlparse
 from core.interfaces import ScannerModule
 from core.scanner_types import Target, Vulnerability, PageElement
 from core.crawler import WebCrawler
 from core.config import GlobalConfig
-from core.fingerprinter import TechFingerprinter  # 🆕 IMPORT
+from core.fingerprinter import TechFingerprinter
+from core.subdomain_scanner import SubdomainScanner
 
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
 class VulnSeekerEngine:
-    """Orquestador de VulnSeeker."""
+    """Orquestador Enterprise con Fingerprint + Subdomain Discovery."""
 
-    def __init__(self) -> None:
-        self.modules: list[ScannerModule] = []
-        self.results: list[Vulnerability] = []
-        self.fingerprint_data: str = "Unknown"  # 🆕 Atributo para guardar el resultado
-        logger.info("VulnSeeker Engine: Sistema Multihilo Inicializado.")
+    def __init__(self, enable_subdomains: bool = True) -> None:
+        self.modules: List[ScannerModule] = []
+        self.results: List[Vulnerability] = []
+        self.fingerprint_data: str = "Unknown"
+        self.subdomain_data: List[str] = []
+        self.enable_subdomains = enable_subdomains
+        logger.info("⚙️ VulnSeeker Engine inicializado (Subdomains: ON)" if enable_subdomains
+                    else "⚙️ VulnSeeker Engine inicializado (Subdomains: OFF)")
 
     def register_module(self, module: ScannerModule) -> None:
         if not isinstance(module, ScannerModule):
             raise TypeError(f"El objeto {type(module)} no cumple con la interfaz ScannerModule.")
         self.modules.append(module)
-        logger.debug(f"Módulo registrado: {module.name}")
+        logger.debug(f"📦 Módulo registrado: {module.name}")
 
-    def scan(self, start_url: str, crawl: bool = True) -> list[Vulnerability]:
-        """Punto de entrada principal."""
-        logger.info(f"--- Iniciando Auditoría: {start_url} ---")
+    def scan(self, start_url: str, crawl: bool = True) -> List[Vulnerability]:
+        """Punto de entrada principal con recon OSINT expandido."""
 
-        # 🆕 FASE 19: Fingerprinting (El Detective)
+        # FIX: Asegurar que la URL tenga esquema (http/https) para que requests no falle
+        if not start_url.startswith(('http://', 'https://')):
+            start_url = 'http://' + start_url
+
+        logger.info(f"🎯 --- AUDITORÍA ENTERPRISE: {start_url} ---")
+
+        # FASE 0: SUBDOMAIN DISCOVERY (FASE 20)
+        if self.enable_subdomains:
+            self._run_subdomain_discovery(start_url)
+
+        # FASE 1: FINGERPRINTING (Detective)
         try:
-            logger.info("🕵️‍♂️ Ejecutando análisis de tecnologías (Fingerprinting)...")
+            logger.info("🕵️‍♂️ Análisis tecnológico activo...")
             fp = TechFingerprinter()
             analysis = fp.analyze(start_url)
 
-            # Formatear bonito para la DB y la UI
             tech_parts = []
             if analysis['server']: tech_parts.append(f"Server: {', '.join(analysis['server'])}")
             if analysis['powered_by']: tech_parts.append(f"Backend: {', '.join(analysis['powered_by'])}")
             if analysis['cms_framework']: tech_parts.append(f"CMS: {', '.join(analysis['cms_framework'])}")
 
-            self.fingerprint_data = " | ".join(tech_parts) if tech_parts else "Tecnología Genérica / Oculta"
-            logger.info(f"✅ Tecnologías detectadas: {self.fingerprint_data}")
-
+            self.fingerprint_data = " | ".join(tech_parts) if tech_parts else "Tecnología Genérica"
+            logger.info(f"🔬 Fingerprint: {self.fingerprint_data}")
         except Exception as e:
-            logger.error(f"⚠️ Error en fingerprinting: {e}")
+            logger.error(f"⚠️ Fingerprint falló: {e}")
             self.fingerprint_data = "Error en análisis"
 
-        target_elements: list[PageElement] = []
-
-        # FASE 1: Reconocimiento (Crawling)
+        # FASE 2: CRAWLING
+        target_elements: List[PageElement] = []
         if crawl:
-            logger.info("Ejecutando reconocimiento estructural...")
+            logger.info("🕷️ Crawler estructural activo...")
             crawler = WebCrawler(start_url, max_pages=GlobalConfig.MAX_CRAWL_PAGES)
             target_elements = crawler.start()
         else:
             target_elements = [PageElement(url=start_url, method="GET")]
 
-        # FASE 2: Fase de Ataque (Concurrente)
-        logger.info(f"Iniciando ataque sobre {len(target_elements)} elementos con {GlobalConfig.MAX_THREADS} hilos.")
+        logger.info(f"📍 {len(target_elements)} endpoints identificados.")
 
-        with ThreadPoolExecutor(max_workers=GlobalConfig.MAX_THREADS) as executor:
-            future_to_element = {
-                executor.submit(self._analyze_single_element, element): element
-                for element in target_elements
-            }
+        # FASE 3: ATAQUE MULTIHILO
+        if target_elements:
+            logger.info(f"⚔️ Ataque coordinado: {len(self.modules)} módulos, {GlobalConfig.MAX_THREADS} hilos.")
+            with ThreadPoolExecutor(max_workers=GlobalConfig.MAX_THREADS) as executor:
+                future_to_element = {
+                    executor.submit(self._analyze_single_element, element): element
+                    for element in target_elements
+                }
 
-            for future in as_completed(future_to_element):
-                try:
-                    vulnerabilities_found = future.result()
-                    if vulnerabilities_found:
-                        self.results.extend(vulnerabilities_found)
-                except Exception as e:
-                    element = future_to_element[future]
-                    logger.error(f"Excepción en hilo al analizar {element.url}: {e}")
+                for future in as_completed(future_to_element):
+                    try:
+                        vulns = future.result()
+                        if vulns:
+                            self.results.extend(vulns)
+                    except Exception as e:
+                        element = future_to_element[future]
+                        logger.error(f"💥 Error hilo {element.url}: {e}")
+        else:
+            logger.warning("⚠️ No se encontraron endpoints para atacar. Verifica la URL.")
 
-        logger.info(f"Auditoría finalizada. {len(self.results)} vulnerabilidades.")
+        logger.info(f"🏁 Auditoría completada: {len(self.results)} vulnerabilidades.")
+        logger.info(f"🌐 Subdominios expandidos: {len(self.subdomain_data)}")
         return self.results
 
-    def _analyze_single_element(self, element: PageElement) -> list[Vulnerability]:
-        findings: list[Vulnerability] = []
+    def _run_subdomain_discovery(self, start_url: str) -> None:
+        """Ejecuta el Conquistador OSINT."""
+        try:
+            # FIX: urlparse ya está importado correctamente arriba
+            parsed = urlparse(start_url)
+            domain = parsed.netloc or parsed.path  # Maneja casos raros
+
+            logger.info(f"🌐 Recon OSINT: {domain} (crt.sh Certificate Transparency)")
+
+            scanner = SubdomainScanner()
+            # Pasamos la URL completa, el scanner se encarga de extraer el dominio base
+            self.subdomain_data = scanner.discover(start_url)
+
+            if self.subdomain_data:
+                logger.info(f"🎉 CONQUISTADOR: {len(self.subdomain_data)} subdominios LIVE:")
+                for sub in self.subdomain_data[:5]:
+                    logger.info(f"   👉 {sub}")
+                if len(self.subdomain_data) > 5:
+                    logger.info(f"   ...y {len(self.subdomain_data) - 5} más")
+            else:
+                logger.info("📭 No se encontraron subdominios adicionales.")
+
+        except Exception as e:
+            logger.error(f"⚠️ Error Subdomain Scanner: {e}")
+            self.subdomain_data = []
+
+    def _analyze_single_element(self, element: PageElement) -> List[Vulnerability]:
+        """Análisis individual por hilo."""
+        findings: List[Vulnerability] = []
         target = Target(
             url=element.url,
             method=element.method,
@@ -93,6 +138,13 @@ class VulnSeekerEngine:
                 if vulns:
                     findings.extend(vulns)
             except Exception as e:
-                logger.error(f"Módulo {module.name} falló en {element.url}: {e}")
+                logger.error(f"💥 Módulo {module.name} falló en {element.url}: {e}")
 
         return findings
+
+    # GETTERS para UI/DB
+    def get_subdomains(self) -> List[str]:
+        return self.subdomain_data
+
+    def get_fingerprint(self) -> str:
+        return self.fingerprint_data
