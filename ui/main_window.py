@@ -84,6 +84,10 @@ class VulnSeekerApp(ctk.CTk):
         self.nav_buttons: dict = {}
         self.current_scan_id: Optional[int] = None
         self.ai_summary_cache: Dict[int, str] = {}
+        self.threads_slider: Optional[ctk.CTkSlider] = None
+        self.subdomains_switch: Optional[ctk.CTkSwitch] = None
+        self.ua_entry: Optional[ctk.CTkEntry] = None
+        self.groq_entry: Optional[ctk.CTkEntry] = None
 
         self.selected_history_scan_id: Optional[int] = None
         self.history_row_cache: Dict[int, Dict[str, Any]] = {}
@@ -133,7 +137,8 @@ class VulnSeekerApp(ctk.CTk):
         self.nav_buttons = {
             "scan": self._create_nav_button("🚀 Nuevo Escaneo", 1, self.show_scan),
             "results": self._create_nav_button("📊 Resultados", 2, self.show_results),
-            "history": self._create_nav_button("📋 Historial", 3, self.show_history)
+            "history": self._create_nav_button("📋 Historial", 3, self.show_history),
+            "settings": self._create_nav_button("⚙️ Configuración", 4, self.show_settings)
         }
 
         self.main_container = ctk.CTkFrame(self, corner_radius=0)
@@ -605,13 +610,23 @@ class VulnSeekerApp(ctk.CTk):
             logger.info(f"🚀 Iniciando escaneo: {target_url}")
             logger.info(f"🕷️ Crawler: {'SÍ' if use_crawler else 'NO'}")
 
-            engine = VulnSeekerEngine(enable_subdomains=True)
+            threads_cfg = int(self.db_manager.get_setting("threads", "10") or 10)
+            enable_subs_cfg = (self.db_manager.get_setting("enable_subdomains", "true") or "true").lower() in (
+                "true", "1", "yes", "y")
+            ua_cfg = self.db_manager.get_setting("user_agent", GlobalConfig.USER_AGENT) or GlobalConfig.USER_AGENT
+            config = {
+                "threads": threads_cfg,
+                "user_agent": ua_cfg,
+                "enable_subdomains": enable_subs_cfg
+            }
+
+            engine = VulnSeekerEngine(config=config)
             engine.register_module(SQLInjectionScanner())
             engine.register_module(XSSScanner())
             engine.register_module(HeaderAnalyzer())
             engine.register_module(PortScanner())
             engine.register_module(PathFuzzer())
-            logger.info("⚡ Motor de análisis iniciado (5 módulos activos)...")
+            logger.info(f"⚡ Motor de análisis iniciado (5 módulos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
             results = engine.scan(target_url, crawl=use_crawler)
 
             logger.info(f"💾 Guardando resultados...")
@@ -770,6 +785,81 @@ class VulnSeekerApp(ctk.CTk):
         if hasattr(self, 'history_pdf_button') and self.history_pdf_button.winfo_exists():
             self.history_pdf_button.configure(state="normal", fg_color=("#10b981", "#047857"))
 
+    def show_settings(self) -> None:
+        self._select_nav_button("settings")
+        settings_frame = ctk.CTkFrame(self.main_container)
+        settings_frame.grid_columnconfigure(0, weight=1)
+        ctk.CTkLabel(settings_frame, text="⚙️ Configuración del Sistema",
+                     font=ctk.CTkFont(size=28, weight="bold")).grid(row=0, column=0, padx=20, pady=(30, 10),
+                                                                    sticky="w")
+
+        # Valores actuales
+        threads_val = int(self.db_manager.get_setting("threads", "10") or 10)
+        enable_subs_val = (self.db_manager.get_setting("enable_subdomains", "true") or "true").lower() in (
+            "true", "1", "yes", "y")
+        ua_val = self.db_manager.get_setting("user_agent", GlobalConfig.USER_AGENT) or GlobalConfig.USER_AGENT
+        groq_val = self.db_manager.get_setting("groq_api_key", "") or (self.db_manager.get_api_key() or "")
+
+        form = ctk.CTkFrame(settings_frame)
+        form.grid(row=1, column=0, padx=20, pady=20, sticky="nsew")
+        form.grid_columnconfigure(1, weight=1)
+
+        ctk.CTkLabel(form, text="Hilos (1-50):", font=ctk.CTkFont(size=15, weight="bold")).grid(row=0, column=0,
+                                                                                                padx=10, pady=15,
+                                                                                                sticky="w")
+        self.threads_slider = ctk.CTkSlider(form, from_=1, to=50, number_of_steps=49, width=320)
+        self.threads_slider.set(threads_val)
+        self.threads_slider.grid(row=0, column=1, padx=10, pady=15, sticky="ew")
+
+        ctk.CTkLabel(form, text="Activar Subdomain Scanner:", font=ctk.CTkFont(size=15, weight="bold")).grid(row=1,
+                                                                                                            column=0,
+                                                                                                            padx=10,
+                                                                                                            pady=15,
+                                                                                                            sticky="w")
+        self.subdomains_switch = ctk.CTkSwitch(form, text="", onvalue=True, offvalue=False)
+        self.subdomains_switch.select() if enable_subs_val else self.subdomains_switch.deselect()
+        self.subdomains_switch.grid(row=1, column=1, padx=10, pady=15, sticky="w")
+
+        ctk.CTkLabel(form, text="User-Agent:", font=ctk.CTkFont(size=15, weight="bold")).grid(row=2, column=0,
+                                                                                               padx=10, pady=15,
+                                                                                               sticky="w")
+        self.ua_entry = ctk.CTkEntry(form, placeholder_text=GlobalConfig.USER_AGENT, font=ctk.CTkFont(size=14))
+        self.ua_entry.insert(0, ua_val)
+        self.ua_entry.grid(row=2, column=1, padx=10, pady=15, sticky="ew")
+
+        ctk.CTkLabel(form, text="API Key de Groq:", font=ctk.CTkFont(size=15, weight="bold")).grid(row=3, column=0,
+                                                                                                   padx=10, pady=15,
+                                                                                                   sticky="w")
+        self.groq_entry = ctk.CTkEntry(form, placeholder_text="sk-...", show="*", font=ctk.CTkFont(size=14))
+        if groq_val:
+            self.groq_entry.insert(0, groq_val)
+        self.groq_entry.grid(row=3, column=1, padx=10, pady=15, sticky="ew")
+
+        save_btn = ctk.CTkButton(form, text="💾 Guardar", height=40, font=ctk.CTkFont(size=15, weight="bold"),
+                                 command=self.save_settings, fg_color=("#10b981", "#047857"),
+                                 hover_color=("#059669", "#047857"))
+        save_btn.grid(row=4, column=0, columnspan=2, padx=10, pady=(20, 10), sticky="e")
+
+        self.show_frame(settings_frame)
+
+    def save_settings(self) -> None:
+        try:
+            threads = int(self.threads_slider.get()) if self.threads_slider else 10
+            enable_subs = self.subdomains_switch.get() if self.subdomains_switch else True
+            ua = self.ua_entry.get().strip() if self.ua_entry else GlobalConfig.USER_AGENT
+            groq = self.groq_entry.get().strip() if self.groq_entry else ""
+
+            self.db_manager.set_setting("threads", str(threads))
+            self.db_manager.set_setting("enable_subdomains", "true" if enable_subs else "false")
+            self.db_manager.set_setting("user_agent", ua or GlobalConfig.USER_AGENT)
+            if groq:
+                self.db_manager.set_setting("groq_api_key", groq)
+                self.db_manager.save_api_key(groq)
+
+            self.show_message("✅ Configuración guardada.", "Éxito")
+        except Exception as e:
+            self.show_message(f"❌ Error al guardar: {e}", "Error")
+
 
 def main() -> None:
     app = VulnSeekerApp()
@@ -778,3 +868,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

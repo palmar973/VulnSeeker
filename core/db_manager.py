@@ -183,6 +183,24 @@ class DatabaseManager:
         except Exception:
             return "Desconocido"
 
+    def set_setting(self, key: str, value: str) -> None:
+        """Guarda un par clave/valor de configuración."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", (key, value))
+                conn.commit()
+        except Exception as e:
+            logger.error(f"❌ Error guardando setting {key}: {e}")
+
+    def get_setting(self, key: str, default: str = "") -> str:
+        """Recupera un valor de configuración o retorna default."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                res = conn.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
+                return res[0] if res else default
+        except Exception:
+            return default
+
     def save_api_key(self, api_key: str) -> None:
         try:
             with sqlite3.connect(self.db_path) as conn:

@@ -17,13 +17,27 @@ logger = logging.getLogger(__name__)
 class VulnSeekerEngine:
     """Orquestador Enterprise con Fingerprint + Subdomain Discovery."""
 
-    def __init__(self, enable_subdomains: bool = True) -> None:
+    def __init__(self, enable_subdomains: bool = True, config: dict | None = None) -> None:
+        default_config = {
+            "threads": 10,
+            "user_agent": GlobalConfig.USER_AGENT,
+            "enable_subdomains": True if config is None else True
+        }
+        if config is None:
+            config = default_config
+            config["enable_subdomains"] = enable_subdomains
+        else:
+            cfg = default_config.copy()
+            cfg.update(config)
+            config = cfg
+
+        self.config = config
         self.modules: List[ScannerModule] = []
         self.results: List[Vulnerability] = []
         self.fingerprint_data: str = "Unknown"
         self.subdomain_data: List[str] = []
-        self.enable_subdomains = enable_subdomains
-        logger.info("⚙️ VulnSeeker Engine inicializado (Subdomains: ON)" if enable_subdomains
+        self.enable_subdomains = self.config.get("enable_subdomains", True)
+        logger.info("⚙️ VulnSeeker Engine inicializado (Subdomains: ON)" if self.enable_subdomains
                     else "⚙️ VulnSeeker Engine inicializado (Subdomains: OFF)")
 
     def register_module(self, module: ScannerModule) -> None:
@@ -42,7 +56,7 @@ class VulnSeekerEngine:
         logger.info(f"🎯 --- AUDITORÍA ENTERPRISE: {start_url} ---")
 
         # FASE 0: SUBDOMAIN DISCOVERY (FASE 20)
-        if self.enable_subdomains:
+        if self.config.get("enable_subdomains", True):
             self._run_subdomain_discovery(start_url)
 
         # FASE 1: FINGERPRINTING (Detective)
@@ -75,8 +89,8 @@ class VulnSeekerEngine:
 
         # FASE 3: ATAQUE MULTIHILO
         if target_elements:
-            logger.info(f"⚔️ Ataque coordinado: {len(self.modules)} módulos, {GlobalConfig.MAX_THREADS} hilos.")
-            with ThreadPoolExecutor(max_workers=GlobalConfig.MAX_THREADS) as executor:
+            logger.info(f"⚔️ Ataque coordinado: {len(self.modules)} módulos, {self.config.get('threads', 10)} hilos.")
+            with ThreadPoolExecutor(max_workers=self.config.get("threads", 10)) as executor:
                 future_to_element = {
                     executor.submit(self._analyze_single_element, element): element
                     for element in target_elements
@@ -129,7 +143,7 @@ class VulnSeekerEngine:
         target = Target(
             url=element.url,
             method=element.method,
-            headers={'User-Agent': GlobalConfig.USER_AGENT}
+            headers={'User-Agent': self.config.get("user_agent", GlobalConfig.USER_AGENT)}
         )
 
         for module in self.modules:
@@ -148,3 +162,4 @@ class VulnSeekerEngine:
 
     def get_fingerprint(self) -> str:
         return self.fingerprint_data
+
