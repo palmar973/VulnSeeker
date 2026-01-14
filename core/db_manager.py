@@ -10,6 +10,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Tuple, Dict, Any, Optional
 from core.config import GlobalConfig
+import csv
 
 logger = logging.getLogger("VulnSeeker.DB")
 
@@ -25,7 +26,10 @@ class DatabaseManager:
 
     def __init__(self) -> None:
         if not self._initialized:
-            self.db_path = Path(GlobalConfig.REPORTS_DIR) / "vulns.db"
+            # FIX: usar ruta absoluta para evitar fallos si cambia el CWD
+            base_dir = Path(__file__).resolve().parent.parent  # core/ -> raíz del proyecto
+            self.db_path = (base_dir / GlobalConfig.REPORTS_DIR / "vulns.db").resolve()
+            self.db_path.parent.mkdir(parents=True, exist_ok=True)
             self._init_db()
             self._initialized = True
 
@@ -331,3 +335,67 @@ class DatabaseManager:
                 return [PDFVuln(*r) for r in rows]
         except Exception:
             return []
+
+    def delete_scan(self, scan_id: int) -> bool:
+        """Elimina un scan y sus datos asociados."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute("BEGIN")
+                conn.execute("DELETE FROM vulnerabilities WHERE scan_id = ?", (scan_id,))
+                conn.execute("DELETE FROM subdomains WHERE scan_id = ?", (scan_id,))
+                conn.execute("DELETE FROM scans WHERE id = ?", (scan_id,))
+                conn.commit()
+                return True
+        except Exception as e:
+            logger.error(f"❌ Error eliminando scan {scan_id}: {e}")
+            return False
+
+    def nuke_database(self) -> bool:
+        """
+        Borra todo el historial (scans, vulns, subdomains) pero conserva settings.
+        """
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute("BEGIN")
+                conn.execute("DELETE FROM vulnerabilities;")
+                conn.execute("DELETE FROM subdomains;")
+                conn.execute("DELETE FROM scans;")
+                conn.execute("COMMIT")
+                conn.execute("VACUUM;")
+            return True
+        except Exception as e:
+            logger.error(f"☢️ Error haciendo NUKE DB: {e}")
+            return False
+
+    def export_to_csv(self, output_path: str) -> bool:
+        """Exporta DB a CSV nativo de Excel (UTF-8-SIG)."""
+        try:
+            import csv
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                query = """
+                    SELECT 
+                        s.id, s.scan_date, s.target_url,
+                        v.name, v.severity, v.description, v.target_url, v.payload
+                    FROM vulnerabilities v
+                    JOIN scans s ON v.scan_id = s.id
+                    ORDER BY s.scan_date DESC
+                """
+                rows = cursor.execute(query).fetchall()
+
+            headers = ["ID Scan", "Fecha", "Objetivo", "Vulnerabilidad", "Severidad", "Descripción", "URL", "Payload"]
+            sev_map = {0: "INFO", 1: "LOW", 2: "MEDIUM", 3: "HIGH", 4: "CRITICAL"}
+
+            with open(output_path, "w", newline="", encoding="utf-8-sig") as f:
+                writer = csv.writer(f)
+                writer.writerow(headers)
+                for scan_id, date, target, v_name, v_sev, v_desc, v_url, v_pay in rows:
+                    sev_text = sev_map.get(v_sev, "UNKNOWN")
+                    clean_desc = str(v_desc).replace("\n", " ").replace("\r", "").strip() if v_desc else ""
+                    clean_pay = str(v_pay).replace("\n", " ").replace("\r", "").strip() if v_pay else ""
+                    writer.writerow([scan_id, date, target, v_name, sev_text, clean_desc, v_url, clean_pay])
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error exportando CSV: {e}")
+            return False
+

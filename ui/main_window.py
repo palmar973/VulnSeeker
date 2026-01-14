@@ -17,6 +17,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, Any
 import matplotlib
+import tkinter.filedialog as filedialog
 
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -91,6 +92,7 @@ class VulnSeekerApp(ctk.CTk):
 
         self.selected_history_scan_id: Optional[int] = None
         self.history_row_cache: Dict[int, Dict[str, Any]] = {}
+        self.history_table_container: Optional[ctk.CTkFrame] = None
 
         self.db_manager = DatabaseManager()
         self.ai_analyst = GroqAIAnalyst()
@@ -689,6 +691,7 @@ class VulnSeekerApp(ctk.CTk):
         table_container.grid(row=2, column=0, padx=20, pady=(0, 10), sticky="nsew")
         table_container.grid_columnconfigure(0, weight=1)
         table_container.grid_rowconfigure(0, weight=1)
+        self.history_table_container = table_container
         self._refresh_history_table(table_container)
 
         button_frame = ctk.CTkFrame(history_frame)
@@ -715,6 +718,26 @@ class VulnSeekerApp(ctk.CTk):
                                                hover_color=("#7c3aed", "#6d28d9"))
         self.history_ai_button.pack(side="right", padx=(10, 5), pady=10)
 
+        danger_frame = ctk.CTkFrame(history_frame, fg_color="transparent")
+        danger_frame.grid(row=4, column=0, padx=20, pady=(0, 20), sticky="ew")
+        danger_frame.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkButton(danger_frame, text="🗑️ Eliminar Seleccionado", height=42, width=170,
+                      font=ctk.CTkFont(size=14, weight="bold"),
+                      command=self.handle_delete_selected,
+                      fg_color=("#f97316", "#c2410c"), hover_color=("#ea580c", "#9a3412")).pack(side="left", padx=10,
+                                                                                              pady=8)
+        ctk.CTkButton(danger_frame, text="☢️ NUKE DB", height=42, width=140,
+                      font=ctk.CTkFont(size=14, weight="bold"),
+                      command=self.handle_nuke_db,
+                      fg_color=("#ef4444", "#b91c1c"), hover_color=("#dc2626", "#991b1b")).pack(side="left", padx=10,
+                                                                                              pady=8)
+        ctk.CTkButton(danger_frame, text="📊 Exportar CSV", height=42, width=150,
+                      font=ctk.CTkFont(size=14, weight="bold"),
+                      command=self.handle_export_csv,
+                      fg_color=("#3b82f6", "#1d4ed8"), hover_color=("#2563eb", "#1e40af")).pack(side="right",
+                                                                                               padx=10, pady=8)
+
         self.show_frame(history_frame)
 
     def _on_target_filter_change(self, selected_target: str) -> None:
@@ -723,6 +746,53 @@ class VulnSeekerApp(ctk.CTk):
                 if child.grid_info()['row'] == 2:
                     self._refresh_history_table(child, selected_target)
                     break
+
+    def handle_delete_selected(self) -> None:
+        if not self.selected_history_scan_id:
+            self.show_message("ℹ️ Seleccione un scan primero.", "Info")
+            return
+        confirm = CTkInputDialog(text="Escriba DELETE para confirmar:", title="Confirmar eliminación").get_input()
+        if confirm != "DELETE":
+            self.show_message("Operación cancelada.", "Cancelado")
+            return
+        ok = self.db_manager.delete_scan(self.selected_history_scan_id)
+        if ok:
+            self.show_message("✅ Scan eliminado.", "Éxito")
+            self.selected_history_scan_id = None
+            if self.history_table_container:
+                self._refresh_history_table(self.history_table_container, self.target_filter_var.get())
+        else:
+            self.show_message("❌ No se pudo eliminar.", "Error")
+
+    def handle_nuke_db(self) -> None:
+        first = CTkInputDialog(text="PELIGRO: escriba NUKE para continuar:", title="☢️ NUKE DB").get_input()
+        if first != "NUKE":
+            self.show_message("Operación cancelada.", "Cancelado")
+            return
+        second = CTkInputDialog(text="CONFIRME: escriba CONFIRM:", title="☢️ Confirmación final").get_input()
+        if second != "CONFIRM":
+            self.show_message("Operación cancelada.", "Cancelado")
+            return
+        ok = self.db_manager.nuke_database()
+        if ok:
+            self.show_message("☢️ Base limpiada (historial eliminado).", "Éxito")
+            self.selected_history_scan_id = None
+            if self.history_table_container:
+                self._refresh_history_table(self.history_table_container, "Todos")
+        else:
+            self.show_message("❌ No se pudo limpiar la base.", "Error")
+
+    def handle_export_csv(self) -> None:
+        path = filedialog.asksaveasfilename(defaultextension=".csv",
+                                            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+                                            initialfile="vulnseeker_export.csv")
+        if not path:
+            return
+        ok = self.db_manager.export_to_csv(path)
+        if ok:
+            self.show_message(f"📊 CSV exportado:\n{path}", "Éxito")
+        else:
+            self.show_message("❌ Error exportando CSV.", "Error")
 
     def _refresh_history_table(self, table_container: ctk.CTkFrame, target_filter: str = "Todos") -> None:
         for widget in table_container.winfo_children():
