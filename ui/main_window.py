@@ -737,42 +737,68 @@ class VulnSeekerApp(ctk.CTk):
 
     def show_history(self) -> None:
         self._select_nav_button("history")
-        history_frame = ctk.CTkFrame(self.main_container, fg_color=COLOR_BG)
-        ctk.CTkLabel(history_frame, text="📋 Historial de Escaneos",
-                     font=ctk.CTkFont(size=28, weight="bold"),
-                     text_color=COLOR_TEXT).grid(row=0, column=0, padx=20, pady=(30, 20))
 
-        filter_frame = ctk.CTkFrame(history_frame, fg_color=COLOR_PANEL, corner_radius=10,
+        # Frame principal que ocupa todo el espacio
+        history_frame = ctk.CTkFrame(self.main_container, fg_color=COLOR_BG)
+        # Configuración de rejilla 3x3 para centrado perfecto
+        history_frame.grid_columnconfigure(0, weight=1)  # Margen izquierdo
+        history_frame.grid_columnconfigure(1, weight=0)  # Contenido (ancho fijo o adaptable)
+        history_frame.grid_columnconfigure(2, weight=1)  # Margen derecho
+        history_frame.grid_rowconfigure(0, weight=1)  # Margen superior
+        history_frame.grid_rowconfigure(1, weight=0)  # Contenido
+        history_frame.grid_rowconfigure(2, weight=1)  # Margen inferior
+
+        # Contenedor del contenido (Centrado)
+        content_box = ctk.CTkFrame(history_frame, fg_color=COLOR_BG, width=960, corner_radius=0)
+        content_box.grid(row=1, column=1, sticky="nsew")  # En el centro
+
+        # Ojo: No usamos grid_propagate(False) aquí para que crezca según necesite,
+        # pero como está en el centro, se verá centrado.
+        content_box.grid_columnconfigure(0, weight=1)
+
+        # --- Título ---
+        ctk.CTkLabel(content_box, text="📋 Historial de Escaneos",
+                     font=ctk.CTkFont(size=28, weight="bold"),
+                     text_color=COLOR_TEXT).grid(row=0, column=0, padx=20, pady=(0, 20), sticky="w")
+
+        # --- Filtros ---
+        filter_frame = ctk.CTkFrame(content_box, fg_color=COLOR_PANEL, corner_radius=10,
                                     border_width=1, border_color=COLOR_BORDER)
         filter_frame.grid(row=1, column=0, padx=20, pady=(0, 20), sticky="ew")
+
         ctk.CTkLabel(filter_frame, text="🎯 Filtrar por Target:", font=ctk.CTkFont(size=14, weight="bold")).pack(
             side="left", padx=(20, 10), pady=15)
+
         self.target_filter_var = ctk.StringVar(value="Todos")
         targets = self.db_manager.get_unique_targets()
         targets.insert(0, "Todos")
         self.target_filter_menu = ctk.CTkOptionMenu(filter_frame, values=targets, variable=self.target_filter_var,
-                                                    command=self._on_target_filter_change, width=400)
+                                                    command=self._on_target_filter_change, width=300,
+                                                    fg_color=COLOR_ACCENT_BLUE, button_color="#2b75cc")
         self.target_filter_menu.pack(side="left", pady=15)
 
-        table_container = ctk.CTkFrame(history_frame, fg_color=COLOR_BG)
+        # --- Tabla ---
+        table_container = ctk.CTkFrame(content_box, fg_color=COLOR_BG)
         table_container.grid(row=2, column=0, padx=20, pady=(0, 10), sticky="nsew")
         table_container.grid_columnconfigure(0, weight=1)
-        table_container.grid_rowconfigure(0, weight=1)
         self.history_table_container = table_container
         self._refresh_history_table(table_container)
 
-        button_frame = ctk.CTkFrame(history_frame, fg_color=COLOR_BG)
+        # --- Botones Superiores (Carpeta, PDF, IA) ---
+        button_frame = ctk.CTkFrame(content_box, fg_color=COLOR_BG)
         button_frame.grid(row=3, column=0, padx=20, pady=(0, 20), sticky="ew")
-        button_frame.grid_columnconfigure(0, weight=1)
+        button_frame.grid_columnconfigure(0, weight=1)  # Espaciador
 
         reports_dir = Path(GlobalConfig.REPORTS_DIR)
-        ctk.CTkButton(button_frame, text="📂 Abrir Carpeta", height=45, width=120,
+        ctk.CTkButton(button_frame, text="📂 Abrir Carpeta", height=45, width=140,
                       font=ctk.CTkFont(size=14, weight="bold"),
                       command=lambda: self.open_reports_folder(reports_dir),
                       corner_radius=10,
-                      fg_color=COLOR_PANEL, hover_color="#1d1d1d",
-                      border_width=1, border_color=COLOR_BORDER, text_color=COLOR_TEXT).pack(side="left", padx=10,
-                                                                                             pady=10)
+                      fg_color=COLOR_PANEL, hover_color="#2d333b",
+                      border_width=1, border_color=COLOR_BORDER, text_color=COLOR_TEXT).pack(side="left", padx=(0, 10))
+
+        # Espaciador invisible para empujar los otros a la derecha
+        ctk.CTkLabel(button_frame, text="").pack(side="left", expand=True, fill="x")
 
         self.history_pdf_button = ctk.CTkButton(button_frame, text="📄 PDF", height=45, width=100,
                                                 font=ctk.CTkFont(size=14, weight="bold"),
@@ -781,38 +807,40 @@ class VulnSeekerApp(ctk.CTk):
                                                 corner_radius=10,
                                                 fg_color=COLOR_ACCENT, hover_color="#00e67a",
                                                 text_color=COLOR_BG)
-        self.history_pdf_button.pack(side="right", padx=(5, 10), pady=10)
+        self.history_pdf_button.pack(side="right", padx=(10, 0))
 
         self.history_ai_button = ctk.CTkButton(button_frame, text="🤖 IA", height=45, width=100,
                                                font=ctk.CTkFont(size=14, weight="bold"),
                                                command=lambda: self.generate_ai_report(self.selected_history_scan_id),
                                                state="disabled", corner_radius=10,
-                                               fg_color=COLOR_ACCENT_ALT, hover_color="#6d28d9",
+                                               fg_color="#9D00FF", hover_color="#7A00C4",
                                                text_color=COLOR_TEXT)
-        self.history_ai_button.pack(side="right", padx=(10, 5), pady=10)
+        self.history_ai_button.pack(side="right", padx=(10, 0))
 
-        danger_frame = ctk.CTkFrame(history_frame, fg_color=COLOR_BG)
+        # --- Botones Inferiores (Danger Zone) ---
+        danger_frame = ctk.CTkFrame(content_box, fg_color=COLOR_BG)
         danger_frame.grid(row=4, column=0, padx=20, pady=(0, 20), sticky="ew")
-        danger_frame.grid_columnconfigure(0, weight=1)
 
         ctk.CTkButton(danger_frame, text="🗑️ Eliminar Seleccionado", height=42, width=170,
                       font=ctk.CTkFont(size=14, weight="bold"),
                       command=self.handle_delete_selected,
                       corner_radius=10,
                       fg_color="#f97316", hover_color="#ea580c",
-                      text_color=COLOR_BG).pack(side="left", padx=10, pady=8)
+                      text_color=COLOR_BG).pack(side="left", padx=(0, 10))
+
         ctk.CTkButton(danger_frame, text="☢️ NUKE DB", height=42, width=140,
                       font=ctk.CTkFont(size=14, weight="bold"),
                       command=self.handle_nuke_db,
                       corner_radius=10,
                       fg_color=COLOR_DANGER, hover_color="#dc2626",
-                      text_color=COLOR_BG).pack(side="left", padx=10, pady=8)
+                      text_color=COLOR_BG).pack(side="left", padx=10)
+
         ctk.CTkButton(danger_frame, text="📊 Exportar CSV", height=42, width=150,
                       font=ctk.CTkFont(size=14, weight="bold"),
                       command=self.handle_export_csv,
                       corner_radius=10,
-                      fg_color="#3b82f6", hover_color="#2563eb",
-                      text_color=COLOR_BG).pack(side="right", padx=10, pady=8)
+                      fg_color=COLOR_ACCENT_BLUE, hover_color="#2b75cc",
+                      text_color=COLOR_BG).pack(side="right", padx=0)
 
         self.show_frame(history_frame)
 
@@ -937,11 +965,24 @@ class VulnSeekerApp(ctk.CTk):
 
     def show_settings(self) -> None:
         self._select_nav_button("settings")
+
+        # Frame Principal (Centrado 3x3)
         settings_frame = ctk.CTkFrame(self.main_container, fg_color=COLOR_BG)
-        ctk.CTkLabel(settings_frame, text="⚙️ Configuración del Sistema",
-                     font=ctk.CTkFont(size=28, weight="bold"),
-                     text_color=COLOR_TEXT).grid(row=0, column=0, padx=20, pady=(30, 10),
-                                                 sticky="w")
+        settings_frame.grid_columnconfigure(0, weight=1)
+        settings_frame.grid_columnconfigure(1, weight=0)  # Contenido
+        settings_frame.grid_columnconfigure(2, weight=1)
+        settings_frame.grid_rowconfigure(0, weight=1)
+        settings_frame.grid_rowconfigure(1, weight=0)  # Contenido
+        settings_frame.grid_rowconfigure(2, weight=1)
+
+        # Contenido Centrado
+        content_box = ctk.CTkFrame(settings_frame, fg_color=COLOR_BG, width=800, corner_radius=0)
+        content_box.grid(row=1, column=1, sticky="nsew")
+        content_box.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(content_box, text="⚙️ Configuración del Sistema",
+                     font=ctk.CTkFont(size=32, weight="bold"),  # Título un poco más grande
+                     text_color=COLOR_TEXT).grid(row=0, column=0, padx=20, pady=(0, 30), sticky="w")
 
         # Valores actuales
         threads_val = int(self.db_manager.get_setting("threads", "10") or 10)
@@ -950,53 +991,61 @@ class VulnSeekerApp(ctk.CTk):
         ua_val = self.db_manager.get_setting("user_agent", GlobalConfig.USER_AGENT) or GlobalConfig.USER_AGENT
         groq_val = self.db_manager.get_setting("groq_api_key", "") or (self.db_manager.get_api_key() or "")
 
-        form = ctk.CTkFrame(settings_frame)
-        form.grid(row=1, column=0, padx=20, pady=20, sticky="nsew")
-        form.grid_columnconfigure(1, weight=1)
+        # Formulario
+        form = ctk.CTkFrame(content_box, fg_color=COLOR_SURFACE, corner_radius=12,
+                            border_width=1, border_color=COLOR_BORDER)
+        form.grid(row=1, column=0, padx=20, pady=0, sticky="ew")
+        form.grid_columnconfigure(1, weight=1)  # Input column expande
 
+        # --- HILOS ---
         ctk.CTkLabel(form, text="Hilos (1-50):", font=ctk.CTkFont(size=15, weight="bold")).grid(row=0, column=0,
-                                                                                                padx=10, pady=15,
+                                                                                                padx=20, pady=20,
                                                                                                 sticky="w")
-        self.threads_slider = ctk.CTkSlider(form, from_=1, to=50, number_of_steps=49, width=320,
-                                            progress_color=COLOR_ACCENT, button_color=COLOR_ACCENT)
+        self.threads_slider = ctk.CTkSlider(form, from_=1, to=50, number_of_steps=49, width=300,
+                                            progress_color=COLOR_ACCENT, button_color=COLOR_ACCENT,
+                                            button_hover_color=COLOR_ACCENT_ALT)
         self.threads_slider.set(threads_val)
-        self.threads_slider.grid(row=0, column=1, padx=10, pady=15, sticky="ew")
+        self.threads_slider.grid(row=0, column=1, padx=20, pady=20, sticky="ew")
 
+        # --- SUBDOMINIOS ---
         ctk.CTkLabel(form, text="Activar Subdomain Scanner:", font=ctk.CTkFont(size=15, weight="bold")).grid(row=1,
                                                                                                              column=0,
-                                                                                                             padx=10,
-                                                                                                             pady=15,
+                                                                                                             padx=20,
+                                                                                                             pady=20,
                                                                                                              sticky="w")
         self.subdomains_switch = ctk.CTkSwitch(form, text="", onvalue=True, offvalue=False,
-                                               fg_color=COLOR_ACCENT, progress_color=COLOR_ACCENT,
-                                               button_color=COLOR_BG)
+                                               fg_color="#444", progress_color=COLOR_ACCENT,
+                                               button_color="white", button_hover_color="gray")
         self.subdomains_switch.select() if enable_subs_val else self.subdomains_switch.deselect()
-        self.subdomains_switch.grid(row=1, column=1, padx=10, pady=15, sticky="w")
+        self.subdomains_switch.grid(row=1, column=1, padx=20, pady=20, sticky="w")
 
+        # --- USER AGENT ---
         ctk.CTkLabel(form, text="User-Agent:", font=ctk.CTkFont(size=15, weight="bold")).grid(row=2, column=0,
-                                                                                              padx=10, pady=15,
+                                                                                              padx=20, pady=20,
                                                                                               sticky="w")
         self.ua_entry = ctk.CTkEntry(form, placeholder_text=GlobalConfig.USER_AGENT, font=ctk.CTkFont(size=14),
                                      fg_color=COLOR_BG, border_color=COLOR_BORDER, text_color=COLOR_TEXT,
-                                     placeholder_text_color=COLOR_MUTED)
+                                     height=40)
         self.ua_entry.insert(0, ua_val)
-        self.ua_entry.grid(row=2, column=1, padx=10, pady=15, sticky="ew")
+        self.ua_entry.grid(row=2, column=1, padx=20, pady=20, sticky="ew")
 
+        # --- GROQ API KEY ---
         ctk.CTkLabel(form, text="API Key de Groq:", font=ctk.CTkFont(size=15, weight="bold")).grid(row=3, column=0,
-                                                                                                   padx=10, pady=15,
+                                                                                                   padx=20, pady=20,
                                                                                                    sticky="w")
         self.groq_entry = ctk.CTkEntry(form, placeholder_text="sk-...", show="*", font=ctk.CTkFont(size=14),
                                        fg_color=COLOR_BG, border_color=COLOR_BORDER, text_color=COLOR_TEXT,
-                                       placeholder_text_color=COLOR_MUTED)
+                                       height=40)
         if groq_val:
             self.groq_entry.insert(0, groq_val)
-        self.groq_entry.grid(row=3, column=1, padx=10, pady=15, sticky="ew")
+        self.groq_entry.grid(row=3, column=1, padx=20, pady=20, sticky="ew")
 
-        save_btn = ctk.CTkButton(form, text="💾 Guardar", height=40, font=ctk.CTkFont(size=15, weight="bold"),
+        # --- BOTÓN GUARDAR ---
+        save_btn = ctk.CTkButton(form, text="💾 Guardar Cambios", height=45, font=ctk.CTkFont(size=15, weight="bold"),
                                  command=self.save_settings, corner_radius=10,
                                  fg_color=COLOR_ACCENT, hover_color="#00e67a",
                                  text_color=COLOR_BG)
-        save_btn.grid(row=4, column=0, columnspan=2, padx=10, pady=(20, 10), sticky="e")
+        save_btn.grid(row=4, column=0, columnspan=2, padx=20, pady=(30, 20), sticky="e")
 
         self.show_frame(settings_frame)
 
