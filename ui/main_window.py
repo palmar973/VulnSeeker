@@ -2,7 +2,7 @@
 """
 VulnSeeker Enterprise - FASE 20: GOLD MASTER UI (FINAL REPAIRED).
 - FIX CRÍTICO: Reintegración de métodos PDF faltantes/mal indentados.
-- FIX UI: Gráfico de barras ajustado (Copilot) + Layout optimizado.
+- FIX UI: Gráfico de barras ajustado + Layout optimizado + Paneles Compactos.
 """
 
 import customtkinter as ctk
@@ -24,7 +24,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
-# --- IMPORTS DEL BACKEND (Faltaban) ---
+# --- IMPORTS DEL BACKEND ---
 from core.db_manager import DatabaseManager
 from core.engine import VulnSeekerEngine
 from core.config import GlobalConfig
@@ -36,17 +36,19 @@ from modules.path_fuzzer import PathFuzzer
 from modules.ai_analyst import GroqAIAnalyst
 from reports.report_generator import ReportGenerator
 from reports.pdf_generator import PDFReportGenerator
+
 # --------------------------------------
 
 plt.style.use('dark_background')
 
-# Paleta inspirada en la web (page.tsx) -> ahora cyberpunk landing
-COLOR_BG = "#0D1117"          # Fondo principal
-COLOR_SURFACE = "#161B22"     # Paneles / Sidebar
+# Paleta Cyberpunk
+COLOR_BG = "#0D1117"  # Fondo principal
+COLOR_SURFACE = "#161B22"  # Paneles / Sidebar
 COLOR_PANEL = "#161B22"
 COLOR_BORDER = "#222933"
-COLOR_ACCENT = "#00E676"      # Verde neón
+COLOR_ACCENT = "#00E676"  # Verde neón
 COLOR_ACCENT_ALT = "#00b36b"
+COLOR_ACCENT_BLUE = "#4facfe"  # Azul acento
 COLOR_TEXT = "#FFFFFF"
 COLOR_MUTED = "#8B949E"
 COLOR_DANGER = "#ff3366"
@@ -150,7 +152,6 @@ class VulnSeekerApp(ctk.CTk):
         self.grid_rowconfigure(0, weight=1)
 
     def _build_sidebar(self) -> ctk.CTkFrame:
-        # FIX: Asignamos self.sidebar de inmediato para que los botones tengan padre
         self.sidebar = ctk.CTkFrame(self, width=240, corner_radius=0,
                                     fg_color=COLOR_SURFACE, border_width=1, border_color=COLOR_BORDER)
         self.sidebar.grid(row=0, column=0, sticky="nswe")
@@ -160,7 +161,6 @@ class VulnSeekerApp(ctk.CTk):
                                        text_color=COLOR_TEXT)
         self.logo_label.grid(row=0, column=0, padx=20, pady=(24, 16), sticky="w")
 
-        # Ahora sí, self.sidebar existe y podemos crear botones hijos
         self.nav_buttons = {
             "scan": self._create_nav_button("🚀 Nuevo Escaneo", 1, self.show_scan),
             "results": self._create_nav_button("📊 Resultados", 2, self.show_results),
@@ -200,153 +200,169 @@ class VulnSeekerApp(ctk.CTk):
             self.show_scan()
             return
 
-        results_frame = ctk.CTkFrame(self.main_container, fg_color=COLOR_BG)
-        ctk.CTkLabel(results_frame, text=f"📊 RESULTADOS SCAN #{self.current_scan_id}",
-                     font=ctk.CTkFont(size=28, weight="bold"),
-                     text_color=COLOR_TEXT).grid(row=0, column=0, padx=20, pady=(15, 10), sticky="w")
-
-        # 1. KPIs
-        kpi_frame = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
-        kpi_frame.grid(row=1, column=0, padx=20, pady=(0, 10), sticky="ew")
-
+        target_url = self.db_manager.get_scan_target(self.current_scan_id)
         scan_stats = self.db_manager.get_scan_stats(self.current_scan_id)
         subdomain_count = self.db_manager.get_subdomain_count(self.current_scan_id)
-        target_url = self.db_manager.get_scan_target(self.current_scan_id)
+        accent_blue = globals().get("COLOR_ACCENT_BLUE", "#3b82f6")
 
-        kpi_configs = [
-            ("Vulnerabilidades", scan_stats["total_vulns"], "🐛", "#f0932b"),
-            ("Críticas/Alta", scan_stats["critical_high"], "🚨", "#eb4d4b"),
-            ("Subdominios", subdomain_count, "🌐", "#4facfe")
-        ]
+        # Frame Principal Scrollable
+        results_frame = ctk.CTkScrollableFrame(self.main_container, fg_color=COLOR_BG, corner_radius=0)
+        results_frame.grid_columnconfigure(0, weight=1)
 
-        for idx, (title, value, icon, color) in enumerate(kpi_configs):
-            kpi_card = ctk.CTkFrame(kpi_frame, fg_color=color, height=90, corner_radius=12,
-                                border_width=0)
-            kpi_card.grid(row=0, column=idx, padx=10, pady=10, sticky="nsew")
-            kpi_card.grid_columnconfigure(0, weight=1)
-            kpi_card.grid_rowconfigure(1, weight=1)
-            ctk.CTkLabel(kpi_card, text=icon, font=ctk.CTkFont(size=30)).grid(row=0, column=0, pady=(10, 5))
-            ctk.CTkLabel(kpi_card, text=str(value), font=ctk.CTkFont(size=32, weight="bold")).grid(
-                row=1, column=0, pady=(0, 2))
-            ctk.CTkLabel(kpi_card, text=title, font=ctk.CTkFont(size=13)).grid(row=2, column=0, pady=(0, 10))
+        # 1. HEADER
+        header = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
+        header.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="ew")
+        ctk.CTkLabel(header, text=f"RESULTADOS SCAN #{self.current_scan_id}",
+                     font=ctk.CTkFont(size=30, weight="bold", family="Consolas"),
+                     text_color=COLOR_TEXT).pack(anchor="w")
+        ctk.CTkLabel(header, text=f"🎯 {target_url}",
+                     font=ctk.CTkFont(size=14, family="Consolas"),
+                     text_color=COLOR_ACCENT).pack(anchor="w", pady=(4, 0))
 
-        ctk.CTkLabel(kpi_frame, text=f"🎯 {target_url}", font=ctk.CTkFont(size=14),
-                     text_color=COLOR_MUTED).grid(
-            row=0, column=len(kpi_configs), padx=20, pady=20)
-
+        # 2. KPIs
+        kpi_frame = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
+        kpi_frame.grid(row=1, column=0, padx=20, pady=(5, 15), sticky="ew")
         kpi_frame.grid_columnconfigure((0, 1, 2), weight=1)
-        kpi_frame.grid_columnconfigure(3, weight=0)
+        self._create_metric_card(kpi_frame, 0, "🐛", "Vulnerabilidades", scan_stats["total_vulns"], COLOR_ACCENT)
+        self._create_metric_card(kpi_frame, 1, "🚨", "Críticas/Alta", scan_stats["critical_high"], COLOR_DANGER)
+        self._create_metric_card(kpi_frame, 2, "🌐", "Subdominios", subdomain_count, accent_blue)
 
-        # 2. Tech Info & Subdomains Row
-        info_row_frame = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
-        info_row_frame.grid(row=2, column=0, padx=20, pady=(0, 10), sticky="ew")
-        info_row_frame.grid_columnconfigure(0, weight=1)
-        info_row_frame.grid_columnconfigure(1, weight=1)
+        # 3. INFO PANELS (CORREGIDO: pack_propagate)
+        info_row = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
+        info_row.grid(row=2, column=0, padx=20, pady=(0, 15), sticky="ew")
+        info_row.grid_columnconfigure(0, weight=1)
+        info_row.grid_columnconfigure(1, weight=1)
 
-        # -- Sección Tecnologías --
-        tech_info = self.db_manager.get_scan_technologies(self.current_scan_id)
-        tech_frame = ctk.CTkFrame(info_row_frame, fg_color=COLOR_PANEL, corner_radius=10,
-                                  border_width=1, border_color=COLOR_BORDER)
-        tech_frame.grid(row=0, column=0, padx=(0, 10), pady=0, sticky="ew")
-        tech_frame.pack_propagate(False)
+        # -- Panel Tecnologías (Altura Fija: 140px) --
+        tech_container = ctk.CTkFrame(info_row, fg_color=COLOR_SURFACE, corner_radius=10,
+                                      border_width=1, border_color=COLOR_BORDER, height=140)
+        tech_container.grid(row=0, column=0, padx=(0, 10), pady=0, sticky="nsew")
 
-        ctk.CTkLabel(tech_frame, text="🕵️ Tecnologías:", font=ctk.CTkFont(size=14, weight="bold")
-                     ).pack(side="left", padx=(15, 5))
-        ctk.CTkLabel(tech_frame, text=tech_info, font=ctk.CTkFont(size=13, family="Consolas"),
-                     text_color=("#00ff88")).pack(side="left", padx=5)
+        # ¡AQUÍ ESTABA EL ERROR! Usamos pack() adentro, así que debemos usar pack_propagate(False)
+        tech_container.pack_propagate(False)
 
-        # -- Sección Subdominios --
+        ctk.CTkLabel(tech_container, text="🕵️ Tecnologías",
+                     font=ctk.CTkFont(size=15, weight="bold"), text_color=COLOR_TEXT).pack(anchor="w", padx=14,
+                                                                                           pady=(10, 5))
+
+        tech_scroll = ctk.CTkScrollableFrame(tech_container, fg_color="transparent", height=80)
+        tech_scroll.pack(fill="both", expand=True, padx=5, pady=(0, 5))
+
+        tech_info_text = self.db_manager.get_scan_technologies(self.current_scan_id)
+        ctk.CTkLabel(tech_scroll, text=tech_info_text, font=ctk.CTkFont(size=13, family="Consolas"),
+                     text_color=COLOR_MUTED, wraplength=350, justify="left").pack(anchor="w", padx=5)
+
+        # -- Panel Subdominios (Altura Fija: 140px) --
+        sub_container = ctk.CTkFrame(info_row, fg_color=COLOR_SURFACE, corner_radius=10,
+                                     border_width=1, border_color=COLOR_BORDER, height=140)
+        sub_container.grid(row=0, column=1, padx=(10, 0), pady=0, sticky="nsew")
+
+        # ¡CORRECCIÓN AQUÍ TAMBIÉN!
+        sub_container.pack_propagate(False)
+
+        ctk.CTkLabel(sub_container, text=f"🌐 Subdominios ({subdomain_count})",
+                     font=ctk.CTkFont(size=15, weight="bold"), text_color=accent_blue).pack(anchor="w", padx=14,
+                                                                                            pady=(10, 5))
+
+        sub_scroll = ctk.CTkScrollableFrame(sub_container, fg_color="transparent", height=80)
+        sub_scroll.pack(fill="both", expand=True, padx=5, pady=(0, 5))
+
         if subdomain_count > 0:
-            subdomains = self.db_manager.get_subdomains_by_scan(self.current_scan_id)
-            sub_scroll = ctk.CTkScrollableFrame(info_row_frame, height=50, fg_color=COLOR_PANEL,
-                                            corner_radius=10, border_width=1, border_color=COLOR_BORDER)
-            sub_scroll.grid(row=0, column=1, padx=(10, 0), pady=0, sticky="ew")
-
-            ctk.CTkLabel(sub_scroll, text=f"🌐 Subdominios ({subdomain_count})",
-                         font=ctk.CTkFont(size=12, weight="bold"), text_color="#4facfe").pack(anchor="w")
-
-            for sub in subdomains:
-                ctk.CTkLabel(sub_scroll, text=f"• {sub}", font=ctk.CTkFont(size=12, family="Consolas"),
-                             anchor="w").pack(anchor="w", padx=10)
+            for sub in self.db_manager.get_subdomains_by_scan(self.current_scan_id):
+                ctk.CTkLabel(sub_scroll, text=f"• {sub}", anchor="w",
+                             font=ctk.CTkFont(size=12, family="Consolas"), text_color=COLOR_TEXT).pack(anchor="w",
+                                                                                                       padx=5, pady=1)
         else:
-            empty_frame = ctk.CTkFrame(info_row_frame, fg_color=COLOR_PANEL, corner_radius=10,
+            ctk.CTkLabel(sub_scroll, text="Sin subdominios descubiertos",
+                         font=ctk.CTkFont(size=12, family="Consolas"),
+                         text_color=COLOR_MUTED).pack(padx=5, pady=4, anchor="w")
+
+        # 4. GRÁFICOS
+        charts_row = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
+        charts_row.grid(row=3, column=0, padx=20, pady=(0, 15), sticky="ew")
+        charts_row.grid_columnconfigure((0, 1), weight=1)
+
+        pie_container = ctk.CTkFrame(charts_row, fg_color=COLOR_SURFACE, corner_radius=10,
                                      border_width=1, border_color=COLOR_BORDER)
-            empty_frame.grid(row=0, column=1, padx=(10, 0), pady=0, sticky="ew")
-            empty_frame.pack_propagate(False)
-            ctk.CTkLabel(empty_frame, text="🌐 Sin subdominios", text_color="gray50").pack(expand=True)
+        pie_container.grid(row=0, column=0, padx=(0, 8), pady=5, sticky="nsew")
+        ctk.CTkLabel(pie_container, text="Distribución por Severidad",
+                     font=ctk.CTkFont(size=16, weight="bold"), text_color=COLOR_TEXT).grid(row=0, column=0,
+                                                                                           pady=(10, 0))
+        self._create_pie_chart(pie_container, self.current_scan_id)
 
-        # 3. Gráficos
-        charts_frame = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
-        charts_frame.grid(row=3, column=0, padx=20, pady=(0, 15), sticky="nsew")
-        charts_frame.grid_columnconfigure((0, 1), weight=1)
-        results_frame.grid_rowconfigure(3, weight=1)
+        bar_container = ctk.CTkFrame(charts_row, fg_color=COLOR_SURFACE, corner_radius=10,
+                                     border_width=1, border_color=COLOR_BORDER)
+        bar_container.grid(row=0, column=1, padx=(8, 0), pady=5, sticky="nsew")
+        ctk.CTkLabel(bar_container, text="Top Vulnerabilidades",
+                     font=ctk.CTkFont(size=16, weight="bold"), text_color=COLOR_TEXT).grid(row=0, column=0,
+                                                                                           pady=(10, 0))
+        self._create_bar_chart(bar_container, self.current_scan_id)
 
-        # -- Pie Chart --
-        pie_frame = ctk.CTkFrame(charts_frame, fg_color=COLOR_PANEL, corner_radius=10,
-                                 border_width=1, border_color=COLOR_BORDER)
-        pie_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
-        ctk.CTkLabel(pie_frame, text="Distribución por Severidad",
-                     font=ctk.CTkFont(size=16, weight="bold")).grid(row=0, column=0, pady=(5, 5))
-        self._create_pie_chart(pie_frame, self.current_scan_id)
-
-        # -- Bar Chart --
-        bar_frame = ctk.CTkFrame(charts_frame, fg_color=COLOR_PANEL, corner_radius=10,
-                                 border_width=1, border_color=COLOR_BORDER)
-        bar_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
-        ctk.CTkLabel(bar_frame, text="Top Vulnerabilidades", font=ctk.CTkFont(size=16, weight="bold")
-                     ).grid(row=0, column=0, pady=(5, 5))
-        self._create_bar_chart(bar_frame, self.current_scan_id)
-
-        # 4. Botones
+        # 5. FOOTER BUTTONS
         buttons_frame = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
-        buttons_frame.grid(row=4, column=0, padx=20, pady=10, sticky="ew")
-        buttons_frame.grid_columnconfigure(1, weight=1)
+        buttons_frame.grid(row=4, column=0, padx=20, pady=(5, 20), sticky="ew")
+        buttons_frame.grid_columnconfigure(0, weight=1)
 
-        self.ai_button = ctk.CTkButton(buttons_frame, text="🤖 Generar Informe IA (Llama 3)", height=40,
+        btns = ctk.CTkFrame(buttons_frame, fg_color=COLOR_BG)
+        btns.pack(anchor="e")
+
+        self.ai_button = ctk.CTkButton(btns, text="🤖 Generar Informe IA (Llama 3)", height=50,
                                        font=ctk.CTkFont(size=15, weight="bold"),
                                        command=lambda: self.generate_ai_report(self.current_scan_id),
-                                       corner_radius=10,
-                                       fg_color=COLOR_ACCENT_ALT, hover_color="#6d28d9",
+                                       corner_radius=8,
+                                       fg_color="#9D00FF", hover_color="#7A00C4",
                                        text_color=COLOR_TEXT)
-        self.ai_button.pack(side="left", padx=10, pady=10)
+        self.ai_button.pack(side="left", padx=8, pady=4)
 
-        self.pdf_button = ctk.CTkButton(buttons_frame, text="📄 Exportar PDF Profesional", height=40,
+        self.pdf_button = ctk.CTkButton(btns, text="📄 Exportar PDF Profesional", height=50,
                                         font=ctk.CTkFont(size=15, weight="bold"),
                                         command=lambda: self.prepare_pdf_generation(self.current_scan_id),
-                                        corner_radius=10,
+                                        corner_radius=8,
                                         fg_color=COLOR_ACCENT, hover_color="#00e67a",
                                         text_color=COLOR_BG)
-        self.pdf_button.pack(side="right", padx=10, pady=10)
+        self.pdf_button.pack(side="left", padx=8, pady=4)
 
-        results_frame.grid_columnconfigure(0, weight=1)
         self.show_frame(results_frame)
+
+    def _create_metric_card(self, parent: ctk.CTkFrame, column: int, icon: str, label: str,
+                            value: int, border_color: str) -> None:
+        card = ctk.CTkFrame(parent, fg_color=COLOR_SURFACE, corner_radius=10,
+                            border_width=2, border_color=border_color, height=120)
+        card.grid(row=0, column=column, padx=8, pady=5, sticky="nsew")
+        card.grid_propagate(False)
+        ctk.CTkLabel(card, text=icon, font=ctk.CTkFont(size=26)).pack(pady=(12, 4))
+        ctk.CTkLabel(card, text=str(value), font=ctk.CTkFont(size=30, weight="bold", family="Consolas"),
+                     text_color=COLOR_TEXT).pack()
+        ctk.CTkLabel(card, text=label, font=ctk.CTkFont(size=13, weight="bold"),
+                     text_color=COLOR_MUTED).pack(pady=(2, 12))
 
     def _create_pie_chart(self, parent_frame: ctk.CTkFrame, scan_id: int) -> None:
         severity_data = self.db_manager.get_severity_distribution_by_scan(scan_id)
         if not severity_data:
-            ctk.CTkLabel(parent_frame, text="📊 Sin datos para graficar", font=ctk.CTkFont(size=14)).grid(row=1,
-                                                                                                         column=0,
-                                                                                                         pady=40)
+            ctk.CTkLabel(parent_frame, text="📊 Sin datos para graficar", font=ctk.CTkFont(size=14),
+                         text_color=COLOR_MUTED).grid(row=1, column=0, pady=40)
             return
         labels = [row[0] for row in severity_data]
         sizes = [row[1] for row in severity_data]
         color_map = {'INFO': '#999999', 'LOW': '#ffff99', 'MEDIUM': '#ffcc99', 'HIGH': '#ff6666', 'CRITICAL': '#ff3333'}
         colors = [color_map.get(l, '#cccccc') for l in labels]
 
-        fig = Figure(figsize=(6, 3.2), facecolor='#2b2b2b')
-        fig.subplots_adjust(left=0.0, right=0.7, bottom=0.1, top=0.9)
+        fig = Figure(figsize=(6, 3.2))
+        fig.patch.set_facecolor(COLOR_SURFACE)
+        fig.subplots_adjust(left=0.02, right=0.7, bottom=0.1, top=0.9)
         ax = fig.add_subplot(111)
+        ax.set_facecolor(COLOR_SURFACE)
 
         wedges, texts, autotexts = ax.pie(sizes, labels=None, colors=colors, autopct='%1.1f%%', startangle=90,
-                                          pctdistance=0.8)
-
-        ax.set_facecolor('#2b2b2b')
+                                          pctdistance=0.78)
+        for t in texts:
+            t.set_color(COLOR_TEXT)
         for autotext in autotexts:
-            autotext.set_color('black')
+            autotext.set_color(COLOR_BG)
             autotext.set_fontsize(9)
 
-        ax.legend(wedges, labels, loc="center left", bbox_to_anchor=(1, 0.5), facecolor='#2b2b2b',
-                  labelcolor='white', ncol=1)
+        ax.legend(wedges, labels, loc="center left", bbox_to_anchor=(1, 0.5),
+                  facecolor=COLOR_SURFACE, labelcolor=COLOR_TEXT, ncol=1)
 
         canvas = FigureCanvasTkAgg(fig, parent_frame)
         canvas.draw()
@@ -355,37 +371,32 @@ class VulnSeekerApp(ctk.CTk):
     def _create_bar_chart(self, parent_frame: ctk.CTkFrame, scan_id: int) -> None:
         vuln_data = self.db_manager.get_top_vulns_by_scan(scan_id, 5)
         if not vuln_data:
-            ctk.CTkLabel(parent_frame, text="📊 Sin datos para graficar", font=ctk.CTkFont(size=14)).grid(row=1,
-                                                                                                         column=0,
-                                                                                                         pady=40)
+            ctk.CTkLabel(parent_frame, text="📊 Sin datos para graficar", font=ctk.CTkFont(size=14),
+                         text_color=COLOR_MUTED).grid(row=1, column=0, pady=40)
             return
         names = [row[0][:15] + "..." if len(row[0]) > 15 else row[0] for row in vuln_data]
         counts = [row[1] for row in vuln_data]
 
-        # FIX COPILOT: Ajuste de dimensiones y márgenes
-        fig = Figure(figsize=(6.6, 3.2), facecolor='#2b2b2b')
-        fig.subplots_adjust(left=0.12, right=0.99, bottom=0.42, top=0.9)
+        fig = Figure(figsize=(6.6, 3.2))
+        fig.patch.set_facecolor(COLOR_SURFACE)
+        fig.subplots_adjust(left=0.12, right=0.99, bottom=0.3, top=0.9)
         ax = fig.add_subplot(111)
+        ax.set_facecolor(COLOR_SURFACE)
 
         bars = ax.bar(names, counts, color=['#4facfe', '#00f2fe', '#fa709a', '#febefe', '#ffecd2'])
-        ax.set_facecolor('#2b2b2b')
         ax.margins(x=0.08)
-
         if counts:
             ax.set_ylim(0, max(counts) * 1.25)
 
-        ax.tick_params(axis='x', colors='white', rotation=25, labelsize=9)
-        ax.tick_params(axis='y', colors='white', labelsize=9)
-        ax.set_title("Top 5", color='white', fontsize=11)
+        ax.tick_params(axis='x', colors=COLOR_TEXT, rotation=25, labelsize=9)
+        ax.tick_params(axis='y', colors=COLOR_TEXT, labelsize=9)
+        ax.set_title("Top 5", color=COLOR_TEXT, fontsize=11)
 
         y_limit = ax.get_ylim()[1]
         offset = y_limit * 0.02
-
         for bar, count in zip(bars, counts):
-            ax.text(bar.get_x() + bar.get_width() / 2., count + offset,
-                    f'{count}',
-                    ha='center', va='bottom', color='white', fontsize=9,
-                    clip_on=False, zorder=10)
+            ax.text(bar.get_x() + bar.get_width() / 2., count + offset, f'{count}',
+                    ha='center', va='bottom', color=COLOR_TEXT, fontsize=9, clip_on=False, zorder=10)
 
         canvas = FigureCanvasTkAgg(fig, parent_frame)
         canvas.draw()
@@ -682,7 +693,8 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(HeaderAnalyzer())
             engine.register_module(PortScanner())
             engine.register_module(PathFuzzer())
-            logger.info(f"⚡ Motor de análisis iniciado (5 módulos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
+            logger.info(
+                f"⚡ Motor de análisis iniciado (5 módulos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
             results = engine.scan(target_url, crawl=use_crawler)
 
             logger.info(f"💾 Guardando resultados...")
@@ -760,7 +772,7 @@ class VulnSeekerApp(ctk.CTk):
                       corner_radius=10,
                       fg_color=COLOR_PANEL, hover_color="#1d1d1d",
                       border_width=1, border_color=COLOR_BORDER, text_color=COLOR_TEXT).pack(side="left", padx=10,
-                                                                                                pady=10)
+                                                                                             pady=10)
 
         self.history_pdf_button = ctk.CTkButton(button_frame, text="📄 PDF", height=45, width=100,
                                                 font=ctk.CTkFont(size=14, weight="bold"),
@@ -890,7 +902,7 @@ class VulnSeekerApp(ctk.CTk):
                 readable_date = scan_date[:16]
             row_color = (COLOR_PANEL, "#1a1a1a") if idx % 2 == 0 else ("#131313", "#1f1f1f")
             row_frame = ctk.CTkFrame(scrollable_frame, fg_color=row_color, height=35, corner_radius=8,
-                                 border_width=1, border_color=COLOR_BORDER)
+                                     border_width=1, border_color=COLOR_BORDER)
             row_frame.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
             row_frame.grid_columnconfigure(2, weight=1)
             self.history_row_cache[scan_id] = {"frame": row_frame, "default_color": row_color}
@@ -915,7 +927,7 @@ class VulnSeekerApp(ctk.CTk):
         if scan_id in self.history_row_cache:
             try:
                 self.history_row_cache[scan_id]["frame"].configure(fg_color=("#123426", "#0f2f22"),
-                                                               border_color=COLOR_ACCENT)
+                                                                   border_color=COLOR_ACCENT)
             except:
                 pass
         if hasattr(self, 'history_ai_button') and self.history_ai_button.winfo_exists():
@@ -929,7 +941,7 @@ class VulnSeekerApp(ctk.CTk):
         ctk.CTkLabel(settings_frame, text="⚙️ Configuración del Sistema",
                      font=ctk.CTkFont(size=28, weight="bold"),
                      text_color=COLOR_TEXT).grid(row=0, column=0, padx=20, pady=(30, 10),
-                                                                    sticky="w")
+                                                 sticky="w")
 
         # Valores actuales
         threads_val = int(self.db_manager.get_setting("threads", "10") or 10)
@@ -951,10 +963,10 @@ class VulnSeekerApp(ctk.CTk):
         self.threads_slider.grid(row=0, column=1, padx=10, pady=15, sticky="ew")
 
         ctk.CTkLabel(form, text="Activar Subdomain Scanner:", font=ctk.CTkFont(size=15, weight="bold")).grid(row=1,
-                                                                                                            column=0,
-                                                                                                            padx=10,
-                                                                                                            pady=15,
-                                                                                                            sticky="w")
+                                                                                                             column=0,
+                                                                                                             padx=10,
+                                                                                                             pady=15,
+                                                                                                             sticky="w")
         self.subdomains_switch = ctk.CTkSwitch(form, text="", onvalue=True, offvalue=False,
                                                fg_color=COLOR_ACCENT, progress_color=COLOR_ACCENT,
                                                button_color=COLOR_BG)
@@ -962,8 +974,8 @@ class VulnSeekerApp(ctk.CTk):
         self.subdomains_switch.grid(row=1, column=1, padx=10, pady=15, sticky="w")
 
         ctk.CTkLabel(form, text="User-Agent:", font=ctk.CTkFont(size=15, weight="bold")).grid(row=2, column=0,
-                                                                                               padx=10, pady=15,
-                                                                                               sticky="w")
+                                                                                              padx=10, pady=15,
+                                                                                              sticky="w")
         self.ua_entry = ctk.CTkEntry(form, placeholder_text=GlobalConfig.USER_AGENT, font=ctk.CTkFont(size=14),
                                      fg_color=COLOR_BG, border_color=COLOR_BORDER, text_color=COLOR_TEXT,
                                      placeholder_text_color=COLOR_MUTED)
