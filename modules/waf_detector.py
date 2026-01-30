@@ -1,7 +1,10 @@
+import logging
 import requests
 from typing import List
 from core.interfaces import ScannerModule
 from core.models import Vulnerability, Severity
+
+logger = logging.getLogger("VulnSeeker")
 
 class WAFDetector(ScannerModule):
     @property
@@ -15,7 +18,14 @@ class WAFDetector(ScannerModule):
     def run(self, target: 'Target') -> List[Vulnerability]:
         vulns: List[Vulnerability] = []
         try:
-            response = requests.get(target.url, timeout=5, headers={'User-Agent': 'VulnSeeker/1.0'})
+            logger.info(f"🛡️ WAF Detector: Analizando {target.url} ...")
+            response = requests.get(
+                target.url,
+                timeout=5,
+                headers={
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                },
+            )
             headers = {k.lower(): v.lower() for k, v in response.headers.items()}
             cookies = response.cookies.get_dict()
             signatures = {
@@ -38,6 +48,7 @@ class WAFDetector(ScannerModule):
                                 detected_wafs.append(f"{waf_name} (Cookie: {c_name})")
                                 break
             if detected_wafs:
+                logger.info(f"✅ WAF DETECTADO: {detected_wafs[0]}")
                 vulns.append(
                     Vulnerability(
                         name="WAF Detected",
@@ -48,5 +59,5 @@ class WAFDetector(ScannerModule):
                     )
                 )
         except Exception as e:
-            print(f"Error en WAF Detector: {e}")
+            logger.error(f"❌ Error en WAF Detector: {e}")
         return vulns
