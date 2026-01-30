@@ -36,7 +36,7 @@ from modules.path_fuzzer import PathFuzzer
 from modules.ai_analyst import GroqAIAnalyst
 from reports.report_generator import ReportGenerator
 from reports.pdf_generator import PDFReportGenerator
-
+from modules.waf_detector import WAFDetector
 # --------------------------------------
 
 plt.style.use('dark_background')
@@ -693,6 +693,7 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(HeaderAnalyzer())
             engine.register_module(PortScanner())
             engine.register_module(PathFuzzer())
+            engine.register_module(WAFDetector())
             logger.info(
                 f"⚡ Motor de análisis iniciado (5 módulos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
             results = engine.scan(target_url, crawl=use_crawler)
