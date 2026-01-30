@@ -32,6 +32,7 @@ class Target:
     headers: Dict[str, str] = field(default_factory=dict)
     # Lista de elementos internos descubiertos si se requiere un análisis profundo.
     elements: List[PageElement] = field(default_factory=list)
+    context: Dict[str, object] = field(default_factory=dict)
 
 @dataclass
 class Vulnerability:

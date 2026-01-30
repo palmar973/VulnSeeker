@@ -1,5 +1,6 @@
 from core.interfaces import ScannerModule
 from core.scanner_types import Target, Vulnerability, Severity
+import logging
 
 
 class DummyScanner(ScannerModule):
@@ -16,6 +17,7 @@ class DummyScanner(ScannerModule):
         return "Solo existo para validar que la arquitectura no está rota."
 
     def run(self, target: Target) -> list[Vulnerability]:
+        logging.info(f"🔍 DEBUG CONTEXT: {target.context}")
         # Hago como que pienso...
         print(f"    [Dummy] Fingiendo que analizo {target.url} intensamente...")
 

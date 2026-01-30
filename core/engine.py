@@ -36,6 +36,7 @@ class VulnSeekerEngine:
         self.results: List[Vulnerability] = []
         self.fingerprint_data: str = "Unknown"
         self.subdomain_data: List[str] = []
+        self.tech_context: dict = {}
         self.enable_subdomains = self.config.get("enable_subdomains", True)
         logger.info("⚙️ VulnSeeker Engine inicializado (Subdomains: ON)" if self.enable_subdomains
                     else "⚙️ VulnSeeker Engine inicializado (Subdomains: OFF)")
@@ -63,18 +64,20 @@ class VulnSeekerEngine:
         try:
             logger.info("🕵️‍♂️ Análisis tecnológico activo...")
             fp = TechFingerprinter()
-            analysis = fp.analyze(start_url)
+            tech_context = fp.analyze(start_url)
 
             tech_parts = []
-            if analysis['server']: tech_parts.append(f"Server: {', '.join(analysis['server'])}")
-            if analysis['powered_by']: tech_parts.append(f"Backend: {', '.join(analysis['powered_by'])}")
-            if analysis['cms_framework']: tech_parts.append(f"CMS: {', '.join(analysis['cms_framework'])}")
+            if tech_context['server']: tech_parts.append(f"Server: {', '.join(tech_context['server'])}")
+            if tech_context['powered_by']: tech_parts.append(f"Backend: {', '.join(tech_context['powered_by'])}")
+            if tech_context['cms_framework']: tech_parts.append(f"CMS: {', '.join(tech_context['cms_framework'])}")
 
             self.fingerprint_data = " | ".join(tech_parts) if tech_parts else "Tecnología Genérica"
+            self.tech_context = tech_context or {}
             logger.info(f"🔬 Fingerprint: {self.fingerprint_data}")
         except Exception as e:
             logger.error(f"⚠️ Fingerprint falló: {e}")
             self.fingerprint_data = "Error en análisis"
+            self.tech_context = {}
 
         # FASE 2: CRAWLING
         target_elements: List[PageElement] = []
@@ -143,7 +146,8 @@ class VulnSeekerEngine:
         target = Target(
             url=element.url,
             method=element.method,
-            headers={'User-Agent': self.config.get("user_agent", GlobalConfig.USER_AGENT)}
+            headers={'User-Agent': self.config.get("user_agent", GlobalConfig.USER_AGENT)},
+            context=self.tech_context
         )
 
         for module in self.modules:
