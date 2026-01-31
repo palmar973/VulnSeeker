@@ -41,6 +41,7 @@ from modules.cms_auditor import CMSAuditor
 from modules.dummy_module import DummyScanner as DummyModule
 from modules.exposure_scanner import ExposureScanner
 from modules.email_harvester import EmailHarvester
+from modules.subdomain_takeover import SubdomainTakeover
 # --------------------------------------
 
 plt.style.use('dark_background')
@@ -722,8 +723,9 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(CMSAuditor())
             engine.register_module(ExposureScanner())
             engine.register_module(EmailHarvester())
+            engine.register_module(SubdomainTakeover())
             logger.info(
-                f"⚡ Motor de análisis iniciado (5 módulos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
+                f"⚡ Motor de análisis iniciado (módulos activos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
             results = engine.scan(target_url, crawl=use_crawler)
 
             logger.info(f"💾 Guardando resultados...")
