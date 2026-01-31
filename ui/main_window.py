@@ -40,6 +40,7 @@ from modules.waf_detector import WAFDetector
 from modules.cms_auditor import CMSAuditor
 from modules.dummy_module import DummyScanner as DummyModule
 from modules.exposure_scanner import ExposureScanner
+from modules.email_harvester import EmailHarvester
 # --------------------------------------
 
 plt.style.use('dark_background')
@@ -108,6 +109,7 @@ class VulnSeekerApp(ctk.CTk):
         self.subdomains_switch: Optional[ctk.CTkSwitch] = None
         self.ua_entry: Optional[ctk.CTkEntry] = None
         self.groq_entry: Optional[ctk.CTkEntry] = None
+        self.view_results_button: Optional[ctk.CTkButton] = None
 
         self.selected_history_scan_id: Optional[int] = None
         self.history_row_cache: Dict[int, Dict[str, Any]] = {}
@@ -196,8 +198,10 @@ class VulnSeekerApp(ctk.CTk):
                           text_color=COLOR_BG if active else COLOR_TEXT,
                           border_color=COLOR_ACCENT if active else COLOR_BORDER)
 
-    def show_results(self) -> None:
+    def show_results(self, scan_id: Optional[int] = None) -> None:
         self._select_nav_button("results")
+        if scan_id:
+            self.current_scan_id = scan_id
         if not self.current_scan_id:
             self.show_message("ℹ️ Realice un escaneo primero.", "Info")
             self.show_scan()
@@ -207,6 +211,11 @@ class VulnSeekerApp(ctk.CTk):
         scan_stats = self.db_manager.get_scan_stats(self.current_scan_id)
         subdomain_count = self.db_manager.get_subdomain_count(self.current_scan_id)
         accent_blue = globals().get("COLOR_ACCENT_BLUE", "#3b82f6")
+
+        # 🔎 Obtener vulnerabilidades para extraer correos
+        vulns = self.db_manager.get_vulnerabilities_by_scan(self.current_scan_id)
+        email_vuln = next((v for v in vulns if getattr(v, "name", "") == "Email Disclosure"), None)
+        email_text = getattr(email_vuln, "description", "") or getattr(email_vuln, "payload", "") if email_vuln else "Sin emails recolectados"
 
         # Frame Principal Scrollable
         results_frame = ctk.CTkScrollableFrame(self.main_container, fg_color=COLOR_BG, corner_radius=0)
@@ -233,15 +242,12 @@ class VulnSeekerApp(ctk.CTk):
         # 3. INFO PANELS (CORREGIDO: pack_propagate)
         info_row = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
         info_row.grid(row=2, column=0, padx=20, pady=(0, 15), sticky="ew")
-        info_row.grid_columnconfigure(0, weight=1)
-        info_row.grid_columnconfigure(1, weight=1)
+        info_row.grid_columnconfigure((0, 1, 2), weight=1)
 
         # -- Panel Tecnologías (Altura Fija: 140px) --
         tech_container = ctk.CTkFrame(info_row, fg_color=COLOR_SURFACE, corner_radius=10,
                                       border_width=1, border_color=COLOR_BORDER, height=140)
         tech_container.grid(row=0, column=0, padx=(0, 10), pady=0, sticky="nsew")
-
-        # ¡AQUÍ ESTABA EL ERROR! Usamos pack() adentro, así que debemos usar pack_propagate(False)
         tech_container.pack_propagate(False)
 
         ctk.CTkLabel(tech_container, text="🕵️ Tecnologías",
@@ -258,9 +264,7 @@ class VulnSeekerApp(ctk.CTk):
         # -- Panel Subdominios (Altura Fija: 140px) --
         sub_container = ctk.CTkFrame(info_row, fg_color=COLOR_SURFACE, corner_radius=10,
                                      border_width=1, border_color=COLOR_BORDER, height=140)
-        sub_container.grid(row=0, column=1, padx=(10, 0), pady=0, sticky="nsew")
-
-        # ¡CORRECCIÓN AQUÍ TAMBIÉN!
+        sub_container.grid(row=0, column=1, padx=(10, 10), pady=0, sticky="nsew")
         sub_container.pack_propagate(False)
 
         ctk.CTkLabel(sub_container, text=f"🌐 Subdominios ({subdomain_count})",
@@ -279,6 +283,24 @@ class VulnSeekerApp(ctk.CTk):
             ctk.CTkLabel(sub_scroll, text="Sin subdominios descubiertos",
                          font=ctk.CTkFont(size=12, family="Consolas"),
                          text_color=COLOR_MUTED).pack(padx=5, pady=4, anchor="w")
+
+        # -- Panel Emails (Altura Fija: 140px) --
+        email_container = ctk.CTkFrame(info_row, fg_color=COLOR_SURFACE, corner_radius=10,
+                                       border_width=1, border_color=COLOR_BORDER, height=140)
+        email_container.grid(row=0, column=2, padx=(10, 0), pady=0, sticky="nsew")
+        email_container.pack_propagate(False)
+
+        ctk.CTkLabel(email_container, text="📧 Emails",
+                     font=ctk.CTkFont(size=15, weight="bold"), text_color=COLOR_TEXT).pack(anchor="w", padx=14,
+                                                                                           pady=(10, 5))
+
+        email_scroll = ctk.CTkScrollableFrame(email_container, fg_color="transparent", height=80)
+        email_scroll.pack(fill="both", expand=True, padx=5, pady=(0, 5))
+
+        ctk.CTkLabel(email_scroll, text=email_text,
+                     font=ctk.CTkFont(size=12, family="Consolas"),
+                     text_color=COLOR_MUTED if email_vuln is None else COLOR_TEXT,
+                     wraplength=320, justify="left").pack(anchor="w", padx=5, pady=2)
 
         # 4. GRÁFICOS
         charts_row = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
@@ -699,6 +721,7 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(WAFDetector())
             engine.register_module(CMSAuditor())
             engine.register_module(ExposureScanner())
+            engine.register_module(EmailHarvester())
             logger.info(
                 f"⚡ Motor de análisis iniciado (5 módulos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
             results = engine.scan(target_url, crawl=use_crawler)
@@ -795,6 +818,15 @@ class VulnSeekerApp(ctk.CTk):
         button_frame.grid(row=3, column=0, padx=20, pady=(0, 20), sticky="ew")
         button_frame.grid_columnconfigure(0, weight=1)  # Espaciador
 
+        self.view_results_button = ctk.CTkButton(button_frame, text="👁️ Ver Resultados", height=45, width=150,
+                                                 font=ctk.CTkFont(size=14, weight="bold"),
+                                                 command=lambda: self.show_results(self.selected_history_scan_id),
+                                                 state="disabled",
+                                                 corner_radius=10,
+                                                 fg_color=COLOR_PANEL, hover_color="#2d333b",
+                                                 border_width=1, border_color=COLOR_BORDER, text_color=COLOR_TEXT)
+        self.view_results_button.pack(side="left", padx=(0, 10))
+
         reports_dir = Path(GlobalConfig.REPORTS_DIR)
         ctk.CTkButton(button_frame, text="📂 Abrir Carpeta", height=45, width=140,
                       font=ctk.CTkFont(size=14, weight="bold"),
@@ -851,11 +883,8 @@ class VulnSeekerApp(ctk.CTk):
         self.show_frame(history_frame)
 
     def _on_target_filter_change(self, selected_target: str) -> None:
-        if self.current_frame:
-            for child in self.current_frame.winfo_children():
-                if child.grid_info()['row'] == 2:
-                    self._refresh_history_table(child, selected_target)
-                    break
+        if self.history_table_container and self.history_table_container.winfo_exists():
+            self._refresh_history_table(self.history_table_container, selected_target)
 
     def handle_delete_selected(self) -> None:
         if not self.selected_history_scan_id:
@@ -968,6 +997,9 @@ class VulnSeekerApp(ctk.CTk):
             self.history_ai_button.configure(state="normal", fg_color=("#8b5cf6", "#7c3aed"))
         if hasattr(self, 'history_pdf_button') and self.history_pdf_button.winfo_exists():
             self.history_pdf_button.configure(state="normal", fg_color=("#10b981", "#047857"))
+        if self.view_results_button and self.view_results_button.winfo_exists():
+            self.view_results_button.configure(state="normal", fg_color=COLOR_ACCENT_BLUE, hover_color="#2b75cc",
+                                               text_color=COLOR_BG)
 
     def show_settings(self) -> None:
         self._select_nav_button("settings")
