@@ -11,3 +11,4 @@ tqdm>=4.66.0          # Barras de carga pro
 
 # --- Reportes ---
 jinja2>=3.1.2         # Para crear reportes HTML bonitos
+networkx>=3.1         # Grafo de arquitectura (TechVisualizer)

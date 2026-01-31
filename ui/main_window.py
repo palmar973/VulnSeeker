@@ -42,6 +42,7 @@ from modules.dummy_module import DummyScanner as DummyModule
 from modules.exposure_scanner import ExposureScanner
 from modules.email_harvester import EmailHarvester
 from modules.subdomain_takeover import SubdomainTakeover
+from modules.tech_visualizer import TechVisualizer
 # --------------------------------------
 
 plt.style.use('dark_background')
@@ -347,6 +348,12 @@ class VulnSeekerApp(ctk.CTk):
                                         fg_color=COLOR_ACCENT, hover_color="#00e67a",
                                         text_color=COLOR_BG)
         self.pdf_button.pack(side="left", padx=8, pady=4)
+
+        ctk.CTkButton(btns, text="🗺️ Mapa Arquitectura", height=50,
+                      font=ctk.CTkFont(size=15, weight="bold"),
+                      command=lambda: self.show_architecture_map(self.current_scan_id),
+                      corner_radius=8, fg_color=COLOR_ACCENT_BLUE, hover_color="#2b75cc",
+                      text_color=COLOR_BG).pack(side="left", padx=8, pady=4)
 
         self.show_frame(results_frame)
 
@@ -1106,6 +1113,32 @@ class VulnSeekerApp(ctk.CTk):
             self.show_message("✅ Configuración guardada.", "Éxito")
         except Exception as e:
             self.show_message(f"❌ Error al guardar: {e}", "Error")
+
+    def show_architecture_map(self, scan_id: Optional[int]) -> None:
+        if not scan_id:
+            self.show_message("ℹ️ Seleccione un scan primero.", "Info")
+            return
+        tech_str = self.db_manager.get_scan_technologies(scan_id)
+        tech_list = [t.strip() for t in tech_str.split(",")] if tech_str else []
+        sub_count = self.db_manager.get_subdomain_count(scan_id)
+        vulns = self.db_manager.get_vulnerabilities_by_scan(scan_id)
+        waf_vuln = next((v for v in vulns if getattr(v, "name", "").lower() == "waf detected"), None)
+        waf_name = ""
+        if waf_vuln:
+            desc = getattr(waf_vuln, "description", "") or ""
+            waf_name = desc.replace("Se detectó protección de Firewall Web:", "").strip() or ""
+        tv = TechVisualizer()
+        fig = tv.generate_map(tech_list, waf_name, sub_count)
+
+        win = ctk.CTkToplevel(self)
+        win.title("🗺️ Mapa de Reconocimiento")
+        win.geometry("820x600")
+        win.grab_set()
+        frame = ctk.CTkFrame(win, fg_color=COLOR_BG)
+        frame.pack(fill="both", expand=True, padx=12, pady=12)
+        canvas = FigureCanvasTkAgg(fig, master=frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill="both", expand=True)
 
 
 def main() -> None:
