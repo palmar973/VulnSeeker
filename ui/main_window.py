@@ -39,6 +39,7 @@ from reports.pdf_generator import PDFReportGenerator
 from modules.waf_detector import WAFDetector
 from modules.cms_auditor import CMSAuditor
 from modules.dummy_module import DummyScanner as DummyModule
+from modules.exposure_scanner import ExposureScanner
 # --------------------------------------
 
 plt.style.use('dark_background')
@@ -697,6 +698,7 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(PathFuzzer())
             engine.register_module(WAFDetector())
             engine.register_module(CMSAuditor())
+            engine.register_module(ExposureScanner())
             logger.info(
                 f"⚡ Motor de análisis iniciado (5 módulos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
             results = engine.scan(target_url, crawl=use_crawler)
