@@ -43,6 +43,7 @@ from modules.exposure_scanner import ExposureScanner
 from modules.email_harvester import EmailHarvester
 from modules.subdomain_takeover import SubdomainTakeover
 from modules.tech_visualizer import TechVisualizer
+from modules.lfi_scanner import LFIScanner
 # --------------------------------------
 
 plt.style.use('dark_background')
@@ -731,6 +732,7 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(ExposureScanner())
             engine.register_module(EmailHarvester())
             engine.register_module(SubdomainTakeover())
+            engine.register_module(LFIScanner())
             logger.info(
                 f"⚡ Motor de análisis iniciado (módulos activos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
             results = engine.scan(target_url, crawl=use_crawler)
@@ -1139,13 +1141,4 @@ class VulnSeekerApp(ctk.CTk):
         canvas = FigureCanvasTkAgg(fig, master=frame)
         canvas.draw()
         canvas.get_tk_widget().pack(fill="both", expand=True)
-
-
-def main() -> None:
-    app = VulnSeekerApp()
-    app.mainloop()
-
-
-if __name__ == "__main__":
-    main()
 
