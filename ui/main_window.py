@@ -2,7 +2,7 @@
 """
 VulnSeeker Enterprise - FASE 2: WEB APP PENTESTING & UI REPAIR.
 - FIX: Agregada función main() para arranque desde gui.py.
-- FEATURE: Integración de CookieScanner.
+- FEATURE: Integración de CookieScanner y RFIScanner.
 """
 
 import customtkinter as ctk
@@ -41,7 +41,8 @@ from modules.exposure_scanner import ExposureScanner
 from modules.email_harvester import EmailHarvester
 from modules.subdomain_takeover import SubdomainTakeover
 from modules.lfi_scanner import LFIScanner
-from modules.cookie_scanner import CookieScanner  # <--- NUEVO MÓDULO AGREGADO
+from modules.cookie_scanner import CookieScanner
+from modules.rfi_scanner import RFIScanner  # <--- NUEVO MÓDULO RFI AGREGADO
 
 # Módulos Visuales y de Reporte
 from modules.ai_analyst import GroqAIAnalyst
@@ -738,6 +739,7 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(SubdomainTakeover())
             engine.register_module(LFIScanner())
             engine.register_module(CookieScanner())  # <--- SE REGISTRÓ EL NUEVO ESCÁNER
+            engine.register_module(RFIScanner())  # <--- SE REGISTRÓ EL NUEVO ESCÁNER RFI
 
             logger.info(
                 f"⚡ Motor de análisis iniciado (módulos activos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
