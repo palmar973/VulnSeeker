@@ -1,8 +1,8 @@
 #!/usr/bin/env python3.14
 """
-VulnSeeker Enterprise - FASE 2: WEB APP PENTESTING & UI REPAIR.
+VulnSeeker Enterprise - FASE 3: COMMAND INJECTION & RFI INTEGRATION.
 - FIX: Agregada función main() para arranque desde gui.py.
-- FEATURE: Integración de CookieScanner y RFIScanner.
+- FEATURE: Integración de CookieScanner, RFIScanner y CommandInjectionScanner.
 """
 
 import customtkinter as ctk
@@ -42,7 +42,8 @@ from modules.email_harvester import EmailHarvester
 from modules.subdomain_takeover import SubdomainTakeover
 from modules.lfi_scanner import LFIScanner
 from modules.cookie_scanner import CookieScanner
-from modules.rfi_scanner import RFIScanner  # <--- NUEVO MÓDULO RFI AGREGADO
+from modules.rfi_scanner import RFIScanner            # <--- MÓDULO FASE 2
+from modules.cmd_injection import CommandInjectionScanner # <--- NUEVO MÓDULO FASE 3
 
 # Módulos Visuales y de Reporte
 from modules.ai_analyst import GroqAIAnalyst
@@ -738,8 +739,9 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(EmailHarvester())
             engine.register_module(SubdomainTakeover())
             engine.register_module(LFIScanner())
-            engine.register_module(CookieScanner())  # <--- SE REGISTRÓ EL NUEVO ESCÁNER
-            engine.register_module(RFIScanner())  # <--- SE REGISTRÓ EL NUEVO ESCÁNER RFI
+            engine.register_module(CookieScanner())
+            engine.register_module(RFIScanner())            # <--- MÓDULO FASE 2
+            engine.register_module(CommandInjectionScanner()) # <--- NUEVO MÓDULO FASE 3
 
             logger.info(
                 f"⚡ Motor de análisis iniciado (módulos activos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
