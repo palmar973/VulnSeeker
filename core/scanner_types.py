@@ -42,3 +42,13 @@ class Vulnerability:
     description: str
     target_url: str
     evidence: Optional[str] = None
+    payload: Optional[str] = None # Agregado para compatibilidad con reportes que buscan 'payload'
+
+# --- AGREGADO PARA SOPORTE DE NUEVOS MÓDULOS ---
+class ScannerModule:
+    """
+    Clase base (Interfaz) para todos los módulos de escaneo.
+    El motor verifica que los módulos hereden de esta clase.
+    """
+    def run(self, target: Target) -> List[Vulnerability]:
+        raise NotImplementedError("Cada módulo debe implementar el método run()")

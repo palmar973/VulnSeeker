@@ -6,8 +6,8 @@ Descubre .env, .git, backups SQL, paneles admin ocultos, etc.
 
 import requests
 from typing import List
-from core.models import Vulnerability, Severity
-from core.interfaces import ScannerModule
+from core.scanner_types import ScannerModule, Target, Vulnerability
+from core.models import Severity
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 from urllib.parse import urljoin
@@ -70,7 +70,7 @@ class PathFuzzer(ScannerModule):
         except:
             return False, ""
 
-    def run(self, target: 'Target') -> List[Vulnerability]:
+    def run(self, target: Target) -> List[Vulnerability]:
         """Ejecuta fuzzing paralelo de paths críticos."""
         vulnerabilities: List[Vulnerability] = []
         base_url = str(target.url)

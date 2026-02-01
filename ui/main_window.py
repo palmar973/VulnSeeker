@@ -1,8 +1,8 @@
 #!/usr/bin/env python3.14
 """
-VulnSeeker Enterprise - FASE 20: GOLD MASTER UI (FINAL REPAIRED).
-- FIX CRÍTICO: Reintegración de métodos PDF faltantes/mal indentados.
-- FIX UI: Gráfico de barras ajustado + Layout optimizado + Paneles Compactos.
+VulnSeeker Enterprise - FASE 2: WEB APP PENTESTING & UI REPAIR.
+- FIX: Agregada función main() para arranque desde gui.py.
+- FEATURE: Integración de CookieScanner.
 """
 
 import customtkinter as ctk
@@ -28,22 +28,26 @@ import matplotlib.pyplot as plt
 from core.db_manager import DatabaseManager
 from core.engine import VulnSeekerEngine
 from core.config import GlobalConfig
+
+# Módulos de Escaneo
 from modules.sqli_module import SQLInjectionScanner
 from modules.xss_module import XSSScanner
 from modules.header_analyzer import HeaderAnalyzer
 from modules.port_scanner import PortScanner
 from modules.path_fuzzer import PathFuzzer
-from modules.ai_analyst import GroqAIAnalyst
-from reports.report_generator import ReportGenerator
-from reports.pdf_generator import PDFReportGenerator
 from modules.waf_detector import WAFDetector
 from modules.cms_auditor import CMSAuditor
-from modules.dummy_module import DummyScanner as DummyModule
 from modules.exposure_scanner import ExposureScanner
 from modules.email_harvester import EmailHarvester
 from modules.subdomain_takeover import SubdomainTakeover
-from modules.tech_visualizer import TechVisualizer
 from modules.lfi_scanner import LFIScanner
+from modules.cookie_scanner import CookieScanner  # <--- NUEVO MÓDULO AGREGADO
+
+# Módulos Visuales y de Reporte
+from modules.ai_analyst import GroqAIAnalyst
+from reports.report_generator import ReportGenerator
+from reports.pdf_generator import PDFReportGenerator
+from modules.tech_visualizer import TechVisualizer
 # --------------------------------------
 
 plt.style.use('dark_background')
@@ -242,7 +246,7 @@ class VulnSeekerApp(ctk.CTk):
         self._create_metric_card(kpi_frame, 1, "🚨", "Críticas/Alta", scan_stats["critical_high"], COLOR_DANGER)
         self._create_metric_card(kpi_frame, 2, "🌐", "Subdominios", subdomain_count, accent_blue)
 
-        # 3. INFO PANELS (CORREGIDO: pack_propagate)
+        # 3. INFO PANELS
         info_row = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
         info_row.grid(row=2, column=0, padx=20, pady=(0, 15), sticky="ew")
         info_row.grid_columnconfigure((0, 1, 2), weight=1)
@@ -733,6 +737,8 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(EmailHarvester())
             engine.register_module(SubdomainTakeover())
             engine.register_module(LFIScanner())
+            engine.register_module(CookieScanner())  # <--- SE REGISTRÓ EL NUEVO ESCÁNER
+
             logger.info(
                 f"⚡ Motor de análisis iniciado (módulos activos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
             results = engine.scan(target_url, crawl=use_crawler)
@@ -1142,3 +1148,10 @@ class VulnSeekerApp(ctk.CTk):
         canvas.draw()
         canvas.get_tk_widget().pack(fill="both", expand=True)
 
+# --- PUNTO DE ENTRADA (ESTO FALTABA) ---
+def main():
+    app = VulnSeekerApp()
+    app.mainloop()
+
+if __name__ == "__main__":
+    main()

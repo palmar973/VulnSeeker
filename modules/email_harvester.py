@@ -5,9 +5,8 @@ from urllib.parse import urljoin
 
 import requests
 
-from core.interfaces import ScannerModule
-from core.scanner_types import Target
-from core.models import Vulnerability, Severity
+from core.scanner_types import ScannerModule, Target, Vulnerability
+from core.models import Severity
 
 logger = logging.getLogger("VulnSeeker")
 

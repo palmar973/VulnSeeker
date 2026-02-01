@@ -3,8 +3,8 @@ import requests
 import urllib.parse
 import logging
 from typing import List
-from core.interfaces import ScannerModule
-from core.models import Vulnerability, Severity
+from core.scanner_types import ScannerModule, Target, Vulnerability
+from core.models import Severity
 
 # Configurar logger
 logger = logging.getLogger("VulnSeeker")
@@ -19,7 +19,7 @@ class SubdomainTakeover(ScannerModule):
     def description(self) -> str:
         return "Detecta subdominios que apuntan a servicios de terceros no reclamados (S3, GitHub Pages, etc.)."
 
-    def run(self, target: 'Target') -> List[Vulnerability]:
+    def run(self, target: Target) -> List[Vulnerability]:
         vulns: List[Vulnerability] = []
 
         # Diccionario de firmas (Fingerprints)

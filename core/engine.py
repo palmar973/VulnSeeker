@@ -3,8 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List
 # FIX: Agregado el import que faltaba
 from urllib.parse import urlparse
-from core.interfaces import ScannerModule
-from core.scanner_types import Target, Vulnerability, PageElement
+from core.scanner_types import Target, Vulnerability, PageElement, ScannerModule
 from core.crawler import WebCrawler
 from core.config import GlobalConfig
 from core.fingerprinter import TechFingerprinter
