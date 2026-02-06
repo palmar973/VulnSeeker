@@ -18,10 +18,8 @@ class DummyScanner(ScannerModule):
 
     def run(self, target: Target) -> list[Vulnerability]:
         logging.info(f"🔍 DEBUG CONTEXT: {target.context}")
-        # Hago como que pienso...
         print(f"    [Dummy] Fingiendo que analizo {target.url} intensamente...")
 
-        # Me invento una vulnerabilidad para ver si el reporte la agarra.
         vuln = Vulnerability(
             name="Vulnerabilidad de Mentira",
             severity=Severity.INFO,
@@ -30,5 +28,4 @@ class DummyScanner(ScannerModule):
             evidence="<script>alert('Test')</script>"
         )
 
-        # Devuelvo una lista porque así lo exige el contrato (type hint list[Vulnerability]).
         return [vuln]

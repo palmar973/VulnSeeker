@@ -32,7 +32,7 @@ Sé específico con números. Usa lenguaje de directiva (ROI, multas GDPR, reput
 
     def __init__(self):
         self.model = "llama-3.3-70b-versatile"
-        # Mapeo para convertir Enums a Enteros y poder comparar
+        # Mapeo para convertir Enums a enteros y poder comparar
         self.SEVERITY_WEIGHTS = {
             Severity.INFO: 0,
             Severity.LOW: 1,
@@ -58,19 +58,18 @@ Sé específico con números. Usa lenguaje de directiva (ROI, multas GDPR, reput
         critical_keywords = [".env", ".git", "backup.sql", "config.php", "admin/", "shadow"]
 
         for vuln in vulnerabilities:
-            # 1. Severidad (Nombre para el reporte)
+            # Severidad para el reporte
             sev_name = vuln.severity.name if hasattr(vuln.severity, 'name') else str(vuln.severity)
             stats["by_severity"][sev_name] = stats["by_severity"].get(sev_name, 0) + 1
 
-            # 2. Módulo
+            # Módulo origen
             module_name = vuln.name.split(":")[0] if ":" in vuln.name else "Unknown"
             stats["by_module"][module_name] = stats["by_module"].get(module_name, 0) + 1
 
-            # 3. Comparación numérica segura (FIX PRINCIPAL)
+            # Comparación numérica segura (FIX PRINCIPAL)
             # Convertimos el Enum a entero usando el diccionario
             vuln_weight = self.SEVERITY_WEIGHTS.get(vuln.severity, 0)
 
-            # Ahora sí podemos comparar con >= 3
             if vuln_weight >= 3:  # HIGH o CRITICAL
                 # Buscar archivos sensibles
                 if any(keyword in vuln.name.lower() for keyword in critical_keywords):
@@ -95,17 +94,17 @@ Sé específico con números. Usa lenguaje de directiva (ROI, multas GDPR, reput
         """
         Genera informe ejecutivo con Llama 3.3 70B.
         """
-        # Inicializar stats vacío por si falla la generación (Evita UnboundLocalError)
+        # Stats vacío por si falla la generación (evita UnboundLocalError)
         stats = {"total": 0, "risk_score": 0, "by_severity": {}}
 
         try:
-            # 1. Generar resumen estadístico
+            # Generar resumen estadístico
             stats = self._generate_stats_summary(vulnerabilities)
 
-            # 2. Construir prompt
+            # Construir prompt
             summary_text = self._build_summary_prompt(stats, target_url)
 
-            # 3. Llamada a Groq
+            # Llamada a Groq
             client = Groq(api_key=api_key)
 
             chat_completion = client.chat.completions.create(
@@ -129,13 +128,13 @@ Sé específico con números. Usa lenguaje de directiva (ROI, multas GDPR, reput
 
             # Fallback seguro
             return f"""
-**ERROR DE CONEXIÓN CON IA**
-{str(e)}
+ **ERROR DE CONEXIÓN CON IA**
+ {str(e)}
 
-**RESUMEN TÉCNICO DE CONTINGENCIA:**
-- Objetivo: {target_url}
-- Total Hallazgos: {stats.get('total', 'N/A')}
-- Puntuación de Riesgo: {stats.get('risk_score', 0)}/100
+ **RESUMEN TÉCNICO DE CONTINGENCIA:**
+ - Objetivo: {target_url}
+ - Total Hallazgos: {stats.get('total', 'N/A')}
+ - Puntuación de Riesgo: {stats.get('risk_score', 0)}/100
 
 Verifique su conexión a Internet y que la API Key de Groq sea válida.
             """

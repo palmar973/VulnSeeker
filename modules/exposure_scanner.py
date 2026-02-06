@@ -50,10 +50,9 @@ class ExposureScanner(ScannerModule):
                 content = resp.text or ""
                 if not content.strip():
                     continue
-                # Filtro anti falsos positivos: si no buscamos HTML pero la respuesta es HTML, saltar
+                # Evita falsos 200 cuando solo devuelven HTML genérico
                 lowered = content.lower()
                 if "<!doctype html" in lowered or "<html" in lowered:
-                    # Evitar error 200 con página de error
                     continue
 
                 sev = Severity.MEDIUM

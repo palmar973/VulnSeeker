@@ -3,7 +3,6 @@ import argparse
 import urllib3
 import logging
 
-# Desactivamos advertencias de SSL para pruebas en entornos locales
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from core.engine import VulnSeekerEngine
@@ -13,7 +12,6 @@ from reports.report_generator import ReportGenerator
 from core.config import GlobalConfig
 from core.db_manager import DatabaseManager
 
-# Configuración de logging visual
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger("VulnSeeker")
 
@@ -40,25 +38,20 @@ def main() -> None:
     print(f" Threads: {GlobalConfig.MAX_THREADS}")
     print("=" * 70 + "\n")
 
-    # 1. Inicialización
     engine = VulnSeekerEngine()
 
-    # 2. Carga del Arsenal (Usando las clases correctas)
     engine.register_module(SQLInjectionScanner())
     engine.register_module(XSSScanner())
 
     try:
-        # 3. Ejecución (Multithreading)
         print(f"[*] Iniciando motor de análisis...")
         results = engine.scan(target_url, crawl=use_crawler)
 
-        # 4. Reporte en Consola
         print("\n" + "=" * 70)
         print(f" RESUMEN DE EJECUCIÓN: {len(results)} hallazgos totales")
         print("=" * 70)
 
         if results:
-            # Mostrar resumen breve en consola
             severity_counts = {}
             for v in results:
                 print(f"[{v.severity.value}] {v.name} -> {v.target_url}")
@@ -69,14 +62,10 @@ def main() -> None:
             for sev, count in severity_counts.items():
                 print(f"  {sev}: {count}")
 
-            # 5. Persistencia Dual
-
-            # A) JSON (Usando tu ReportGenerator existente)
             reporter = ReportGenerator(output_dir=GlobalConfig.REPORTS_DIR)
             json_path = reporter.export_json(results, target_url)
             print(f"\n[+] Reporte JSON guardado en:\n    {json_path}")
 
-            # B) SQLite (La nueva integración)
             print("[*] Guardando en Base de Datos Histórica...")
             db = DatabaseManager()
             scan_id = db.save_scan_results(target_url, results)

@@ -14,7 +14,7 @@ class TechVisualizer:
         """
         G = nx.DiGraph()
 
-        # 1. Definir Nodos (Sin emojis)
+        # Nodos base sin emojis
         user_node = "USER (Client)"
         internet_node = "INTERNET"
 
@@ -24,21 +24,21 @@ class TechVisualizer:
 
         current_source = internet_node
 
-        # 2. Capa WAF
+        # Capa WAF
         if waf_name and waf_name.lower() != "none" and waf_name.lower() != "unknown":
             waf_node = f"WAF: {waf_name}"
             G.add_node(waf_node, type='waf')
             G.add_edge(current_source, waf_node)
             current_source = waf_node
 
-        # 3. Capa Frontend / Subdominios
+        # Capa Frontend / Subdominios
         if subdomains_count > 0:
             dns_node = f"DNS / SUBS ({subdomains_count})"
             G.add_node(dns_node, type='infra')
             G.add_edge(current_source, dns_node)
             current_source = dns_node
 
-        # 4. Capa Web Server (Nginx, Apache...)
+        # Capa Web Server (Nginx, Apache...)
         server_found = False
         for tech in tech_list:
             if tech.lower() in ['nginx', 'apache', 'iis', 'litespeed', 'cloudflare']:
@@ -55,7 +55,7 @@ class TechVisualizer:
             G.add_edge(current_source, server_node)
             current_source = server_node
 
-        # 5. Capa Aplicación (CMS / Lenguaje)
+        # Capa Aplicación (CMS / Lenguaje)
         app_node_name = "APP / CMS"
         # Buscamos algo relevante para nombrar el nodo
         relevant_apps = [t for t in tech_list if t.lower() not in ['nginx', 'apache', 'iis', 'cloudflare']]
@@ -65,7 +65,7 @@ class TechVisualizer:
         G.add_node(app_node_name, type='app')
         G.add_edge(current_source, app_node_name)
 
-        # 6. Capa Base de Datos (Inferida)
+        # Capa Base de Datos (Inferida)
         db_node = "DATABASE (?)"
         tech_str = " ".join(tech_list).lower()
 
@@ -81,9 +81,7 @@ class TechVisualizer:
         G.add_node(db_node, type='db')
         G.add_edge(app_node_name, db_node)
 
-        # --- DIBUJADO DEL GRÁFICO ---
-
-        # Crear Figura de Matplotlib (Sin usar pyplot global para evitar conflictos)
+        # Crear Figura sin usar pyplot global para evitar conflictos
         fig = Figure(figsize=(10, 8), facecolor='#0D1117')  # Fondo oscuro UI
         ax = fig.add_subplot(111)
         ax.set_facecolor('#0D1117')
@@ -108,7 +106,7 @@ class TechVisualizer:
             elif n_type == 'server':
                 color = '#1f6feb'  # Azul Servidor
             elif n_type == 'app':
-                color = '#238636'  # VERDE OSCURO (Readable) <--- CAMBIO AQUÍ
+                color = '#238636'  # Verde oscuro legible
             elif n_type == 'db':
                 color = '#d29922'  # Naranja DB
             elif n_type == 'infra':

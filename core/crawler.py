@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 from typing import Set, List, Dict, Optional
 from core.scanner_types import PageElement
 
-# Uso el logger del módulo para trazabilidad.
 logger = logging.getLogger(__name__)
 
 
@@ -21,11 +20,7 @@ class WebCrawler:
         self.base_domain: str = urlparse(start_url).netloc
         self.max_pages: int = max_pages
 
-        # Uso un set para URLs porque la búsqueda aquí es instantánea.
-        # No quiero procesar la página de 'contacto' 500 veces.
         self.visited_urls: Set[str] = set()
-
-        # Aquí guardo todo lo 'atacable' encontrado.
         self.discovered_elements: List[PageElement] = []
 
     def start(self) -> List[PageElement]:
@@ -43,7 +38,6 @@ class WebCrawler:
             if current_url in self.visited_urls:
                 continue
 
-            # Registro esta URL para no volver a entrar en bucle.
             self.visited_urls.add(current_url)
 
             try:
@@ -51,7 +45,6 @@ class WebCrawler:
                 if not html_content:
                     continue
 
-                # Extraigo la estructura de ataque de la página actual.
                 new_links = self._parse_structure(current_url, html_content)
 
                 for link in new_links:
@@ -59,7 +52,6 @@ class WebCrawler:
                         queue.append(link)
 
             except Exception as e:
-                # Me guardo el error en el log pero sigo, un 404 no debe tirar la tesis.
                 logger.error(f"Fallo en navegación sobre {current_url}: {e}")
 
         logger.info(f"Reconocimiento completo. {len(self.discovered_elements)} puntos de ataque mapeados.")
@@ -69,14 +61,13 @@ class WebCrawler:
         """
         Descargador con modales. Intenta obtener el HTML de la página.
         """
-        # Aquí decido usar un User-Agent fijo, luego podríamos rotarlo.
+        # User-Agent fijo para evitar bloqueos básicos
         headers: Dict[str, str] = {'User-Agent': 'VulnSeeker/1.0 (Academic Project)'}
         try:
             response = requests.get(url, headers=headers, timeout=5)
             if "text/html" in response.headers.get("Content-Type", ""):
                 return response.text
         except requests.RequestException:
-            # Si el servidor no responde, me callo y sigo.
             pass
         return None
 
@@ -87,11 +78,9 @@ class WebCrawler:
         soup = BeautifulSoup(html, "html.parser")
         found_links: List[str] = []
 
-        # 1. Búsqueda de enlaces (GET points)
         for a_tag in soup.find_all("a", href=True):
             full_url = urljoin(url, a_tag["href"]).split("#")[0]
             if self._is_in_scope(full_url):
-                # Extraigo parámetros si los tiene (ej: ?id=1)
                 parsed_query = urlparse(full_url).query
                 params = {k: v[0] for k, v in parse_qs(parsed_query).items()}
 
@@ -102,20 +91,16 @@ class WebCrawler:
                 ))
                 found_links.append(full_url)
 
-        # 2. Búsqueda de formularios (POST/GET points)
-        # Esto es vital porque aquí es donde suelen vivir el SQLi y XSS real.
         for form in soup.find_all("form"):
             action = form.get("action")
             method = form.get("method", "get").upper()
             form_url = urljoin(url, action)
 
             if self._is_in_scope(form_url):
-                # Mapeo los inputs para que el motor sepa qué 'veneno' meter en cada uno.
                 inputs: Dict[str, str] = {}
                 for input_tag in form.find_all(["input", "textarea"]):
                     name = input_tag.get("name")
                     if name:
-                        # Guardo un valor vacío, el motor se encargará de fuzzerar.
                         inputs[name] = input_tag.get("value", "")
 
                 self.discovered_elements.append(PageElement(
@@ -132,5 +117,4 @@ class WebCrawler:
         Filtro de seguridad para no terminar atacando dominios externos.
         """
         parsed = urlparse(url)
-        # Me aseguro de que el dominio sea el mismo y sea web (http/s).
         return parsed.netloc == self.base_domain and parsed.scheme in ["http", "https"]

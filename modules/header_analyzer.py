@@ -6,14 +6,12 @@ Detecta ausencia de headers críticos (X-Frame-Options, CSP, HSTS, etc).
 
 import requests
 from typing import List
-# --- CORRECCIÓN DE IMPORTS PARA COMPATIBILIDAD ---
 from core.scanner_types import ScannerModule, Vulnerability, Target, Severity
 
 
 class HeaderAnalyzer(ScannerModule):
     """Analizador de cabeceras de seguridad HTTP."""
 
-    # Estas propiedades no son obligatorias en la nueva interfaz, pero está bien dejarlas
     @property
     def name(self) -> str:
         return "Header Security Audit"
@@ -27,8 +25,7 @@ class HeaderAnalyzer(ScannerModule):
         vulnerabilities: List[Vulnerability] = []
 
         try:
-            # HEAD request ligero (no descarga contenido)
-            # verify=False es necesario para entornos de prueba locales
+            # verify=False es necesario en entornos de prueba locales
             response = requests.head(
                 target.url,
                 timeout=10,
@@ -38,7 +35,6 @@ class HeaderAnalyzer(ScannerModule):
 
             headers = {k.lower(): v for k, v in response.headers.items()}
 
-            # 1. X-Frame-Options (Clickjacking) → LOW
             if 'x-frame-options' not in headers:
                 vulnerabilities.append(Vulnerability(
                     name="Missing X-Frame-Options",
@@ -49,7 +45,6 @@ class HeaderAnalyzer(ScannerModule):
                     payload="Recomendado: X-Frame-Options: DENY"
                 ))
 
-            # 2. Content-Security-Policy (XSS) → MEDIUM
             if 'content-security-policy' not in headers:
                 vulnerabilities.append(Vulnerability(
                     name="Missing Content-Security-Policy",
@@ -60,7 +55,6 @@ class HeaderAnalyzer(ScannerModule):
                     payload="Recomendado: Content-Security-Policy: default-src 'self'"
                 ))
 
-            # 3. Strict-Transport-Security (HSTS) → LOW
             if 'strict-transport-security' not in headers:
                 vulnerabilities.append(Vulnerability(
                     name="Missing HSTS",
@@ -71,7 +65,6 @@ class HeaderAnalyzer(ScannerModule):
                     payload="Recomendado: Strict-Transport-Security: max-age=31536000"
                 ))
 
-            # 4. X-Content-Type-Options (MIME Sniffing) → LOW
             if 'x-content-type-options' not in headers:
                 vulnerabilities.append(Vulnerability(
                     name="Missing X-Content-Type-Options",
@@ -82,8 +75,7 @@ class HeaderAnalyzer(ScannerModule):
                     payload="Recomendado: X-Content-Type-Options: nosniff"
                 ))
 
-        except requests.RequestException as e:
-            # Network error → no vuln, solo log
+        except requests.RequestException:
             pass
 
         return vulnerabilities

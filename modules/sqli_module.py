@@ -3,7 +3,6 @@ import requests
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from core.scanner_types import ScannerModule, Target, Vulnerability, Severity
 
-# Logger específico para este módulo
 logger = logging.getLogger(__name__)
 
 
@@ -22,12 +21,9 @@ class SQLInjectionScanner(ScannerModule):
         return "Detecta vulnerabilidades SQLi inyectando caracteres especiales y buscando errores de BD."
 
     def run(self, target: Target) -> list[Vulnerability]:
-        """
-        Analiza la URL en busca de parámetros GET e intenta inyectar payloads.
-        """
+        """Analiza parámetros GET e intenta disparar errores SQL visibles."""
         vulnerabilities: list[Vulnerability] = []
 
-        # 1. Analizo si la URL tiene parámetros. Si es estática, no pierdo tiempo.
         parsed_url = urlparse(target.url)
         query_params = parse_qs(parsed_url.query)
 
@@ -37,12 +33,10 @@ class SQLInjectionScanner(ScannerModule):
 
         logger.info(f"Analizando parámetros en: {target.url}")
 
-        # Lista de 'venenos' para ver si la base de datos se queja.
-        # Para la tesis, usamos payloads clásicos que provocan errores de sintaxis.
+        # Payloads clásicos para forzar errores de sintaxis visibles
         payloads: list[str] = ["'", '"', "';", "--", "' OR '1'='1"]
 
-        # Firmas de error comunes en Motores de Base de Datos.
-        # Si encuentro esto en el HTML, es BINGO.
+        # Firmas de error comunes de motores SQL
         error_signatures: list[str] = [
             "You have an error in your SQL syntax",
             "Warning: mysql_",
@@ -51,20 +45,12 @@ class SQLInjectionScanner(ScannerModule):
             "PostgreSQL query failed"
         ]
 
-        # 2. Itero sobre cada parámetro (ej: id=1, cat=book)
         for param_name in query_params.keys():
-            # Guardo el valor original para restaurarlo después.
-            original_values = query_params[param_name]  # Esto es una lista
+            original_values = query_params[param_name]
 
             for payload in payloads:
-                # Construyo la URL maliciosa.
-                # Copio los params para no modificar el diccionario original del bucle.
                 fuzzed_params = query_params.copy()
-
-                # Inyecto el payload en el primer valor del parámetro.
                 fuzzed_params[param_name] = [original_values[0] + payload]
-
-                # Reconstruyo la URL completa con el veneno.
                 new_query = urlencode(fuzzed_params, doseq=True)
                 malicious_url = urlunparse((
                     parsed_url.scheme,
@@ -75,16 +61,12 @@ class SQLInjectionScanner(ScannerModule):
                     parsed_url.fragment
                 ))
 
-                # 3. Disparo la petición
                 try:
-                    # Uso los headers del target si existen, o unos default.
                     headers = target.headers or {'User-Agent': 'VulnSeeker/1.0'}
                     response = requests.get(malicious_url, headers=headers, timeout=5)
 
-                    # 4. Análisis de la respuesta (Pattern Matching)
                     for error in error_signatures:
                         if error in response.text:
-                            # ¡Encontré algo!
                             logger.warning(f"  [!!!] Posible SQLi en parámetro '{param_name}' con payload: {payload}")
 
                             vuln = Vulnerability(
@@ -96,14 +78,11 @@ class SQLInjectionScanner(ScannerModule):
                             )
                             vulnerabilities.append(vuln)
 
-                            # Si ya encontré que este parámetro es vulnerable,
-                            # rompo el ciclo de payloads para no reportar lo mismo 5 veces.
+                            # Evito reportar el mismo parámetro varias veces
                             break
 
                 except requests.RequestException as e:
                     logger.debug(f"Error de conexión probando payload: {e}")
 
-            # Si encontré vulnerabilidad en este parámetro, paso al siguiente parámetro (opcional, decisión de diseño).
-            # Por ahora dejo que siga probando otros parámetros.
 
         return vulnerabilities

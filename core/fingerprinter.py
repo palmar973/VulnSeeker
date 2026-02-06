@@ -18,7 +18,7 @@ class TechFingerprinter:
     """Detective tecnológico: Server -> Lenguaje -> CMS/Framework."""
 
     def __init__(self) -> None:
-        # Patrones de detección (Firmas digitales)
+        # Patrones de detección (firmas digitales)
         self.server_patterns = {
             'nginx': r'(nginx/?[\d.]+|\bnnginx\b)',
             'apache': r'(apache|httpd)',
@@ -63,7 +63,7 @@ class TechFingerprinter:
             ]
         }
 
-        # Rutas comunes para "adivinar" si no hay headers claros
+        # Rutas comunes para adivinar cuando los headers no hablan
         self.common_paths = [
             '/wp-admin/', '/administrator/', '/sites/', '/themes/', '/modules/'
         ]
@@ -89,7 +89,7 @@ class TechFingerprinter:
             html_fingerprint = self._analyze_html(html)
             fingerprint['cms_framework'].extend(html_fingerprint)
 
-            # 3. Paths predictivos (solo si la confianza es baja)
+            # Paths predictivos solo si la confianza es baja
             if not fingerprint['cms_framework']:
                 path_fingerprint = self._analyze_paths(target_url)
                 fingerprint['cms_framework'].extend(path_fingerprint)
@@ -157,9 +157,10 @@ class TechFingerprinter:
                 test_url = urljoin(target_url, path)
                 resp = requests.head(test_url, timeout=3, allow_redirects=True, verify=False)
                 if resp.status_code == 200:
-                    # Deducción basada en ruta
+                    # Inferencia rápida por ruta
                     if "wp-" in path: detected.append("WordPress")
                     if "administrator" in path: detected.append("Joomla")
         except:
             pass
         return detected
+

@@ -26,7 +26,7 @@ class DatabaseManager:
 
     def __init__(self) -> None:
         if not self._initialized:
-            # FIX: usar ruta absoluta para evitar fallos si cambia el CWD
+            # Ruta absoluta para no depender del CWD
             base_dir = Path(__file__).resolve().parent.parent  # core/ -> raíz del proyecto
             self.db_path = (base_dir / GlobalConfig.REPORTS_DIR / "vulns.db").resolve()
             self.db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -39,7 +39,7 @@ class DatabaseManager:
         with sqlite3.connect(self.db_path) as conn:
             conn.execute("PRAGMA foreign_keys = ON")
 
-            # Tabla SCANS (con technologies de Fase 19)
+            # Tabla scans con columna de tech (Fase 19)
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS scans (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,7 +50,7 @@ class DatabaseManager:
                 )
             """)
 
-            # 🆕 FASE 20: Tabla SUBDOMAINS
+            # Tabla de subdominios (Fase 20)
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS subdomains (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,7 +61,7 @@ class DatabaseManager:
                 )
             """)
 
-            # Tabla VULNERABILITIES
+            # Vulnerabilidades asociadas a cada scan
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS vulnerabilities (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -75,7 +75,7 @@ class DatabaseManager:
                 )
             """)
 
-            # Tabla SETTINGS
+            # KV de configuración
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS settings (
                     key TEXT PRIMARY KEY,
@@ -83,7 +83,7 @@ class DatabaseManager:
                 )
             """)
 
-            # Migraciones automáticas seguras
+            # Migración idempotente
             try:
                 conn.execute("ALTER TABLE scans ADD COLUMN technologies TEXT DEFAULT 'Unknown'")
             except sqlite3.OperationalError:
@@ -92,7 +92,7 @@ class DatabaseManager:
             conn.commit()
             logger.info("🗄️ DB inicializada/migrada correctamente.")
 
-    # 🆕 FASE 20: MÉTODOS SUBDOMAINS
+    # Fase 20: subdominios
     def save_subdomains(self, scan_id: int, subdomains: List[str]) -> None:
         """Guarda subdominios encontrados vinculados al scan."""
         try:
@@ -178,7 +178,6 @@ class DatabaseManager:
             logger.error(f"❌ Error CRÍTICO guardando en DB: {e}")
             raise
 
-    # Métodos existentes (sin cambios)
     def get_scan_technologies(self, scan_id: int) -> str:
         try:
             with sqlite3.connect(self.db_path) as conn:

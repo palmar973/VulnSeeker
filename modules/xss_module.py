@@ -34,15 +34,12 @@ class XSSScanner(ScannerModule):
 
         logger.info(f"Analizando XSS en: {target.url}")
 
-        # Payload "Canario". Usamos algo único que sea fácil de buscar en la respuesta.
-        # Si el servidor devuelve esto tal cual, es vulnerable.
+        # Payload canario fácil de rastrear
         xss_payload: str = "<VulnSeekerXSS>"
 
-        # Itero sobre cada parámetro
         for param_name in query_params.keys():
             original_values = query_params[param_name]
 
-            # Construyo la URL maliciosa
             fuzzed_params = query_params.copy()
             fuzzed_params[param_name] = [xss_payload]
 
@@ -58,13 +55,9 @@ class XSSScanner(ScannerModule):
 
             try:
                 headers = target.headers or {'User-Agent': 'VulnSeeker/1.0'}
-                # Para XSS reflejado, basta con ver el body de la respuesta.
                 response = requests.get(malicious_url, headers=headers, timeout=5)
 
-                # ANÁLISIS CRÍTICO:
-                # Verificamos si nuestro payload volvió intacto.
-                # Si el servidor sanitizara bien, devolvería "&lt;VulnSeekerXSS&gt;" (HTML Entities).
-                # Si devuelve "<VulnSeekerXSS>", ejecutó nuestro HTML.
+                # Si sanitiza, debería volver escapado; si regresa intacto es reflejado.
                 if xss_payload in response.text:
                     logger.warning(f"  [!!!] XSS Reflejado detectado en parámetro '{param_name}'")
 

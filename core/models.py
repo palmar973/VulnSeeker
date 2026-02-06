@@ -1,7 +1,5 @@
-"""
-core/models.py - Definición de estructuras de datos.
-Este archivo evita dependencias circulares entre Interfaces y DB.
-"""
+"""Estructuras base; separa tipos comunes para evitar dependencias circulares."""
+
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional

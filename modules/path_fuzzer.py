@@ -16,9 +16,8 @@ from urllib.parse import urljoin
 class PathFuzzer(ScannerModule):
     """Descubridor activo de paths sensibles expuestos."""
 
-    # Diccionario maestro de paths críticos
     CRITICAL_PATHS = {
-        # 🔥 CRITICAL (4) - Secretos absolutos
+        # Secretos absolutos
         ".env": Severity.CRITICAL,
         ".env.bak": Severity.CRITICAL,
         ".env.production": Severity.CRITICAL,
@@ -32,7 +31,7 @@ class PathFuzzer(ScannerModule):
         "config.php.bak": Severity.CRITICAL,
         "wp-config.php.bak": Severity.CRITICAL,
 
-        # ⚠️ HIGH (3) - Configs sensibles y admin panels
+        # Configs sensibles y paneles admin
         "web.config": Severity.HIGH,
         "Dockerfile": Severity.HIGH,
         "admin/": Severity.HIGH,
@@ -43,7 +42,7 @@ class PathFuzzer(ScannerModule):
         "config.json": Severity.HIGH,
         ".DS_Store": Severity.HIGH,
 
-        # 🔍 INFO - Menos críticos pero interesantes
+        # Menos críticos pero interesantes
         "robots.txt": Severity.INFO,
         "sitemap.xml": Severity.INFO,
     }
@@ -75,15 +74,15 @@ class PathFuzzer(ScannerModule):
         vulnerabilities: List[Vulnerability] = []
         base_url = str(target.url)
 
-        logger = None  # Para evitar dependencias circulares
+        logger = None  # Evita dependencias circulares
 
         def log_if_debug(msg: str):
-            # Aquí implementé logging silencioso para no romper el engine
+            # Logging silencioso para no romper el engine
             pass
 
         log_if_debug(f"🕵️‍♂️ Fuzzing {len(self.CRITICAL_PATHS)} paths críticos...")
 
-        # Fuzzing paralelo (max 8 threads para velocidad + estabilidad)
+        # Fuzzing paralelo (max 8 threads por balance velocidad/estabilidad)
         with ThreadPoolExecutor(max_workers=8) as executor:
             # Submit todos los paths
             future_to_path = {
@@ -112,7 +111,6 @@ class PathFuzzer(ScannerModule):
                         log_if_debug(f"✅ CRÍTICO: {path} → {full_url}")
 
                 except Exception:
-                    # Timeout/error → no vuln
                     pass
 
         log_if_debug(f"🎯 PathFuzzer completado: {len(vulnerabilities)} secretos encontrados")

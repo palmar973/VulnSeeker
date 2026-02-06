@@ -33,7 +33,6 @@ class SubdomainScanner:
         logger.info(f"🌐 Iniciando OSINT para: {domain}")
         found_subdomains = set()
 
-        # 1. INTENTO PRIMARIO: crt.sh
         try:
             logger.info("   👉 Consultando fuente primaria (crt.sh)...")
             url = f"https://crt.sh/?q=%.{domain}&output=json"
@@ -52,7 +51,6 @@ class SubdomainScanner:
         except Exception as e:
             logger.error(f"Error en crt.sh: {e}")
 
-        # 2. INTENTO SECUNDARIO: HackerTarget (Si el primero trajo poco)
         if len(found_subdomains) < 2:
             try:
                 logger.info("   👉 Consultando fuente de respaldo (HackerTarget)...")
@@ -74,7 +72,6 @@ class SubdomainScanner:
             logger.info("📭 No se encontraron subdominios en ninguna fuente.")
             return []
 
-        # 3. VALIDACIÓN ACTIVA
         candidates = list(found_subdomains)
         logger.info(f"🔍 Validando {len(candidates)} candidatos...")
         return self._validate_live_subdomains(candidates)

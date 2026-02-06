@@ -22,8 +22,7 @@ class RFIScanner(ScannerModule):
     def run(self, target: Target) -> list[Vulnerability]:
         vulns = []
 
-        # Payloads de prueba: Usamos sitios confiables y ligeros para validar
-        # Si DVWA carga el robots.txt de Google, significa que tiene salida a internet e incluye archivos.
+        # Payloads ligeros y confiables para validar inclusión remota
         payloads = [
             ("http://www.google.com/robots.txt", "User-agent:"),
             ("https://www.google.com/robots.txt", "User-agent:"),
@@ -33,7 +32,6 @@ class RFIScanner(ScannerModule):
         # Parámetros sospechosos comunes donde suele ocurrir RFI
         suspicious_params = ['page', 'file', 'doc', 'document', 'url', 'path', 'include', 'template']
 
-        # Si el Crawler ya detectó parámetros en el target, los usamos
         params_to_test = []
         if "?" in target.url:
             try:
@@ -45,9 +43,7 @@ class RFIScanner(ScannerModule):
             except:
                 pass
 
-        # Si no hay parámetros obvios, probamos los comunes ciegamente
         if not params_to_test:
-            # Solo probaremos si la URL base parece aceptar parámetros
             params_to_test = suspicious_params
 
         logger.info(f"🌍 RFI Scanner: Probando {len(params_to_test)} parámetros en {target.url}")
@@ -99,8 +95,7 @@ class RFIScanner(ScannerModule):
                         # Si encontramos una, generalmente basta por parámetro
                         break
 
-                except Exception as e:
-                    # Timeouts o errores de conexión son comunes en RFI si el firewall bloquea
+                except Exception:
                     pass
 
         return vulns

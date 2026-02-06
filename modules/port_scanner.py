@@ -6,7 +6,6 @@ Escanea puertos críticos con timeout agresivo (0.5s).
 
 import socket
 from typing import List
-# --- CORRECCIÓN DE IMPORTS PARA COMPATIBILIDAD ---
 from core.scanner_types import ScannerModule, Vulnerability, Target, Severity
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -49,8 +48,6 @@ class PortScanner(ScannerModule):
             except:
                 return False, ""
 
-        # --- CORRECCIÓN PARA OBTENER HOST DESDE STRING ---
-        # target.url es un string en el nuevo sistema (ej: "http://localhost:3000")
         raw_url = target.url
         try:
             if "://" in raw_url:
@@ -84,7 +81,6 @@ class PortScanner(ScannerModule):
                         ))
 
                 except Exception:
-                    # Puerto timeout/error → no vuln
                     pass
 
         return vulnerabilities

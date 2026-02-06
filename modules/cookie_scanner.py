@@ -1,6 +1,5 @@
 import requests
 import logging
-# Usamos los imports correctos para tu arquitectura
 from core.scanner_types import ScannerModule, Vulnerability, Target, Severity
 
 logger = logging.getLogger("VulnSeeker.CookieScanner")
@@ -12,7 +11,6 @@ class CookieScanner(ScannerModule):
     Verifica banderas Secure, HttpOnly y SameSite.
     """
 
-    # --- ESTO ERA LO QUE FALTABA (LAS ETIQUETAS DEL MÓDULO) ---
     @property
     def name(self) -> str:
         return "Cookie Security Scanner"
@@ -21,8 +19,6 @@ class CookieScanner(ScannerModule):
     def description(self) -> str:
         return "Audita banderas de seguridad en cookies de sesión (Secure, HttpOnly)."
 
-    # -----------------------------------------------------------
-
     def run(self, target: Target) -> list[Vulnerability]:
         vulns = []
         logger.info(f"🍪 Analizando seguridad de Cookies en: {target.url}")
@@ -30,7 +26,7 @@ class CookieScanner(ScannerModule):
         try:
             session = requests.Session()
 
-            # Headers para parecer un navegador real
+            # Headers de navegador para no levantar sospechas
             headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
             if target.headers:
                 headers.update(target.headers)
@@ -74,7 +70,7 @@ class CookieScanner(ScannerModule):
                 if missing_flags:
                     flags_str = ", ".join(missing_flags)
 
-                    # Usamos tu ENUM de Severity
+                    # HttpOnly pesa más por riesgo de robo de sesión
                     sev = Severity.HIGH if "HttpOnly" in missing_flags else Severity.MEDIUM
 
                     desc = (f"La cookie de sesión '{cookie.name}' es insegura.\n"

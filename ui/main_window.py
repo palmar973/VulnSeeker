@@ -1,9 +1,5 @@
 #!/usr/bin/env python3.14
-"""
-VulnSeeker Enterprise - FASE 3: COMMAND INJECTION & RFI INTEGRATION.
-- FIX: Agregada función main() para arranque desde gui.py.
-- FEATURE: Integración de CookieScanner, RFIScanner y CommandInjectionScanner.
-"""
+"""GUI de VulnSeeker con integración de Command Injection y RFI."""
 
 import customtkinter as ctk
 from customtkinter import CTkInputDialog
@@ -24,7 +20,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
-# --- IMPORTS DEL BACKEND ---
 from core.db_manager import DatabaseManager
 from core.engine import VulnSeekerEngine
 from core.config import GlobalConfig
@@ -42,15 +37,13 @@ from modules.email_harvester import EmailHarvester
 from modules.subdomain_takeover import SubdomainTakeover
 from modules.lfi_scanner import LFIScanner
 from modules.cookie_scanner import CookieScanner
-from modules.rfi_scanner import RFIScanner            # <--- MÓDULO FASE 2
-from modules.cmd_injection import CommandInjectionScanner # <--- NUEVO MÓDULO FASE 3
+from modules.rfi_scanner import RFIScanner
+from modules.cmd_injection import CommandInjectionScanner
 
-# Módulos Visuales y de Reporte
 from modules.ai_analyst import GroqAIAnalyst
 from reports.report_generator import ReportGenerator
 from reports.pdf_generator import PDFReportGenerator
 from modules.tech_visualizer import TechVisualizer
-# --------------------------------------
 
 plt.style.use('dark_background')
 
@@ -226,11 +219,9 @@ class VulnSeekerApp(ctk.CTk):
         email_vuln = next((v for v in vulns if getattr(v, "name", "") == "Email Disclosure"), None)
         email_text = getattr(email_vuln, "description", "") or getattr(email_vuln, "payload", "") if email_vuln else "Sin emails recolectados"
 
-        # Frame Principal Scrollable
         results_frame = ctk.CTkScrollableFrame(self.main_container, fg_color=COLOR_BG, corner_radius=0)
         results_frame.grid_columnconfigure(0, weight=1)
 
-        # 1. HEADER
         header = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
         header.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="ew")
         ctk.CTkLabel(header, text=f"RESULTADOS SCAN #{self.current_scan_id}",
@@ -240,7 +231,6 @@ class VulnSeekerApp(ctk.CTk):
                      font=ctk.CTkFont(size=14, family="Consolas"),
                      text_color=COLOR_ACCENT).pack(anchor="w", pady=(4, 0))
 
-        # 2. KPIs
         kpi_frame = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
         kpi_frame.grid(row=1, column=0, padx=20, pady=(5, 15), sticky="ew")
         kpi_frame.grid_columnconfigure((0, 1, 2), weight=1)
@@ -248,7 +238,6 @@ class VulnSeekerApp(ctk.CTk):
         self._create_metric_card(kpi_frame, 1, "🚨", "Críticas/Alta", scan_stats["critical_high"], COLOR_DANGER)
         self._create_metric_card(kpi_frame, 2, "🌐", "Subdominios", subdomain_count, accent_blue)
 
-        # 3. INFO PANELS
         info_row = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
         info_row.grid(row=2, column=0, padx=20, pady=(0, 15), sticky="ew")
         info_row.grid_columnconfigure((0, 1, 2), weight=1)
@@ -311,7 +300,6 @@ class VulnSeekerApp(ctk.CTk):
                      text_color=COLOR_MUTED if email_vuln is None else COLOR_TEXT,
                      wraplength=320, justify="left").pack(anchor="w", padx=5, pady=2)
 
-        # 4. GRÁFICOS
         charts_row = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
         charts_row.grid(row=3, column=0, padx=20, pady=(0, 15), sticky="ew")
         charts_row.grid_columnconfigure((0, 1), weight=1)
@@ -332,7 +320,6 @@ class VulnSeekerApp(ctk.CTk):
                                                                                            pady=(10, 0))
         self._create_bar_chart(bar_container, self.current_scan_id)
 
-        # 5. FOOTER BUTTONS
         buttons_frame = ctk.CTkFrame(results_frame, fg_color=COLOR_BG)
         buttons_frame.grid(row=4, column=0, padx=20, pady=(5, 20), sticky="ew")
         buttons_frame.grid_columnconfigure(0, weight=1)
@@ -638,7 +625,6 @@ class VulnSeekerApp(ctk.CTk):
         scan_frame.grid_columnconfigure(0, weight=1)
         scan_frame.grid_rowconfigure(2, weight=1)
 
-        # Hero centrado
         hero = ctk.CTkFrame(scan_frame, fg_color=COLOR_BG)
         hero.grid(row=0, column=0, pady=(40, 10), sticky="n")
         title_row = ctk.CTkFrame(hero, fg_color=COLOR_BG)
@@ -650,7 +636,6 @@ class VulnSeekerApp(ctk.CTk):
         ctk.CTkLabel(hero, text="Advanced Vulnerability Scanner", text_color=COLOR_MUTED,
                      font=ctk.CTkFont(size=16)).pack(pady=(8, 18))
 
-        # Formulario centrado
         form_frame = ctk.CTkFrame(scan_frame, fg_color=COLOR_SURFACE, corner_radius=16,
                                   border_width=1, border_color=COLOR_BORDER)
         form_frame.grid(row=1, column=0, padx=40, pady=(0, 20), sticky="n")
@@ -677,7 +662,6 @@ class VulnSeekerApp(ctk.CTk):
                                           text_color="#0D1117")
         self.start_button.grid(row=2, column=0, padx=20, pady=(0, 20), sticky="ew")
 
-        # Terminal inferior
         console_frame = ctk.CTkFrame(scan_frame, fg_color=COLOR_SURFACE, corner_radius=12,
                                      border_width=1, border_color=COLOR_BORDER)
         console_frame.grid(row=2, column=0, padx=24, pady=(0, 24), sticky="nsew")
@@ -740,8 +724,8 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(SubdomainTakeover())
             engine.register_module(LFIScanner())
             engine.register_module(CookieScanner())
-            engine.register_module(RFIScanner())            # <--- MÓDULO FASE 2
-            engine.register_module(CommandInjectionScanner()) # <--- NUEVO MÓDULO FASE 3
+            engine.register_module(RFIScanner())
+            engine.register_module(CommandInjectionScanner())
 
             logger.info(
                 f"⚡ Motor de análisis iniciado (módulos activos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
@@ -788,9 +772,7 @@ class VulnSeekerApp(ctk.CTk):
     def show_history(self) -> None:
         self._select_nav_button("history")
 
-        # Frame principal que ocupa todo el espacio
         history_frame = ctk.CTkFrame(self.main_container, fg_color=COLOR_BG)
-        # Configuración de rejilla 3x3 para centrado perfecto
         history_frame.grid_columnconfigure(0, weight=1)  # Margen izquierdo
         history_frame.grid_columnconfigure(1, weight=0)  # Contenido (ancho fijo o adaptable)
         history_frame.grid_columnconfigure(2, weight=1)  # Margen derecho
@@ -798,22 +780,15 @@ class VulnSeekerApp(ctk.CTk):
         history_frame.grid_rowconfigure(1, weight=0)  # Contenido
         history_frame.grid_rowconfigure(2, weight=1)  # Margen inferior
 
-        # Contenedor del contenido (Centrado)
         content_box = ctk.CTkFrame(history_frame, fg_color=COLOR_BG, width=960, corner_radius=0)
         content_box.grid(row=1, column=1, sticky="nsew")  # En el centro
 
-        # Ojo: No usamos grid_propagate(False) aquí para que crezca según necesite,
-        # pero como está en el centro, se verá centrado.
-        content_box.grid_columnconfigure(0, weight=1)
-
-        # --- Título ---
         ctk.CTkLabel(content_box, text="📋 Historial de Escaneos",
                      font=ctk.CTkFont(size=28, weight="bold"),
                      text_color=COLOR_TEXT).grid(row=0, column=0, padx=20, pady=(0, 20), sticky="w")
 
-        # --- Filtros ---
         filter_frame = ctk.CTkFrame(content_box, fg_color=COLOR_PANEL, corner_radius=10,
-                                    border_width=1, border_color=COLOR_BORDER)
+                                     border_width=1, border_color=COLOR_BORDER)
         filter_frame.grid(row=1, column=0, padx=20, pady=(0, 20), sticky="ew")
 
         ctk.CTkLabel(filter_frame, text="🎯 Filtrar por Target:", font=ctk.CTkFont(size=14, weight="bold")).pack(
@@ -827,14 +802,12 @@ class VulnSeekerApp(ctk.CTk):
                                                     fg_color=COLOR_ACCENT_BLUE, button_color="#2b75cc")
         self.target_filter_menu.pack(side="left", pady=15)
 
-        # --- Tabla ---
         table_container = ctk.CTkFrame(content_box, fg_color=COLOR_BG)
         table_container.grid(row=2, column=0, padx=20, pady=(0, 10), sticky="nsew")
         table_container.grid_columnconfigure(0, weight=1)
         self.history_table_container = table_container
         self._refresh_history_table(table_container)
 
-        # --- Botones Superiores (Carpeta, PDF, IA) ---
         button_frame = ctk.CTkFrame(content_box, fg_color=COLOR_BG)
         button_frame.grid(row=3, column=0, padx=20, pady=(0, 20), sticky="ew")
         button_frame.grid_columnconfigure(0, weight=1)  # Espaciador
@@ -876,7 +849,6 @@ class VulnSeekerApp(ctk.CTk):
                                                text_color=COLOR_TEXT)
         self.history_ai_button.pack(side="right", padx=(10, 0))
 
-        # --- Botones Inferiores (Danger Zone) ---
         danger_frame = ctk.CTkFrame(content_box, fg_color=COLOR_BG)
         danger_frame.grid(row=4, column=0, padx=20, pady=(0, 20), sticky="ew")
 
@@ -1025,7 +997,6 @@ class VulnSeekerApp(ctk.CTk):
     def show_settings(self) -> None:
         self._select_nav_button("settings")
 
-        # Frame Principal (Centrado 3x3)
         settings_frame = ctk.CTkFrame(self.main_container, fg_color=COLOR_BG)
         settings_frame.grid_columnconfigure(0, weight=1)
         settings_frame.grid_columnconfigure(1, weight=0)  # Contenido
@@ -1034,23 +1005,20 @@ class VulnSeekerApp(ctk.CTk):
         settings_frame.grid_rowconfigure(1, weight=0)  # Contenido
         settings_frame.grid_rowconfigure(2, weight=1)
 
-        # Contenido Centrado
         content_box = ctk.CTkFrame(settings_frame, fg_color=COLOR_BG, width=800, corner_radius=0)
         content_box.grid(row=1, column=1, sticky="nsew")
         content_box.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(content_box, text="⚙️ Configuración del Sistema",
-                     font=ctk.CTkFont(size=32, weight="bold"),  # Título un poco más grande
+                     font=ctk.CTkFont(size=32, weight="bold"),
                      text_color=COLOR_TEXT).grid(row=0, column=0, padx=20, pady=(0, 30), sticky="w")
 
-        # Valores actuales
         threads_val = int(self.db_manager.get_setting("threads", "10") or 10)
         enable_subs_val = (self.db_manager.get_setting("enable_subdomains", "true") or "true").lower() in (
             "true", "1", "yes", "y")
         ua_val = self.db_manager.get_setting("user_agent", GlobalConfig.USER_AGENT) or GlobalConfig.USER_AGENT
         groq_val = self.db_manager.get_setting("groq_api_key", "") or (self.db_manager.get_api_key() or "")
 
-        # Formulario
         form = ctk.CTkFrame(content_box, fg_color=COLOR_SURFACE, corner_radius=12,
                             border_width=1, border_color=COLOR_BORDER)
         form.grid(row=1, column=0, padx=20, pady=0, sticky="ew")
@@ -1068,10 +1036,10 @@ class VulnSeekerApp(ctk.CTk):
 
         # --- SUBDOMINIOS ---
         ctk.CTkLabel(form, text="Activar Subdomain Scanner:", font=ctk.CTkFont(size=15, weight="bold")).grid(row=1,
-                                                                                                             column=0,
-                                                                                                             padx=20,
-                                                                                                             pady=20,
-                                                                                                             sticky="w")
+                                                                                                              column=0,
+                                                                                                              padx=20,
+                                                                                                              pady=20,
+                                                                                                              sticky="w")
         self.subdomains_switch = ctk.CTkSwitch(form, text="", onvalue=True, offvalue=False,
                                                fg_color="#444", progress_color=COLOR_ACCENT,
                                                button_color="white", button_hover_color="gray")
@@ -1152,7 +1120,6 @@ class VulnSeekerApp(ctk.CTk):
         canvas.draw()
         canvas.get_tk_widget().pack(fill="both", expand=True)
 
-# --- PUNTO DE ENTRADA (ESTO FALTABA) ---
 def main():
     app = VulnSeekerApp()
     app.mainloop()

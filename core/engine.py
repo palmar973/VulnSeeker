@@ -1,7 +1,7 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List
-# FIX: Agregado el import que faltaba
+# Necesario para extraer el dominio antes del recon de subdominios
 from urllib.parse import urlparse
 from core.scanner_types import Target, Vulnerability, PageElement, ScannerModule
 from core.crawler import WebCrawler
@@ -49,7 +49,7 @@ class VulnSeekerEngine:
     def scan(self, start_url: str, crawl: bool = True) -> List[Vulnerability]:
         """Punto de entrada principal con recon OSINT expandido."""
 
-        # FIX: Asegurar que la URL tenga esquema (http/https) para que requests no falle
+        # Forzamos esquema para evitar que requests reviente con URLs sin http/https
         if not start_url.startswith(('http://', 'https://')):
             start_url = 'http://' + start_url
 
@@ -116,14 +116,13 @@ class VulnSeekerEngine:
     def _run_subdomain_discovery(self, start_url: str) -> None:
         """Ejecuta el Conquistador OSINT."""
         try:
-            # FIX: urlparse ya está importado correctamente arriba
             parsed = urlparse(start_url)
             domain = parsed.netloc or parsed.path  # Maneja casos raros
 
             logger.info(f"🌐 Recon OSINT: {domain} (crt.sh Certificate Transparency)")
 
             scanner = SubdomainScanner()
-            # Pasamos la URL completa, el scanner se encarga de extraer el dominio base
+            # Pasamos la URL completa; el scanner extrae el dominio base internamente
             self.subdomain_data = scanner.discover(start_url)
 
             if self.subdomain_data:

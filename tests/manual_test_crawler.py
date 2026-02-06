@@ -2,8 +2,7 @@ import sys
 import os
 import logging
 
-# Configuración de "fontanería" para que Python encuentre la carpeta 'core'.
-# Esto es necesario porque estamos ejecutando un script dentro de una subcarpeta.
+# Ajuste de sys.path porque se ejecuta desde subcarpeta
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from core.crawler import WebCrawler
@@ -21,8 +20,7 @@ def test_crawler_standalone() -> None:
     Objetivo: Verificar que navega, encuentra enlaces y respeta el límite de páginas.
     """
 
-    # Uso este sitio porque es legal y seguro para scrapear.
-    # No usaré un sitio real de producción para evitar problemas legales durante el dev.
+    # Sitio de pruebas público para evitar líos legales
     target_url: str = "http://books.toscrape.com/index.html"
 
     print(f"--- Iniciando Prueba Unitaria Manual del Crawler ---")
