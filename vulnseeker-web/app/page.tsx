@@ -200,7 +200,7 @@ export default function Page() {
   }, [renderLines]);
 
   const handleCopy = () => {
-    const cmd = 'git clone vulnseeker.git && pip install -r requirements.txt';
+    const cmd = 'git clone https://github.com/palmar973/VulnSeeker.git && pip install -r requirements.txt';
     navigator.clipboard.writeText(cmd).then(() => {
       toast.success('Copiado');
     });
@@ -283,14 +283,16 @@ export default function Page() {
         <div className="hidden md:flex items-center gap-10 text-sm text-gray-400">
           <a href="#features" className="hover:text-[#00ff88]">Módulos</a>
           <a href="#install" className="hover:text-[#00ff88]">Despliegue</a>
-          <a href="#" className="hover:text-[#00ff88]">Documentación</a>
-          <a href="#" className="hover:text-[#00ff88]">GitHub</a>
+          <a href="https://github.com/palmar973/VulnSeeker#readme" target="_blank" rel="noopener noreferrer" className="hover:text-[#00ff88]">Documentación</a>
+          <a href="https://github.com/palmar973/VulnSeeker" target="_blank" rel="noopener noreferrer" className="hover:text-[#00ff88]">GitHub</a>
         </div>
         <div className="flex items-center gap-3">
           <a
             aria-label="Dar estrella en GitHub"
             className="hidden md:flex items-center gap-2 rounded-md border border-[#333] bg-[#111] px-4 py-2 font-mono text-sm hover:border-[#00ff88] hover:text-[#00ff88]"
-            href="#"
+            href="https://github.com/palmar973/VulnSeeker"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
               <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
@@ -300,7 +302,9 @@ export default function Page() {
           <a
             aria-label="Clonar repositorio de VulnSeeker"
             className="flex items-center gap-2 rounded-[4px] bg-[#00ff88] px-6 py-3 font-mono text-sm font-semibold uppercase text-[#0a0a0a] shadow-[0_10px_40px_rgba(0,255,136,0.3)] transition hover:-translate-y-0.5"
-            href="#"
+            href="https://github.com/palmar973/VulnSeeker"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -361,9 +365,9 @@ export default function Page() {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
                   </svg>
-                  Descargar Código
+                  Descargar
                 </a>
-                <a className="flex items-center justify-center gap-2 rounded-[4px] border border-[#333] px-6 py-3 font-mono text-sm font-semibold uppercase text-white transition hover:border-[#00ff88] hover:text-[#00ff88]" href="#">
+                <a className="flex items-center justify-center gap-2 rounded-[4px] border border-[#333] px-6 py-3 font-mono text-sm font-semibold uppercase text-white transition hover:border-[#00ff88] hover:text-[#00ff88]" href="https://github.com/palmar973/VulnSeeker/tree/main/modules" target="_blank" rel="noopener noreferrer">
                   <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
                     <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
                   </svg>
@@ -402,12 +406,12 @@ export default function Page() {
                         line.type === 'success'
                           ? 'text-[#00ff88]'
                           : line.type === 'warning'
-                          ? 'text-[#ffaa00]'
-                          : line.type === 'error'
-                          ? 'text-[#ff3366]'
-                          : line.type === 'ai'
-                          ? 'text-[#8b5cf6]'
-                          : 'text-gray-300'
+                            ? 'text-[#ffaa00]'
+                            : line.type === 'error'
+                              ? 'text-[#ff3366]'
+                              : line.type === 'ai'
+                                ? 'text-[#8b5cf6]'
+                                : 'text-gray-300'
                       }
                     >
                       {line.text}
@@ -716,12 +720,6 @@ export default function Page() {
                   Enlaza tus pipelines, alertas y herramientas de explotación sin fricción. Todo versionable y auditable.
                 </p>
               </div>
-              <a
-                className="inline-flex items-center gap-2 rounded-[6px] border border-[#00ff88] px-4 py-2 font-mono text-xs uppercase text-[#00ff88] hover:-translate-y-0.5 transition"
-                href="#"
-              >
-                Ver Integraciones →
-              </a>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {INTEGRATIONS.map((item) => (
@@ -751,7 +749,7 @@ export default function Page() {
               Clona el repositorio e instala dependencias con requirements.txt. Requiere Python 3.14+.
             </p>
             <div className="install__code relative mx-auto flex max-w-xl items-center gap-3 rounded-lg border border-[#333] bg-[#0a0a0a] px-5 py-4 font-mono text-[10px] sm:text-xs text-[#00ff88]">
-              git clone vulnseeker.git && pip install -r requirements.txt
+              git clone https://github.com/palmar973/VulnSeeker.git && pip install -r requirements.txt
               <button
                 aria-label="Copiar comando de instalación"
                 onClick={handleCopy}
@@ -828,13 +826,11 @@ export default function Page() {
               VulnSeeker v2.4.0
             </div>
             <div className="footer__links flex flex-wrap gap-4 text-sm text-gray-500">
-              <a href="#" className="hover:text-[#00ff88]">GitHub</a>
-              <a href="#" className="hover:text-[#00ff88]">Documentación</a>
-              <a href="#" className="hover:text-[#00ff88]">Discord</a>
-              <a href="#" className="hover:text-[#00ff88]">Twitter</a>
+              <a href="https://github.com/palmar973/VulnSeeker" target="_blank" rel="noopener noreferrer" className="hover:text-[#00ff88]">GitHub</a>
+              <a href="https://github.com/palmar973/VulnSeeker#readme" target="_blank" rel="noopener noreferrer" className="hover:text-[#00ff88]">Documentación</a>
             </div>
             <div className="footer__meta text-xs font-mono text-gray-500">
-              Licencia MIT • Copyright 2025 Claudio Palmar
+              Licencia MIT • Copyright 2025 <a href="https://claudiopalmar.me/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#00ff88] transition">Claudio Palmar</a>
             </div>
           </div>
         </footer>
