@@ -1,0 +1,2758 @@
+{
+    "target": "http://testphp.vulnweb.com",
+    "scan_date": "2025-12-28T14:16:23.928242",
+    "total_vulnerabilities": 393,
+    "findings": [
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=2",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=2",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=2",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=2",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'cat' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=3",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=3",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=3",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=3",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'cat' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'cat' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=4",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=4",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=4",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=4",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'cat' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=3",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=3",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=3",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=3",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pp' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/hpp/?pp=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pic' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'cat' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=2",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=2",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=2",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=2",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pic' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'cat' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=3",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=3",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=3",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=3",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pic' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'cat' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=4",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=4",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=4",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=4",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pic' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'cat' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=5",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=5",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=5",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=5",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pic' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'cat' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=7",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=7",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=7",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=7",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pic' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'cat' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=6",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=6",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=6",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=6",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pic' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=2",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=2",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=2",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'cat'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=2",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'cat' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?cat=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=3",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=3",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=3",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=3",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=3",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=3",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=3",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=3",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=2",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=2",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=2",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=2",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pp' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/hpp/?pp=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'p' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/hpp/params.php?p=%3CVulnSeekerXSS%3E&pp=12",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pp' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/hpp/params.php?p=valid&pp=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'p' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/hpp/params.php?p=%3CVulnSeekerXSS%3E&pp=12",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pp' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/hpp/params.php?p=valid&pp=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'p' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/hpp/params.php?p=%3CVulnSeekerXSS%3E&pp=12",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pp' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/hpp/params.php?p=valid&pp=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pic' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=2",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=2",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=2",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=2",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pic' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=3",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=3",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=3",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=3",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pic' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=4",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=4",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=4",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=4",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pic' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=5",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=5",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=5",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=5",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pic' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=6",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=6",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=6",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=6",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pic' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=1",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=7",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=7",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=7",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'pic'.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=7",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'pic' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/product.php?pic=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'file' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/showimage.php?file=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=2",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=2",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=2",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=2",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/listproducts.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: \" | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'artist'.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=2",
+            "evidence": "Payload: ' OR '1'='1 | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "Reflected Cross-Site Scripting (XSS)",
+            "severity": "MEDIUM",
+            "description": "El parámetro 'artist' refleja la entrada del usuario sin filtrar caracteres HTML.",
+            "target_url": "http://testphp.vulnweb.com/artists.php?artist=%3CVulnSeekerXSS%3E",
+            "evidence": "Payload inyectado: <VulnSeekerXSS> encontrado en la respuesta."
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: ' | Error detectado: You have an error in your SQL syntax"
+        },
+        {
+            "name": "SQL Injection (Error Based)",
+            "severity": "HIGH",
+            "description": "Se detectó un error de base de datos al inyectar en el parámetro 'test'.",
+            "target_url": "http://testphp.vulnweb.com/search.php?test=query",
+            "evidence": "Payload: '; | Error detectado: You have an error in your SQL syntax"
+        }
+    ]
+}

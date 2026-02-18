@@ -1,0 +1,63 @@
+{
+    "target": "http://localhost:9000/contactos.html",
+    "scan_date": "2026-01-31T14:46:59.195404",
+    "total_vulnerabilities": 7,
+    "findings": [
+        {
+            "name": "Missing X-Frame-Options",
+            "description": "Ausencia de X-Frame-Options expone a Clickjacking attacks",
+            "severity": "LOW",
+            "target_url": "http://localhost:9000/contactos.html",
+            "payload": "Recomendado: X-Frame-Options: DENY",
+            "evidence": null
+        },
+        {
+            "name": "Missing Content-Security-Policy",
+            "description": "Sin CSP permite ejecución de scripts maliciosos (XSS)",
+            "severity": "MEDIUM",
+            "target_url": "http://localhost:9000/contactos.html",
+            "payload": "Recomendado: Content-Security-Policy: default-src 'self'",
+            "evidence": null
+        },
+        {
+            "name": "Missing HSTS",
+            "description": "Sin HSTS permite downgrade attacks (HTTP)",
+            "severity": "LOW",
+            "target_url": "http://localhost:9000/contactos.html",
+            "payload": "Recomendado: Strict-Transport-Security: max-age=31536000",
+            "evidence": null
+        },
+        {
+            "name": "Missing X-Content-Type-Options",
+            "description": "Sin nosniff permite MIME type confusion attacks",
+            "severity": "LOW",
+            "target_url": "http://localhost:9000/contactos.html",
+            "payload": "Recomendado: X-Content-Type-Options: nosniff",
+            "evidence": null
+        },
+        {
+            "name": "EXPOSED: .env",
+            "description": "Archivo/directorio sensible '.env' accesible públicamente",
+            "severity": "CRITICAL",
+            "target_url": "http://localhost:9000/.env",
+            "payload": "¡ELIMINAR inmediatamente! .env expuesto → Riesgo CRÍTICO",
+            "evidence": null
+        },
+        {
+            "name": "EXPOSED: config.php.bak",
+            "description": "Archivo/directorio sensible 'config.php.bak' accesible públicamente",
+            "severity": "CRITICAL",
+            "target_url": "http://localhost:9000/config.php.bak",
+            "payload": "¡ELIMINAR inmediatamente! config.php.bak expuesto → Riesgo CRÍTICO",
+            "evidence": null
+        },
+        {
+            "name": "Email Disclosure",
+            "description": "Correos expuestos: ceo@millonario.com, finanzas@banco-seguro.net, soporte@victima.com",
+            "severity": "INFO",
+            "target_url": "http://localhost:9000/contactos.html",
+            "payload": "Correos expuestos: ceo@millonario.com, finanzas@banco-seguro.net, soporte@victima.com",
+            "evidence": null
+        }
+    ]
+}
