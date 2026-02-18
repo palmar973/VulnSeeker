@@ -1,7 +1,6 @@
 import requests
 from typing import List
-from core.scanner_types import ScannerModule, Target, Vulnerability
-from core.models import Severity
+from core.models import ScannerModule, Target, Vulnerability, Severity
 
 class CMSAuditor(ScannerModule):
     @property

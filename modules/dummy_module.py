@@ -1,5 +1,4 @@
-from core.interfaces import ScannerModule
-from core.scanner_types import Target, Vulnerability, Severity
+from core.models import ScannerModule, Target, Vulnerability, Severity
 import logging
 
 

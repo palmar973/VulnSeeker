@@ -1,8 +1,7 @@
 import logging
 from typing import List
 import requests
-from core.scanner_types import ScannerModule, Target, Vulnerability
-from core.models import Severity
+from core.models import ScannerModule, Target, Vulnerability, Severity
 
 logger = logging.getLogger("VulnSeeker")
 

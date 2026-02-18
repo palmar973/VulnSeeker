@@ -6,8 +6,7 @@ Descubre .env, .git, backups SQL, paneles admin ocultos, etc.
 
 import requests
 from typing import List
-from core.scanner_types import ScannerModule, Target, Vulnerability
-from core.models import Severity
+from core.models import ScannerModule, Target, Vulnerability, Severity
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 from urllib.parse import urljoin

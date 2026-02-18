@@ -5,8 +5,7 @@ from typing import List
 
 import requests
 
-from core.scanner_types import ScannerModule, Target, Vulnerability
-from core.models import Severity
+from core.models import ScannerModule, Target, Vulnerability, Severity
 
 logger = logging.getLogger("VulnSeeker")
 UA_BROWSER = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
