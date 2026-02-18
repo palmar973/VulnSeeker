@@ -1,3 +1,11 @@
+# =========================
+# VulnSeeker - Output generado
+# =========================
+reports/*.pdf
+reports/*.json
+results/
+vulnseeker.db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
