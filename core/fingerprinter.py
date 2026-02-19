@@ -114,14 +114,14 @@ class TechFingerprinter:
         try:
             resp = requests.head(target_url, timeout=5, headers={'User-Agent': 'VulnSeeker/1.0'}, verify=False)
             return dict(resp.headers)
-        except:
+        except requests.RequestException:
             return {}
 
     def _get_html(self, target_url: str) -> str:
         try:
             resp = requests.get(target_url, timeout=7, headers={'User-Agent': 'VulnSeeker/1.0'}, verify=False)
             return resp.text.lower()
-        except:
+        except requests.RequestException:
             return ""
 
     def _analyze_headers(self, headers: Dict[str, str]) -> Dict[str, List[str]]:
@@ -160,7 +160,7 @@ class TechFingerprinter:
                     # Inferencia rápida por ruta
                     if "wp-" in path: detected.append("WordPress")
                     if "administrator" in path: detected.append("Joomla")
-        except:
+        except requests.RequestException:
             pass
         return detected
 

@@ -87,7 +87,7 @@ class SubdomainScanner:
             parts = hostname.split('.')
             if len(parts) >= 2: return f"{parts[-2]}.{parts[-1]}"
             return hostname
-        except:
+        except Exception:
             return ""
 
     def _is_valid(self, subdomain: str, domain: str) -> bool:
@@ -106,11 +106,11 @@ class SubdomainScanner:
                 # Probar HTTPS primero (más común hoy día)
                 requests.head(f"https://{sub}", timeout=3, verify=False)
                 return True
-            except:
+            except requests.RequestException:
                 try:
                     requests.head(f"http://{sub}", timeout=2, verify=False)
                     return True
-                except:
+                except requests.RequestException:
                     return False
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:

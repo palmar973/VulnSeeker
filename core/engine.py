@@ -49,7 +49,7 @@ class VulnSeekerEngine:
     def scan(self, start_url: str, crawl: bool = True) -> List[Vulnerability]:
         """Punto de entrada principal con recon OSINT expandido."""
 
-        # Forzamos esquema para evitar que requests reviente con URLs sin http/https
+        self.results = []  # Resetear resultados de escaneos anteriores
         if not start_url.startswith(('http://', 'https://')):
             start_url = 'http://' + start_url
 

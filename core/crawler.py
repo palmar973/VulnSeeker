@@ -4,6 +4,7 @@ from urllib.parse import urljoin, urlparse, parse_qs
 from bs4 import BeautifulSoup
 from typing import Set, List, Dict, Optional
 from core.scanner_types import PageElement
+from core.config import GlobalConfig
 
 logger = logging.getLogger(__name__)
 
@@ -61,8 +62,7 @@ class WebCrawler:
         """
         Descargador con modales. Intenta obtener el HTML de la página.
         """
-        # User-Agent fijo para evitar bloqueos básicos
-        headers: Dict[str, str] = {'User-Agent': 'VulnSeeker/1.0 (Academic Project)'}
+        headers: Dict[str, str] = {'User-Agent': GlobalConfig.USER_AGENT}
         try:
             response = requests.get(url, headers=headers, timeout=5)
             if "text/html" in response.headers.get("Content-Type", ""):
