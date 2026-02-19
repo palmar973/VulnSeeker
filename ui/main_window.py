@@ -40,6 +40,7 @@ from modules.cookie_scanner import CookieScanner
 from modules.rfi_scanner import RFIScanner
 from modules.cmd_injection import CommandInjectionScanner
 from modules.open_redirect import OpenRedirectScanner
+from modules.csrf_auditor import CSRFAuditor
 
 from modules.ai_analyst import GroqAIAnalyst
 from reports.report_generator import ReportGenerator
@@ -728,6 +729,7 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(RFIScanner())
             engine.register_module(CommandInjectionScanner())
             engine.register_module(OpenRedirectScanner())
+            engine.register_module(CSRFAuditor())
 
             logger.info(
                 f"⚡ Motor de análisis iniciado (módulos activos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
