@@ -145,6 +145,7 @@ class VulnSeekerEngine:
             url=element.url,
             method=element.method,
             headers={'User-Agent': self.config.get("user_agent", GlobalConfig.USER_AGENT)},
+            elements=[element],
             context=self.tech_context
         )
 

@@ -36,10 +36,15 @@ class CommandInjectionScanner(ScannerModule):
             ("| cat /etc/passwd", "root:x:0:0"),
         ]
 
+        # Obtener params del PageElement si existe
+        element_params = {}
+        if target.elements:
+            element_params = target.elements[0].params
+
         params_to_test = []
 
-        if target.params:
-            params_to_test = list(target.params.keys())
+        if element_params:
+            params_to_test = list(element_params.keys())
 
         elif "?" in target.url:
             try:
@@ -48,7 +53,7 @@ class CommandInjectionScanner(ScannerModule):
                     if "=" in pair:
                         key = pair.split("=")[0]
                         params_to_test.append(key)
-            except:
+            except Exception:
                 pass
 
         # Si no hay nada, probamos sospechosos comunes
@@ -73,8 +78,8 @@ class CommandInjectionScanner(ScannerModule):
 
                 if target.method == "POST":
                     # Copiamos los parámetros originales para no perder el botón 'Submit'
-                    if target.params:
-                        data = target.params.copy()
+                    if element_params:
+                        data = element_params.copy()
 
                     # Inyectamos solo en el parámetro actual
                     data[param] = attack_val
