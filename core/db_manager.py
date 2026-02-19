@@ -16,6 +16,13 @@ logger = logging.getLogger("VulnSeeker.DB")
 
 
 class DatabaseManager:
+    """
+    Gestor centralizado de base de datos SQLite para VulnSeeker.
+
+    Implementa el patrón Singleton para garantizar una única conexión
+    a lo largo de toda la aplicación. Gestiona scans, vulnerabilidades,
+    subdominios y configuración del sistema.
+    """
     _instance = None
     _initialized = False
 
@@ -179,6 +186,7 @@ class DatabaseManager:
             raise
 
     def get_scan_technologies(self, scan_id: int) -> str:
+        """Devuelve las tecnologías detectadas para un scan específico."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 res = conn.execute("SELECT technologies FROM scans WHERE id = ?", (scan_id,)).fetchone()
@@ -205,6 +213,7 @@ class DatabaseManager:
             return default
 
     def save_api_key(self, api_key: str) -> None:
+        """Persiste la API key de Groq en la tabla settings."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 conn.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
@@ -214,6 +223,7 @@ class DatabaseManager:
             pass
 
     def get_api_key(self) -> Optional[str]:
+        """Recupera la API key de Groq almacenada, o None si no existe."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 res = conn.execute("SELECT value FROM settings WHERE key = ?", ("groq_api_key",)).fetchone()
@@ -222,6 +232,11 @@ class DatabaseManager:
             return None
 
     def get_all_scans(self) -> List[Tuple[int, str, str, int]]:
+        """Devuelve todos los scans ordenados por fecha descendente.
+
+        Returns:
+            Lista de tuplas (id, fecha, url_objetivo, total_vulns).
+        """
         try:
             with sqlite3.connect(self.db_path) as conn:
                 return conn.execute(
@@ -231,6 +246,7 @@ class DatabaseManager:
             return []
 
     def get_unique_targets(self) -> List[str]:
+        """Devuelve la lista de URLs únicas escaneadas."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 return [row[0] for row in
@@ -239,6 +255,7 @@ class DatabaseManager:
             return []
 
     def get_scans_by_target(self, target_url: str) -> List[Tuple[int, str, str, int]]:
+        """Filtra los scans realizados contra una URL específica."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 return conn.execute(
@@ -249,6 +266,11 @@ class DatabaseManager:
             return []
 
     def get_scan_stats(self, scan_id: int) -> Dict[str, int]:
+        """Devuelve estadísticas de severidad para un scan.
+
+        Returns:
+            Dict con claves: total_vulns, critical_high, medium_low.
+        """
         try:
             with sqlite3.connect(self.db_path) as conn:
                 total = conn.execute("SELECT total_vulns FROM scans WHERE id = ?", (scan_id,)).fetchone()
@@ -267,6 +289,7 @@ class DatabaseManager:
             return {"total_vulns": 0, "critical_high": 0, "medium_low": 0}
 
     def get_scan_target(self, scan_id: int) -> str:
+        """Devuelve la URL objetivo de un scan por su ID."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 res = conn.execute("SELECT target_url FROM scans WHERE id = ?", (scan_id,)).fetchone()
@@ -275,19 +298,25 @@ class DatabaseManager:
             return "Error"
 
     def get_scan_date(self, scan_id: int) -> str:
+        """Devuelve la fecha del scan formateada como DD-MM-YYYY HH:MM:SS."""
         try:
             with sqlite3.connect(self.db_path) as conn:
                 res = conn.execute("SELECT scan_date FROM scans WHERE id = ?", (scan_id,)).fetchone()
                 if res:
                     try:
                         return datetime.fromisoformat(res[0].replace('Z', '+00:00')).strftime("%d-%m-%Y %H:%M:%S")
-                    except:
+                    except (ValueError, TypeError):
                         return res[0]
                 return "Fecha Desconocida"
         except Exception:
             return "Error"
 
     def get_severity_distribution_by_scan(self, scan_id: int) -> List[Tuple[str, int]]:
+        """Devuelve la distribución de severidades para un scan.
+
+        Returns:
+            Lista de tuplas (nombre_severidad, cantidad) solo para severidades con count > 0.
+        """
         try:
             with sqlite3.connect(self.db_path) as conn:
                 names = ['INFO', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
@@ -303,6 +332,12 @@ class DatabaseManager:
             return []
 
     def get_top_vulns_by_scan(self, scan_id: int, limit: int = 5) -> List[Tuple[str, int]]:
+        """Devuelve las vulnerabilidades más frecuentes de un scan.
+
+        Args:
+            scan_id: ID del scan a consultar.
+            limit: Cantidad máxima de resultados (por defecto 5).
+        """
         try:
             with sqlite3.connect(self.db_path) as conn:
                 return conn.execute(
@@ -314,6 +349,11 @@ class DatabaseManager:
             return []
 
     def get_vulnerabilities_by_scan(self, scan_id: int) -> List[Any]:
+        """Devuelve las vulnerabilidades de un scan como objetos PDFVuln.
+
+        Cada objeto tiene atributos: vuln_type, name, description, severity, url, payload.
+        Usado internamente por el generador de reportes PDF.
+        """
         try:
             with sqlite3.connect(self.db_path) as conn:
                 rows = conn.execute(
