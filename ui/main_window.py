@@ -708,10 +708,22 @@ class VulnSeekerApp(ctk.CTk):
             enable_subs_cfg = (self.db_manager.get_setting("enable_subdomains", "true") or "true").lower() in (
                 "true", "1", "yes", "y")
             ua_cfg = self.db_manager.get_setting("user_agent", GlobalConfig.USER_AGENT) or GlobalConfig.USER_AGENT
+
+            # Parsear cookies desde la configuración
+            cookie_str = self.db_manager.get_setting("session_cookies", "") or ""
+            cookies = {}
+            if cookie_str.strip():
+                for pair in cookie_str.split(";"):
+                    pair = pair.strip()
+                    if "=" in pair:
+                        k, v = pair.split("=", 1)
+                        cookies[k.strip()] = v.strip()
+
             config = {
                 "threads": threads_cfg,
                 "user_agent": ua_cfg,
-                "enable_subdomains": enable_subs_cfg
+                "enable_subdomains": enable_subs_cfg,
+                "cookies": cookies
             }
 
             engine = VulnSeekerEngine(config=config)
@@ -1024,6 +1036,7 @@ class VulnSeekerApp(ctk.CTk):
             "true", "1", "yes", "y")
         ua_val = self.db_manager.get_setting("user_agent", GlobalConfig.USER_AGENT) or GlobalConfig.USER_AGENT
         groq_val = self.db_manager.get_setting("groq_api_key", "") or (self.db_manager.get_api_key() or "")
+        cookie_val = self.db_manager.get_setting("session_cookies", "") or ""
 
         form = ctk.CTkFrame(content_box, fg_color=COLOR_SURFACE, corner_radius=12,
                             border_width=1, border_color=COLOR_BORDER)
@@ -1073,12 +1086,28 @@ class VulnSeekerApp(ctk.CTk):
             self.groq_entry.insert(0, groq_val)
         self.groq_entry.grid(row=3, column=1, padx=20, pady=20, sticky="ew")
 
+        # --- SESSION COOKIES ---
+        ctk.CTkLabel(form, text="🍪 Session Cookie:", font=ctk.CTkFont(size=15, weight="bold")).grid(row=4, column=0,
+                                                                                                    padx=20, pady=(20, 5),
+                                                                                                    sticky="w")
+        self.cookie_entry = ctk.CTkEntry(form, placeholder_text="PHPSESSID=abc123; security=low",
+                                         font=ctk.CTkFont(size=14),
+                                         fg_color=COLOR_BG, border_color=COLOR_BORDER, text_color=COLOR_TEXT,
+                                         height=40)
+        if cookie_val:
+            self.cookie_entry.insert(0, cookie_val)
+        self.cookie_entry.grid(row=4, column=1, padx=20, pady=(20, 5), sticky="ew")
+        ctk.CTkLabel(form, text="Formato: nombre=valor; nombre2=valor2  (copiar de DevTools → Application → Cookies)",
+                     font=ctk.CTkFont(size=11), text_color=COLOR_MUTED).grid(row=5, column=1,
+                                                                             padx=20, pady=(0, 15),
+                                                                             sticky="w")
+
         # --- BOTÓN GUARDAR ---
         save_btn = ctk.CTkButton(form, text="💾 Guardar Cambios", height=45, font=ctk.CTkFont(size=15, weight="bold"),
                                  command=self.save_settings, corner_radius=10,
                                  fg_color=COLOR_ACCENT, hover_color="#00e67a",
                                  text_color=COLOR_BG)
-        save_btn.grid(row=4, column=0, columnspan=2, padx=20, pady=(30, 20), sticky="e")
+        save_btn.grid(row=6, column=0, columnspan=2, padx=20, pady=(30, 20), sticky="e")
 
         self.show_frame(settings_frame)
 
@@ -1088,10 +1117,12 @@ class VulnSeekerApp(ctk.CTk):
             enable_subs = self.subdomains_switch.get() if self.subdomains_switch else True
             ua = self.ua_entry.get().strip() if self.ua_entry else GlobalConfig.USER_AGENT
             groq = self.groq_entry.get().strip() if self.groq_entry else ""
+            cookie = self.cookie_entry.get().strip() if hasattr(self, 'cookie_entry') and self.cookie_entry else ""
 
             self.db_manager.set_setting("threads", str(threads))
             self.db_manager.set_setting("enable_subdomains", "true" if enable_subs else "false")
             self.db_manager.set_setting("user_agent", ua or GlobalConfig.USER_AGENT)
+            self.db_manager.set_setting("session_cookies", cookie)
             if groq:
                 self.db_manager.set_setting("groq_api_key", groq)
                 self.db_manager.save_api_key(groq)

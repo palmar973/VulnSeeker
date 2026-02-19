@@ -15,11 +15,12 @@ class WebCrawler:
     No solo busca URLs, cataloga formularios y puntos de entrada de datos.
     """
 
-    def __init__(self, start_url: str, max_pages: int = 50) -> None:
+    def __init__(self, start_url: str, max_pages: int = 50, cookies: dict | None = None) -> None:
         # Guardo la base para no terminar escaneando todo internet por accidente.
         self.start_url: str = start_url
         self.base_domain: str = urlparse(start_url).netloc
         self.max_pages: int = max_pages
+        self.cookies: dict = cookies or {}
 
         self.visited_urls: Set[str] = set()
         self.discovered_elements: List[PageElement] = []
@@ -64,7 +65,7 @@ class WebCrawler:
         """
         headers: Dict[str, str] = {'User-Agent': GlobalConfig.USER_AGENT}
         try:
-            response = requests.get(url, headers=headers, timeout=5)
+            response = requests.get(url, headers=headers, cookies=self.cookies, timeout=5)
             if "text/html" in response.headers.get("Content-Type", ""):
                 return response.text
         except requests.RequestException:

@@ -82,7 +82,8 @@ class VulnSeekerEngine:
         target_elements: List[PageElement] = []
         if crawl:
             logger.info("🕷️ Crawler estructural activo...")
-            crawler = WebCrawler(start_url, max_pages=GlobalConfig.MAX_CRAWL_PAGES)
+            cookies = self.config.get("cookies", {})
+            crawler = WebCrawler(start_url, max_pages=GlobalConfig.MAX_CRAWL_PAGES, cookies=cookies)
             target_elements = crawler.start()
         else:
             target_elements = [PageElement(url=start_url, method="GET")]
@@ -141,10 +142,18 @@ class VulnSeekerEngine:
     def _analyze_single_element(self, element: PageElement) -> List[Vulnerability]:
         """Análisis individual por hilo."""
         findings: List[Vulnerability] = []
+        headers = {'User-Agent': self.config.get("user_agent", GlobalConfig.USER_AGENT)}
+
+        # Inyectar cookies como header Cookie para módulos que usan requests
+        cookies = self.config.get("cookies", {})
+        if cookies:
+            cookie_str = "; ".join(f"{k}={v}" for k, v in cookies.items())
+            headers["Cookie"] = cookie_str
+
         target = Target(
             url=element.url,
             method=element.method,
-            headers={'User-Agent': self.config.get("user_agent", GlobalConfig.USER_AGENT)},
+            headers=headers,
             elements=[element],
             context=self.tech_context
         )
