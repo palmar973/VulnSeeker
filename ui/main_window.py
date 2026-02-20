@@ -49,6 +49,7 @@ from modules.cors_scanner import CORSMisconfigScanner
 from modules.http_method_scanner import HTTPMethodTamperingScanner
 from modules.dir_listing_detector import DirectoryListingDetector
 from modules.sensitive_data_scanner import SensitiveDataExposure
+from modules.cve_lookup import CVELookupScanner
 
 from modules.ai_analyst import GroqAIAnalyst
 from reports.report_generator import ReportGenerator
@@ -758,6 +759,7 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(HTTPMethodTamperingScanner())
             engine.register_module(DirectoryListingDetector())
             engine.register_module(SensitiveDataExposure())
+            engine.register_module(CVELookupScanner())
 
             logger.info(
                 f"⚡ Motor de análisis iniciado (módulos activos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
