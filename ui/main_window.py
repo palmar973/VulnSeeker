@@ -42,6 +42,7 @@ from modules.cmd_injection import CommandInjectionScanner
 from modules.open_redirect import OpenRedirectScanner
 from modules.csrf_auditor import CSRFAuditor
 from modules.tls_checker import TLSChecker
+from modules.brute_force_detector import BruteForceDetector
 
 from modules.ai_analyst import GroqAIAnalyst
 from reports.report_generator import ReportGenerator
@@ -744,6 +745,7 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(OpenRedirectScanner())
             engine.register_module(CSRFAuditor())
             engine.register_module(TLSChecker())
+            engine.register_module(BruteForceDetector())
 
             logger.info(
                 f"⚡ Motor de análisis iniciado (módulos activos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
