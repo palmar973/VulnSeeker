@@ -46,6 +46,7 @@ from modules.brute_force_detector import BruteForceDetector
 from modules.file_upload_detector import FileUploadDetector
 from modules.weak_session_auditor import WeakSessionAuditor
 from modules.cors_scanner import CORSMisconfigScanner
+from modules.http_method_scanner import HTTPMethodTamperingScanner
 
 from modules.ai_analyst import GroqAIAnalyst
 from reports.report_generator import ReportGenerator
@@ -752,6 +753,7 @@ class VulnSeekerApp(ctk.CTk):
             engine.register_module(FileUploadDetector())
             engine.register_module(WeakSessionAuditor())
             engine.register_module(CORSMisconfigScanner())
+            engine.register_module(HTTPMethodTamperingScanner())
 
             logger.info(
                 f"⚡ Motor de análisis iniciado (módulos activos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
