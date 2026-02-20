@@ -98,6 +98,9 @@ class CVELookupScanner(ScannerModule):
                     payload=f"X-Powered-By: {powered}"
                 ))
 
+            # Check 5: Consultar NVD API en vivo para CVEs no cubiertos localmente
+            self._query_nvd(full_banner, target.url, vulns)
+
         except requests.RequestException as e:
             logger.debug(f"Error de conexión CVE: {e}")
         except Exception as e:
@@ -160,6 +163,100 @@ class CVELookupScanner(ScannerModule):
 
         except requests.RequestException:
             pass
+
+    def _query_nvd(self, banner, url, vulns):
+        """Consulta la API pública de NVD para CVEs en tiempo real."""
+        # Extraer pares tecnología/versión del banner
+        tech_patterns = [
+            (r'apache[/\s]*(\d+\.\d+\.\d+)', 'apache'),
+            (r'nginx[/\s]*(\d+\.\d+\.\d+)', 'nginx'),
+            (r'php[/\s]*(\d+\.\d+\.\d+)', 'php'),
+            (r'openssl[/\s]*(\d+\.\d+[\w.]*)', 'openssl'),
+            (r'microsoft-iis[/\s]*(\d+\.\d+)', 'microsoft:iis'),
+        ]
+
+        for pattern, cpe_vendor in tech_patterns:
+            match = re.search(pattern, banner)
+            if not match:
+                continue
+
+            version = match.group(1)
+            # Solo consultar NVD si la DB local no encontró nada para esta tech
+            local_hits = [v for v in vulns if cpe_vendor.split(':')[-1] in v.payload.lower()]
+            if local_hits:
+                continue
+
+            try:
+                # NVD API 2.0 pública (sin API key, rate-limited)
+                nvd_url = (
+                    f"https://services.nvd.nist.gov/rest/json/cves/2.0"
+                    f"?keywordSearch={cpe_vendor.replace(':', '+')}+{version}"
+                    f"&resultsPerPage=5"
+                )
+                resp = requests.get(nvd_url, timeout=10, headers={
+                    "User-Agent": "VulnSeeker/1.0"
+                })
+
+                if resp.status_code != 200:
+                    continue
+
+                data = resp.json()
+                total = data.get("totalResults", 0)
+
+                if total == 0:
+                    continue
+
+                for cve_item in data.get("vulnerabilities", [])[:5]:
+                    cve_data = cve_item.get("cve", {})
+                    cve_id = cve_data.get("id", "Unknown")
+
+                    # Extraer descripción en español o inglés
+                    descriptions = cve_data.get("descriptions", [])
+                    desc_text = "Sin descripción disponible."
+                    for d in descriptions:
+                        if d.get("lang") == "es":
+                            desc_text = d.get("value", desc_text)
+                            break
+                        if d.get("lang") == "en":
+                            desc_text = d.get("value", desc_text)
+
+                    # Extraer severidad CVSS
+                    metrics = cve_data.get("metrics", {})
+                    cvss_score = 0.0
+                    for metric_key in ["cvssMetricV31", "cvssMetricV30", "cvssMetricV2"]:
+                        metric_list = metrics.get(metric_key, [])
+                        if metric_list:
+                            cvss_score = metric_list[0].get("cvssData", {}).get("baseScore", 0)
+                            break
+
+                    severity = Severity.INFO
+                    if cvss_score >= 9.0:
+                        severity = Severity.CRITICAL
+                    elif cvss_score >= 7.0:
+                        severity = Severity.HIGH
+                    elif cvss_score >= 4.0:
+                        severity = Severity.MEDIUM
+                    elif cvss_score > 0:
+                        severity = Severity.LOW
+
+                    vulns.append(Vulnerability(
+                        name=f"NVD: {cve_id}",
+                        description=(
+                            f"[NVD API] {desc_text[:200]}"
+                        ),
+                        severity=severity,
+                        target_url=url,
+                        payload=f"{cpe_vendor}/{version} → CVSS {cvss_score}"
+                    ))
+
+                logger.info(
+                    f"🌐 NVD API: {total} CVE(s) encontrados para {cpe_vendor}/{version}"
+                )
+
+            except requests.RequestException:
+                logger.debug(f"NVD API no disponible para {cpe_vendor}/{version}")
+            except Exception as e:
+                logger.debug(f"Error parsing NVD response: {e}")
 
     @staticmethod
     def _version_lte(detected: str, known: str) -> bool:

@@ -102,3 +102,48 @@ def test_version_comparison(scanner):
     assert scanner._version_lte("2.4.50", "2.4.49") is False  # mayor
     assert scanner._version_lte("1.0", "2.0") is True
     assert scanner._version_lte("3.0", "2.0") is False
+
+
+@patch("modules.cve_lookup.requests.get")
+def test_nvd_api_devuelve_cves(mock_get, scanner):
+    """NVD API retorna CVEs → se agregan como vulnerabilidades NVD."""
+    nvd_response = {
+        "totalResults": 1,
+        "vulnerabilities": [{
+            "cve": {
+                "id": "CVE-2023-99999",
+                "descriptions": [
+                    {"lang": "en", "value": "Critical RCE in nginx test"}
+                ],
+                "metrics": {
+                    "cvssMetricV31": [{
+                        "cvssData": {"baseScore": 9.8}
+                    }]
+                }
+            }
+        }]
+    }
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = nvd_response
+    mock_get.return_value = mock_resp
+
+    vulns = []
+    scanner._query_nvd("nginx/1.25.3 ", "http://test.com/", vulns)
+    nvd_vulns = [v for v in vulns if "NVD:" in v.name]
+    assert len(nvd_vulns) == 1
+    assert "CVE-2023-99999" in nvd_vulns[0].name
+    assert nvd_vulns[0].severity.name == "CRITICAL"
+
+
+@patch("modules.cve_lookup.requests.get")
+def test_nvd_api_sin_resultados(mock_get, scanner):
+    """NVD API sin CVEs → sin alertas adicionales."""
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {"totalResults": 0, "vulnerabilities": []}
+    mock_get.return_value = mock_resp
+
+    vulns = []
+    scanner._query_nvd("nginx/99.99.99 ", "http://test.com/", vulns)
+    assert len(vulns) == 0
