@@ -14,9 +14,13 @@
 **Escáner Modular de Vulnerabilidades Web · Enterprise Edition**
 
 [![Python](https://img.shields.io/badge/Python-3.14-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Tests](https://img.shields.io/badge/Tests-108%20passing-brightgreen?logo=pytest&logoColor=white)]()
+[![Modules](https://img.shields.io/badge/Modules-21%20scanners-orange?logo=shield&logoColor=white)]()
+[![OWASP](https://img.shields.io/badge/OWASP%20Top%2010-8%2F10-red?logo=owasp&logoColor=white)]()
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)]()
 [![AI](https://img.shields.io/badge/AI-Llama%203.3%2070B-purple?logo=meta)](https://groq.com/)
+[![NVD](https://img.shields.io/badge/NVD-API%202.0-yellow?logo=nist&logoColor=white)](https://nvd.nist.gov/)
 
 </div>
 
@@ -24,49 +28,76 @@
 
 ## 🔍 ¿Qué es VulnSeeker?
 
-**VulnSeeker Enterprise** es un escáner de vulnerabilidades web avanzado, desarrollado en Python, diseñado para realizar auditorías de seguridad automatizadas de forma integral. A diferencia de escáneres básicos que se limitan a un solo vector de ataque, VulnSeeker orquesta **16 módulos independientes** de análisis en paralelo — desde inyecciones SQL y XSS hasta reconocimiento OSINT de subdominios y análisis con Inteligencia Artificial.
+**VulnSeeker Enterprise** es un framework DAST (Dynamic Application Security Testing) avanzado, desarrollado en Python, diseñado para realizar auditorías de seguridad automatizadas de forma integral. A diferencia de escáneres básicos que se limitan a un solo vector de ataque, VulnSeeker orquesta **21 módulos independientes** de análisis — desde inyecciones SQL y XSS hasta reconocimiento OSINT de subdominios, consulta de CVEs en tiempo real contra la NVD del NIST, y análisis con Inteligencia Artificial.
 
-El sistema opera bajo una arquitectura modular extensible donde cada módulo es un componente independiente que se registra en el motor central, permitiendo agregar nuevas capacidades de escaneo sin modificar el núcleo del sistema.
+El sistema opera bajo una arquitectura modular extensible donde cada módulo hereda de la clase base `ScannerModule` y se registra en el motor central, permitiendo agregar nuevas capacidades de escaneo sin modificar el núcleo del sistema.
 
 ### ¿Por qué VulnSeeker?
 
 - **Cobertura real.** No es un script que lanza payloads a ciegas. VulnSeeker ejecuta una cadena completa: reconocimiento → fingerprinting → crawling → ataque multihilo → análisis IA → reporte.
+- **8/10 categorías del OWASP Top 10 (2021).** Las 2 restantes (A08, A09) no son evaluables externamente mediante DAST.
 - **Inteligencia Artificial integrada.** Llama 3.3 70B actúa como un CISO virtual que traduce hallazgos técnicos en riesgos de negocio ejecutivos.
+- **CVEs en tiempo real.** Integración con la API 2.0 del NIST NVD para consultar vulnerabilidades conocidas asociadas a las tecnologías detectadas.
+- **108 tests unitarios.** Suite completa con `pytest` y pipeline CI/CD en GitHub Actions.
 - **Persistencia histórica.** Cada escaneo se almacena en SQLite, permitiendo análisis de tendencias y comparación entre auditorías.
 
 ---
 
-## ⚡ Características Principales
+## ⚡ Módulos de Detección
 
-### Módulos de Ataque
+### Inyección y Ejecución (A03 — Injection)
 
 | Módulo | Descripción | Severidad |
 |--------|-------------|-----------|
-| **SQL Injection** | Detección de SQLi basada en errores (MySQL, PostgreSQL, Oracle, MSSQL) | 🔴 HIGH |
-| **Cross-Site Scripting** | Identificación de XSS reflejado mediante inyección de canarios | 🟠 MEDIUM |
+| **SQL Injection** | Detección de SQLi basada en errores (MySQL, PostgreSQL, Oracle, MSSQL) | 🔴 CRITICAL |
+| **Cross-Site Scripting** | Identificación de XSS reflejado mediante inyección de canarios | 🟠 HIGH |
 | **Command Injection** | Detección de ejecución remota de comandos (RCE) en parámetros | 🔴 CRITICAL |
 | **Local File Inclusion** | Pruebas de traversal de directorios para lectura de archivos locales | 🔴 HIGH |
 | **Remote File Inclusion** | Detección de inclusión de archivos remotos en aplicaciones web | 🔴 HIGH |
+| **SSRF Scanner** | Detección de Server-Side Request Forgery mediante callbacks | 🔴 HIGH |
 
-### Módulos de Reconocimiento y Análisis
+### Control de Acceso y Autenticación (A01 + A07)
+
+| Módulo | Descripción | Severidad |
+|--------|-------------|-----------|
+| **Open Redirect** | Detección de redirecciones abiertas explotables | 🟠 HIGH |
+| **CORS Scanner** | Análisis de políticas Cross-Origin mal configuradas | 🟡 MEDIUM |
+| **CSRF Auditor** | Verificación de protección anti-falsificación en formularios | 🟡 MEDIUM |
+| **Brute Force Detector** | Detección de endpoints sin protección contra fuerza bruta | 🟠 HIGH |
+| **Weak Session Auditor** | Auditoría de gestión de sesiones (entropía, rotación, tokens) | 🟠 HIGH |
+
+### Configuración y Hardening (A05 — Security Misconfiguration)
+
+| Módulo | Descripción | Severidad |
+|--------|-------------|-----------|
+| **Header Analyzer** | Evaluación de cabeceras de seguridad (CSP, HSTS, X-Frame-Options, etc.) | 🟡 MEDIUM |
+| **Dir Listing Detector** | Detección de listado de directorios habilitado | 🟡 MEDIUM |
+| **HTTP Method Scanner** | Identificación de métodos HTTP peligrosos habilitados (PUT, DELETE, TRACE) | 🟡 MEDIUM |
+| **Exposure Scanner** | Detección de archivos sensibles expuestos (.env, .git, backups) | 🟠 HIGH |
+| **Path Fuzzer** | Descubrimiento de rutas y archivos ocultos mediante diccionarios | 🟡 MEDIUM |
+
+### Componentes Vulnerables y Criptografía (A02 + A06)
+
+| Módulo | Descripción | Severidad |
+|--------|-------------|-----------|
+| **CVE Lookup** | Base de datos local + consulta en vivo a NVD API 2.0 del NIST | 🔴 CRITICAL |
+| **TLS Checker** | Validación de certificados SSL/TLS, protocolos y cifrados débiles | 🟠 HIGH |
+| **Sensitive Data Scanner** | Detección de datos sensibles expuestos (emails, tokens, API keys) | 🟠 HIGH |
+
+### Diseño Inseguro (A04)
+
+| Módulo | Descripción | Severidad |
+|--------|-------------|-----------|
+| **File Upload Detector** | Detección de formularios de subida de archivos sin validación | 🟠 HIGH |
+
+### Reconocimiento y Análisis
 
 | Módulo | Descripción |
 |--------|-------------|
-| **Web Crawler** | Explorador estructural que mapea URLs, formularios y puntos de entrada |
-| **Tech Fingerprinter** | Identificación de servidor, lenguaje backend y CMS/Framework |
+| **Web Crawler** | Explorador estructural que mapea URLs, formularios y puntos de entrada con soporte de autenticación |
+| **Tech Fingerprinter** | Identificación de servidor, lenguaje backend, CMS/Framework y versiones |
 | **Subdomain Scanner** | Descubrimiento pasivo OSINT vía crt.sh y HackerTarget con validación de subdominios live |
-| **Port Scanner** | Escaneo de puertos abiertos en el objetivo |
-| **Path Fuzzer** | Descubrimiento de rutas y archivos ocultos mediante diccionarios |
-
-### Módulos de Configuración y Hardening
-
-| Módulo | Descripción |
-|--------|-------------|
-| **Header Analyzer** | Evaluación de cabeceras de seguridad (CSP, HSTS, X-Frame-Options, etc.) |
-| **Cookie Scanner** | Auditoría de atributos de cookies (Secure, HttpOnly, SameSite) |
-| **WAF Detector** | Identificación de Web Application Firewalls activos |
-| **CMS Auditor** | Análisis específico para WordPress, Joomla, Drupal y otros CMS |
-| **Exposure Scanner** | Detección de archivos sensibles expuestos (.env, .git, backups, configs) |
+| **Port Scanner** | Escaneo de puertos TCP abiertos con identificación de servicios |
 
 ### Inteligencia Artificial
 
@@ -89,43 +120,63 @@ El sistema opera bajo una arquitectura modular extensible donde cada módulo es 
 
 ```
 VulnSeeker/
-├── core/                    # Núcleo del sistema
-│   ├── engine.py            # Orquestador principal (multihilo)
-│   ├── scanner_types.py     # Tipos base: Target, Vulnerability, ScannerModule
-│   ├── models.py            # Estructuras de datos compartidas
-│   ├── config.py            # Configuración global centralizada
-│   ├── crawler.py           # Web Crawler estructural
-│   ├── fingerprinter.py     # Detective tecnológico (Server/CMS/Backend)
-│   ├── subdomain_scanner.py # Conquistador OSINT (crt.sh + HackerTarget)
-│   └── db_manager.py        # Persistencia SQLite (Singleton)
+├── core/                         # Núcleo del sistema
+│   ├── engine.py                 # Orquestador principal (multihilo)
+│   ├── scanner_types.py          # Tipos base: Target, Vulnerability, ScannerModule
+│   ├── models.py                 # Estructuras de datos compartidas
+│   ├── config.py                 # Configuración global centralizada
+│   ├── crawler.py                # Web Crawler con autenticación por cookies
+│   ├── fingerprinter.py          # Fingerprinting tecnológico (Server/CMS/Backend)
+│   ├── subdomain_scanner.py      # OSINT de subdominios (crt.sh + HackerTarget)
+│   └── db_manager.py             # Persistencia SQLite (Singleton)
 │
-├── modules/                 # Módulos de escaneo independientes
-│   ├── sqli_module.py       # SQL Injection (Error-Based)
-│   ├── xss_module.py        # Reflected XSS
-│   ├── cmd_injection.py     # Command Injection / RCE
-│   ├── lfi_scanner.py       # Local File Inclusion
-│   ├── rfi_scanner.py       # Remote File Inclusion
-│   ├── header_analyzer.py   # Análisis de cabeceras HTTP
-│   ├── cookie_scanner.py    # Auditoría de cookies
-│   ├── waf_detector.py      # Detección de WAF
-│   ├── cms_auditor.py       # Auditoría de CMS
-│   ├── exposure_scanner.py  # Archivos sensibles expuestos
-│   ├── port_scanner.py      # Escaneo de puertos
-│   ├── path_fuzzer.py       # Fuzzing de rutas
-│   ├── email_harvester.py   # Recolección de correos electrónicos
-│   ├── tech_visualizer.py   # Visualización de arquitectura tecnológica
-│   └── ai_analyst.py        # Analista IA (Groq / Llama 3.3 70B)
+├── modules/                      # 21 módulos de escaneo independientes
+│   ├── sqli_module.py            # SQL Injection (Error-Based)
+│   ├── xss_module.py             # Reflected XSS
+│   ├── cmd_injection.py          # Command Injection / RCE
+│   ├── lfi_scanner.py            # Local File Inclusion
+│   ├── rfi_scanner.py            # Remote File Inclusion
+│   ├── open_redirect.py          # Open Redirect
+│   ├── cors_scanner.py           # CORS Misconfiguration
+│   ├── csrf_auditor.py           # Cross-Site Request Forgery
+│   ├── cve_lookup.py             # CVE Lookup (Local DB + NVD API 2.0)
+│   ├── tls_checker.py            # TLS/SSL Certificate Analyzer
+│   ├── header_analyzer.py        # HTTP Security Headers
+│   ├── dir_listing_detector.py   # Directory Listing Detection
+│   ├── http_method_scanner.py    # Dangerous HTTP Methods
+│   ├── cookie_scanner.py         # Cookie Security Audit
+│   ├── exposure_scanner.py       # Sensitive File Exposure
+│   ├── path_fuzzer.py            # Path Fuzzing / Discovery
+│   ├── port_scanner.py           # TCP Port Scanner
+│   ├── sensitive_data_scanner.py # Sensitive Data Exposure (PII, tokens)
+│   ├── file_upload_detector.py   # Insecure File Upload Detection
+│   ├── brute_force_detector.py   # Brute Force Protection Audit
+│   ├── weak_session_auditor.py   # Session Management Audit
+│   ├── waf_detector.py           # WAF Detection
+│   ├── cms_auditor.py            # CMS-Specific Vulnerabilities
+│   ├── email_harvester.py        # Email Address Discovery
+│   ├── tech_visualizer.py        # Architecture Map Generator
+│   └── ai_analyst.py             # AI Analyst (Groq / Llama 3.3 70B)
 │
-├── ui/                      # Interfaz gráfica
-│   └── main_window.py       # GUI completa (CustomTkinter + Matplotlib)
+├── ui/                           # Interfaz gráfica
+│   └── main_window.py            # GUI completa (PyQt6 + Matplotlib)
 │
-├── reports/                 # Sistema de reportes
-│   ├── report_generator.py  # Exportador JSON
-│   └── pdf_generator.py     # Generador PDF (ReportLab + gráficos)
+├── reports/                      # Sistema de reportes
+│   ├── report_generator.py       # Exportador JSON/CSV
+│   └── pdf_generator.py          # Generador PDF (ReportLab + gráficos)
 │
-├── main.py                  # Punto de entrada CLI
-├── gui.py                   # Punto de entrada GUI
-└── requirements.txt         # Dependencias del proyecto
+├── tests/                        # 108 tests unitarios (pytest)
+│   ├── test_sqli.py
+│   ├── test_xss.py
+│   ├── test_cmd_injection.py
+│   ├── test_cve_lookup.py
+│   ├── ...                       # 22 archivos de test
+│   └── test_weak_session.py
+│
+├── .github/workflows/ci.yml     # CI/CD Pipeline (GitHub Actions)
+├── main.py                      # Punto de entrada CLI
+├── gui.py                       # Punto de entrada GUI
+└── requirements.txt             # Dependencias del proyecto
 ```
 
 ### Flujo de Ejecución
@@ -143,35 +194,73 @@ VulnSeeker/
 └────────┬────────┘
          ▼
 ┌─────────────────┐
-│    Web Crawler   │ ← URLs + Formularios + Parámetros
+│    Web Crawler   │ ← URLs + Formularios + Parámetros (con autenticación)
 └────────┬────────┘
          ▼
-┌─────────────────────────────────────┐
-│     ATAQUE MULTIHILO (10 hilos)     │
-│  ┌───────┐ ┌───────┐ ┌───────────┐ │
-│  │ SQLi  │ │  XSS  │ │ Headers   │ │
-│  │ LFI   │ │  RFI  │ │ Cookies   │ │
-│  │ RCE   │ │  WAF  │ │ Exposure  │ │
-│  └───────┘ └───────┘ └───────────┘ │
-└────────────────┬────────────────────┘
-                 ▼
-┌─────────────────────────────────────┐
-│   ANÁLISIS IA (Llama 3.3 70B)      │
-│   Informe CISO + Riesgo de Negocio │
-└────────────────┬────────────────────┘
-                 ▼
-      ┌──────────┴──────────┐
-      │   PDF · JSON · CSV  │
-      │   SQLite (Historial)│
-      └─────────────────────┘
+┌──────────────────────────────────────────────┐
+│     ATAQUE MULTIHILO (21 módulos en paralelo)│
+│  ┌────────┐ ┌────────┐ ┌──────────────────┐ │
+│  │ SQLi   │ │  XSS   │ │ Header Analyzer  │ │
+│  │ LFI    │ │  RFI   │ │ CORS Scanner     │ │
+│  │ RCE    │ │  SSRF  │ │ CSRF Auditor     │ │
+│  │ CVE    │ │  TLS   │ │ Brute Force      │ │
+│  │ Upload │ │ Redirect│ │ Weak Session     │ │
+│  └────────┘ └────────┘ └──────────────────┘ │
+└─────────────────┬────────────────────────────┘
+                  ▼
+┌──────────────────────────────────────────────┐
+│      CVE LOOKUP (NVD API 2.0 en vivo)        │
+│   Base local (16 CVEs) + consulta al NIST    │
+└─────────────────┬────────────────────────────┘
+                  ▼
+┌──────────────────────────────────────────────┐
+│     ANÁLISIS IA (Llama 3.3 70B via Groq)     │
+│   Informe CISO + Riesgo de Negocio           │
+└─────────────────┬────────────────────────────┘
+                  ▼
+       ┌──────────┴──────────┐
+       │  PDF · JSON · CSV   │
+       │  SQLite (Historial) │
+       └─────────────────────┘
 ```
+
+### Cobertura OWASP Top 10 (2021)
+
+| # | Categoría OWASP | Módulo(s) | Estado |
+|---|----------------|-----------|:------:|
+| A01 | Broken Access Control | Open Redirect, CORS Scanner | ✅ |
+| A02 | Cryptographic Failures | TLS Checker, Sensitive Data Scanner | ✅ |
+| A03 | Injection | SQLi, XSS, Command Injection, LFI, RFI | ✅ |
+| A04 | Insecure Design | File Upload Detector | ✅ |
+| A05 | Security Misconfiguration | Headers, Dir Listing, HTTP Methods, Exposure, Path Fuzzer | ✅ |
+| A06 | Vulnerable Components | CVE Lookup (NVD API), Tech Fingerprinter | ✅ |
+| A07 | Auth Failures | CSRF, Brute Force, Weak Session | ✅ |
+| A08 | Software & Data Integrity | — | ⬜ No evaluable externamente |
+| A09 | Logging & Monitoring | — | ⬜ No evaluable externamente |
+| A10 | SSRF | SSRF Scanner | ✅ |
+
+---
+
+## 🧪 Tests
+
+VulnSeeker cuenta con **108 pruebas unitarias** organizadas en 22 archivos de test. Todos los módulos están cubiertos con tests que utilizan mocking de respuestas HTTP para garantizar ejecución determinista y sin dependencia de red.
+
+```bash
+# Ejecutar la suite completa
+pytest tests/ -v
+
+# Resultado esperado
+108 passed ✅
+```
+
+La integración continua ejecuta la suite completa en cada push vía **GitHub Actions**.
 
 ---
 
 ## 🚀 Instalación
 
 ### Requisitos Previos
-- Python 3.10+ 
+- Python 3.10+
 - pip (gestor de paquetes)
 - *(Opcional)* API Key de [Groq](https://console.groq.com/) para el módulo de IA
 
@@ -218,6 +307,16 @@ Esta decisión es deliberada: un escáner de vulnerabilidades requiere acceso di
 
 ---
 
+## 📚 Contexto Académico
+
+VulnSeeker es desarrollado como Trabajo de Grado para la **Licenciatura en Computación** de la **Facultad Experimental de Ciencias, Universidad del Zulia**, Maracaibo, Venezuela.
+
+**Título:** *Escáner Modular para la Detección Automatizada de Vulnerabilidades en Aplicaciones Web*
+
+**Autor:** Claudio Enrique Palmar León · **Tutor:** Prof. Sigerist Rodríguez
+
+---
+
 ## ⚠️ Disclaimer Legal
 
 ```
@@ -236,7 +335,7 @@ El autor no se hace responsable del uso indebido de esta herramienta.
 
 Este proyecto está licenciado bajo la [Licencia MIT](LICENSE).
 
-Desarrollado por **Claudio Enrique Palmar León** · 2025
+Desarrollado por **Claudio Enrique Palmar León** · 2025-2026
 
 ---
 
