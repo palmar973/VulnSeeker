@@ -1063,11 +1063,21 @@ class VulnSeekerApp(ctk.CTk):
         ctk.CTkLabel(form, text="Hilos (1-50):", font=ctk.CTkFont(size=15, weight="bold")).grid(row=0, column=0,
                                                                                                 padx=20, pady=20,
                                                                                                 sticky="w")
-        self.threads_slider = ctk.CTkSlider(form, from_=1, to=50, number_of_steps=49, width=300,
+        slider_frame = ctk.CTkFrame(form, fg_color="transparent")
+        slider_frame.grid(row=0, column=1, padx=20, pady=20, sticky="ew")
+        slider_frame.grid_columnconfigure(0, weight=1)
+
+        self.threads_label = ctk.CTkLabel(slider_frame, text=str(threads_val),
+                                          font=ctk.CTkFont(size=16, weight="bold"),
+                                          text_color=COLOR_ACCENT, width=35)
+        self.threads_label.grid(row=0, column=1, padx=(10, 0))
+
+        self.threads_slider = ctk.CTkSlider(slider_frame, from_=1, to=50, number_of_steps=49,
                                             progress_color=COLOR_ACCENT, button_color=COLOR_ACCENT,
-                                            button_hover_color=COLOR_ACCENT_ALT)
+                                            button_hover_color=COLOR_ACCENT_ALT,
+                                            command=lambda v: self.threads_label.configure(text=str(int(v))))
         self.threads_slider.set(threads_val)
-        self.threads_slider.grid(row=0, column=1, padx=20, pady=20, sticky="ew")
+        self.threads_slider.grid(row=0, column=0, sticky="ew")
 
         # --- SUBDOMINIOS ---
         ctk.CTkLabel(form, text="Activar Subdomain Scanner:", font=ctk.CTkFont(size=15, weight="bold")).grid(row=1,
