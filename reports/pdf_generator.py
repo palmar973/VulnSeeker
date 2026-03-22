@@ -20,6 +20,7 @@ from io import BytesIO
 from pathlib import Path
 from datetime import datetime
 from typing import List, Optional
+from xml.sax.saxutils import escape as _xml_escape
 from core.db_manager import DatabaseManager
 import traceback
 
@@ -102,11 +103,19 @@ class PDFReportGenerator:
         story.append(info_table)
         return story
 
+    @staticmethod
+    def _safe(text: str) -> str:
+        """Escapa caracteres HTML para que ReportLab no los interprete como tags."""
+        if not text:
+            return ""
+        return _xml_escape(str(text))
+
     def _create_executive_summary(self, ai_summary: str) -> List:
+        safe_summary = self._safe(ai_summary).replace('\n', '<br/>')
         story = [
             Paragraph("Resumen Ejecutivo (IA)", self.styles['Heading1']),
             Spacer(1, 12),
-            Paragraph(ai_summary.replace('\n', '<br/>'), self.styles['Normal'])
+            Paragraph(safe_summary, self.styles['Normal'])
         ]
         return story
 
@@ -240,11 +249,14 @@ class PDFReportGenerator:
         table_data = [['#', 'Tipo', 'Severidad', 'URL']]
         for idx, vuln in enumerate(vulns, 1):
             sev_color = self.severity_colors.get(vuln.severity, colors.black)
-            sev_text = f'<font color="{sev_color.hexval()}"><b>{vuln.severity}</b></font>'
+            safe_sev = self._safe(vuln.severity)
+            sev_text = f'<font color="{sev_color.hexval()}"><b>{safe_sev}</b></font>'
+            safe_type = self._safe(vuln.vuln_type)
+            safe_url = self._safe(vuln.url[:60] + "..." if len(vuln.url) > 60 else vuln.url)
             table_data.append([
-                str(idx), Paragraph(vuln.vuln_type, self.styles['Normal']),
+                str(idx), Paragraph(safe_type, self.styles['Normal']),
                 Paragraph(sev_text, self.styles['Normal']),
-                Paragraph(vuln.url[:60] + "..." if len(vuln.url) > 60 else vuln.url, self.styles['Normal'])
+                Paragraph(safe_url, self.styles['Normal'])
             ])
         findings_table = Table(table_data, colWidths=[0.5 * inch, 2 * inch, 1 * inch, 3 * inch])
         findings_table.setStyle(TableStyle([
