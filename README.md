@@ -14,8 +14,8 @@
 **Escáner Modular de Vulnerabilidades Web · Enterprise Edition**
 
 [![Python](https://img.shields.io/badge/Python-3.14-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/Tests-108%20passing-brightgreen?logo=pytest&logoColor=white)]()
-[![Modules](https://img.shields.io/badge/Modules-21%20scanners-orange?logo=shield&logoColor=white)]()
+[![Tests](https://img.shields.io/badge/Tests-113%20passing-brightgreen?logo=pytest&logoColor=white)]()
+[![Modules](https://img.shields.io/badge/Modules-26%20scanners-orange?logo=shield&logoColor=white)]()
 [![OWASP](https://img.shields.io/badge/OWASP%20Top%2010-8%2F10-red?logo=owasp&logoColor=white)]()
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)]()
@@ -28,7 +28,7 @@
 
 ## 🔍 ¿Qué es VulnSeeker?
 
-**VulnSeeker Enterprise** es un framework DAST (Dynamic Application Security Testing) avanzado, desarrollado en Python, diseñado para realizar auditorías de seguridad automatizadas de forma integral. A diferencia de escáneres básicos que se limitan a un solo vector de ataque, VulnSeeker orquesta **21 módulos independientes** de análisis — desde inyecciones SQL y XSS hasta reconocimiento OSINT de subdominios, consulta de CVEs en tiempo real contra la NVD del NIST, y análisis con Inteligencia Artificial.
+**VulnSeeker Enterprise** es un framework DAST (Dynamic Application Security Testing) avanzado, desarrollado en Python, diseñado para realizar auditorías de seguridad automatizadas de forma integral. A diferencia de escáneres básicos que se limitan a un solo vector de ataque, VulnSeeker orquesta **26 módulos independientes** de análisis — desde inyecciones SQL y XSS hasta reconocimiento OSINT de subdominios, consulta de CVEs en tiempo real contra la NVD del NIST, y análisis con Inteligencia Artificial.
 
 El sistema opera bajo una arquitectura modular extensible donde cada módulo hereda de la clase base `ScannerModule` y se registra en el motor central, permitiendo agregar nuevas capacidades de escaneo sin modificar el núcleo del sistema.
 
@@ -130,7 +130,7 @@ VulnSeeker/
 │   ├── subdomain_scanner.py      # OSINT de subdominios (crt.sh + HackerTarget)
 │   └── db_manager.py             # Persistencia SQLite (Singleton)
 │
-├── modules/                      # 21 módulos de escaneo independientes
+├── modules/                      # 26 módulos de escaneo independientes
 │   ├── sqli_module.py            # SQL Injection (Error-Based)
 │   ├── xss_module.py             # Reflected XSS
 │   ├── cmd_injection.py          # Command Injection / RCE
@@ -159,7 +159,7 @@ VulnSeeker/
 │   └── ai_analyst.py             # AI Analyst (Groq / Llama 3.3 70B)
 │
 ├── ui/                           # Interfaz gráfica
-│   └── main_window.py            # GUI completa (PyQt6 + Matplotlib)
+│   └── main_window.py            # GUI completa (CustomTkinter + Matplotlib)
 │
 ├── reports/                      # Sistema de reportes
 │   ├── report_generator.py       # Exportador JSON/CSV
@@ -198,7 +198,7 @@ VulnSeeker/
 └────────┬────────┘
          ▼
 ┌──────────────────────────────────────────────┐
-│     ATAQUE MULTIHILO (21 módulos en paralelo)│
+│     ATAQUE MULTIHILO (26 módulos en paralelo)│
 │  ┌────────┐ ┌────────┐ ┌──────────────────┐ │
 │  │ SQLi   │ │  XSS   │ │ Header Analyzer  │ │
 │  │ LFI    │ │  RFI   │ │ CORS Scanner     │ │

@@ -60,8 +60,8 @@ const SETTINGS = [
 ];
 const INTEGRATIONS = [
   { name: 'GitHub Actions', tag: 'CI/CD', desc: 'Ejecuta el escaneo en cada pull request y bloquea merges inseguros.' },
-  { name: 'Slack Webhooks', tag: 'Alerting', desc: 'Envía hallazgos críticos a #secops con contexto y severidad.' },
-  { name: 'Burp Suite', tag: 'Proxy', desc: 'Comparte sesión y cookies para pruebas autenticadas.' },
+  { name: 'Slack Webhooks', tag: 'Roadmap', desc: 'Próximamente: notificaciones de hallazgos críticos en canales de Slack.' },
+  { name: 'Burp Suite', tag: 'Roadmap', desc: 'Próximamente: importación/exportación de sesiones para pruebas autenticadas.' },
   { name: 'SQLite / JSON', tag: 'Export', desc: 'Persistencia ligera para pipelines y dashboards.' },
   { name: 'Groq Cloud', tag: 'AI', desc: 'Inferencia ultrarrápida con Llama 3.3 para reportes ejecutivos.' },
 ];
