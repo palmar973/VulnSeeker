@@ -93,3 +93,44 @@ def test_scan_sin_crawl_usa_url_directa():
         engine.scan("http://example.com", crawl=False)
 
     assert "http://example.com" in urls_atacadas
+
+
+def test_deduplicacion_elimina_duplicados():
+    """El engine debe eliminar hallazgos duplicados (mismo name + url + payload)."""
+    engine = VulnSeekerEngine(enable_subdomains=False)
+
+    class DuplicatorModule(ScannerModule):
+        @property
+        def name(self) -> str:
+            return "Duplicator"
+
+        @property
+        def description(self) -> str:
+            return "Genera duplicados"
+
+        def run(self, target: Target) -> list[Vulnerability]:
+            # Retorna 3 vulns: 2 idénticas + 1 distinta
+            return [
+                Vulnerability(name="XSS", severity=Severity.HIGH,
+                              description="XSS en param", target_url=target.url,
+                              payload="<script>alert(1)</script>"),
+                Vulnerability(name="XSS", severity=Severity.HIGH,
+                              description="XSS en param", target_url=target.url,
+                              payload="<script>alert(1)</script>"),
+                Vulnerability(name="SQLi", severity=Severity.CRITICAL,
+                              description="SQLi en param", target_url=target.url,
+                              payload="' OR 1=1--"),
+            ]
+
+    engine.register_module(DuplicatorModule())
+
+    with patch("core.engine.TechFingerprinter") as mock_fp:
+        mock_fp.return_value.analyze.return_value = {
+            'server': [], 'powered_by': [], 'cms_framework': [], 'confidence': 'LOW'
+        }
+        results = engine.scan("http://example.com", crawl=False)
+
+    # Debe haber 2 resultados únicos, no 3
+    assert len(results) == 2
+    names = {v.name for v in results}
+    assert names == {"XSS", "SQLi"}

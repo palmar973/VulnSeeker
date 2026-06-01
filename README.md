@@ -14,7 +14,7 @@
 **Escáner Modular de Vulnerabilidades Web · Enterprise Edition**
 
 [![Python](https://img.shields.io/badge/Python-3.14-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/Tests-133%20passing-brightgreen?logo=pytest&logoColor=white)]()
+[![Tests](https://img.shields.io/badge/Tests-134%20passing-brightgreen?logo=pytest&logoColor=white)]()
 [![Modules](https://img.shields.io/badge/Modules-26%20scanners-orange?logo=shield&logoColor=white)]()
 [![OWASP](https://img.shields.io/badge/OWASP%20Top%2010-8%2F10-red?logo=owasp&logoColor=white)]()
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
@@ -38,14 +38,14 @@ El sistema opera bajo una arquitectura modular extensible donde cada módulo her
 - **8/10 categorías del OWASP Top 10 (2021).** Las 2 restantes (A08, A09) no son evaluables externamente mediante DAST.
 - **Inteligencia Artificial integrada.** Llama 3.3 70B actúa como un CISO virtual que traduce hallazgos técnicos en riesgos de negocio ejecutivos.
 - **CVEs en tiempo real.** Integración con la API 2.0 del NIST NVD para consultar vulnerabilidades conocidas asociadas a las tecnologías detectadas.
-- **133 tests unitarios.** Suite completa con `pytest` y pipeline CI/CD en GitHub Actions.
+- **134 tests unitarios.** Suite completa con `pytest` y pipeline CI/CD en GitHub Actions.
 - **Persistencia histórica.** Cada escaneo se almacena en SQLite, permitiendo análisis de tendencias y comparación entre auditorías.
 
 ---
 
 ## ⚡ Módulos de Detección
 
-### Inyección y Ejecución (A03 — Injection)
+### Inyección y Ejecución (A03 + A10 — Injection / SSRF)
 
 | Módulo | Descripción | Severidad |
 |--------|-------------|-----------|
@@ -167,7 +167,7 @@ VulnSeeker/
 │   ├── report_generator.py       # Exportador JSON/CSV
 │   └── pdf_generator.py          # Generador PDF (ReportLab + gráficos)
 │
-├── tests/                        # 133 tests unitarios (pytest)
+├── tests/                        # 134 tests unitarios (pytest)
 │   ├── test_sqli.py
 │   ├── test_xss.py
 │   ├── test_cmd_injection.py
@@ -245,17 +245,29 @@ VulnSeeker/
 
 ## 🧪 Tests
 
-VulnSeeker cuenta con **133 pruebas unitarias** organizadas en 30 archivos de test. Todos los módulos están cubiertos con tests que utilizan mocking de respuestas HTTP para garantizar ejecución determinista y sin dependencia de red.
+VulnSeeker cuenta con **134 pruebas unitarias** organizadas en 30 archivos de test. Todos los módulos están cubiertos con tests que utilizan mocking de respuestas HTTP para garantizar ejecución determinista y sin dependencia de red.
 
 ```bash
 # Ejecutar la suite completa
 pytest tests/ -v
 
 # Resultado esperado
-133 passed ✅
+134 passed ✅
 ```
 
 La integración continua ejecuta la suite completa en cada push vía **GitHub Actions**.
+
+---
+
+## ⚠️ Limitaciones Conocidas
+
+- **Detección heurística:** Los módulos de inyección usan técnicas error-based. No se detectan Blind SQLi (time-based), XSS almacenado ni DOM XSS.
+- **SSRF in-band:** Detección por análisis de respuesta HTTP; no usa callbacks OOB (Out-of-Band).
+- **Subdominios como recon:** Los subdominios descubiertos vía OSINT no se escanean automáticamente (requiere autorización explícita).
+- **IA dependiente de API:** El informe ejecutivo requiere conectividad con Groq API; el resto del framework opera offline.
+- **Validación en entorno controlado:** Precision 100% contra DVWA (low security); en producción los resultados pueden variar.
+
+Para más detalles, consulte la sección de Limitaciones del Estudio en el [documento de tesis](tesis/main.pdf).
 
 ---
 
