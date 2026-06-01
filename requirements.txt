@@ -1,6 +1,7 @@
 # --- Motor HTTP y Red ---
 requests>=2.31.0      # Para hacer peticiones a las webs
 urllib3>=2.0.0        # Dependencia de requests
+dnspython>=2.4.0      # Resolución DNS (subdomain_takeover)
 
 # --- Análisis de HTML ---
 beautifulsoup4>=4.12.0 # Para leer el código fuente de las webs
