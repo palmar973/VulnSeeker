@@ -1,0 +1,3 @@
+# Dependencias de desarrollo
+pytest>=7.4.0         # Framework de testing
+pytest-cov>=4.1.0     # Cobertura de tests

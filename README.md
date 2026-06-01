@@ -176,9 +176,12 @@ VulnSeeker/
 │   └── test_weak_session.py
 │
 ├── .github/workflows/ci.yml     # CI/CD Pipeline (GitHub Actions)
+├── tesis/                       # Documento de tesis (LaTeX + PDF)
+│   └── main.tex / main.pdf
 ├── main.py                      # Punto de entrada CLI
 ├── gui.py                       # Punto de entrada GUI
-└── requirements.txt             # Dependencias del proyecto
+├── requirements.txt             # Dependencias del proyecto
+└── requirements-dev.txt         # Dependencias de desarrollo (pytest)
 ```
 
 ### Flujo de Ejecución
@@ -216,6 +219,11 @@ VulnSeeker/
 └─────────────────┬────────────────────────────┘
                   ▼
 ┌──────────────────────────────────────────────┐
+│  DEDUPLICACIÓN (name + URL + payload)         │
+│  Elimina hallazgos exactamente idénticos      │
+└─────────────────┬────────────────────────────┘
+                  ▼
+┌──────────────────────────────────────────────┐
 │     ANÁLISIS IA (Llama 3.3 70B via Groq)     │
 │   Informe CISO + Riesgo de Negocio           │
 └─────────────────┬────────────────────────────┘
@@ -232,7 +240,7 @@ VulnSeeker/
 |---|----------------|-----------|:------:|
 | A01 | Broken Access Control | Open Redirect, CORS Scanner | ✅ |
 | A02 | Cryptographic Failures | TLS Checker, Sensitive Data Scanner | ✅ |
-| A03 | Injection | SQLi, XSS, Command Injection, LFI, RFI | ✅ |
+| A03 | Injection | SQLi, XSS, Command Injection, LFI, RFI, SSRF* | ✅ |
 | A04 | Insecure Design | File Upload Detector | ✅ |
 | A05 | Security Misconfiguration | Headers, Dir Listing, HTTP Methods, Exposure, Path Fuzzer | ✅ |
 | A06 | Vulnerable Components | CVE Lookup (NVD API), Tech Fingerprinter | ✅ |
@@ -240,6 +248,8 @@ VulnSeeker/
 | A08 | Software & Data Integrity | — | ⬜ No evaluable externamente |
 | A09 | Logging & Monitoring | — | ⬜ No evaluable externamente |
 | A10 | SSRF | SSRF Scanner | ✅ |
+
+> *\*SSRF se clasifica oficialmente como A10 en OWASP Top 10 (2021), pero se agrupa también en A03 por su naturaleza de inyección server-side.*
 
 ---
 
