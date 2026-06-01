@@ -14,7 +14,7 @@
 **Escáner Modular de Vulnerabilidades Web · Enterprise Edition**
 
 [![Python](https://img.shields.io/badge/Python-3.14-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/Tests-113%20passing-brightgreen?logo=pytest&logoColor=white)]()
+[![Tests](https://img.shields.io/badge/Tests-133%20passing-brightgreen?logo=pytest&logoColor=white)]()
 [![Modules](https://img.shields.io/badge/Modules-26%20scanners-orange?logo=shield&logoColor=white)]()
 [![OWASP](https://img.shields.io/badge/OWASP%20Top%2010-8%2F10-red?logo=owasp&logoColor=white)]()
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
@@ -38,7 +38,7 @@ El sistema opera bajo una arquitectura modular extensible donde cada módulo her
 - **8/10 categorías del OWASP Top 10 (2021).** Las 2 restantes (A08, A09) no son evaluables externamente mediante DAST.
 - **Inteligencia Artificial integrada.** Llama 3.3 70B actúa como un CISO virtual que traduce hallazgos técnicos en riesgos de negocio ejecutivos.
 - **CVEs en tiempo real.** Integración con la API 2.0 del NIST NVD para consultar vulnerabilidades conocidas asociadas a las tecnologías detectadas.
-- **108 tests unitarios.** Suite completa con `pytest` y pipeline CI/CD en GitHub Actions.
+- **133 tests unitarios.** Suite completa con `pytest` y pipeline CI/CD en GitHub Actions.
 - **Persistencia histórica.** Cada escaneo se almacena en SQLite, permitiendo análisis de tendencias y comparación entre auditorías.
 
 ---
@@ -54,7 +54,7 @@ El sistema opera bajo una arquitectura modular extensible donde cada módulo her
 | **Command Injection** | Detección de ejecución remota de comandos (RCE) en parámetros | 🔴 CRITICAL |
 | **Local File Inclusion** | Pruebas de traversal de directorios para lectura de archivos locales | 🔴 HIGH |
 | **Remote File Inclusion** | Detección de inclusión de archivos remotos en aplicaciones web | 🔴 HIGH |
-| **SSRF Scanner** | Detección de Server-Side Request Forgery mediante callbacks | 🔴 HIGH |
+| **SSRF Scanner** | Detección heurística in-band de Server-Side Request Forgery | 🔴 HIGH |
 
 ### Control de Acceso y Autenticación (A01 + A07)
 
@@ -155,8 +155,9 @@ VulnSeeker/
 │   ├── waf_detector.py           # WAF Detection
 │   ├── cms_auditor.py            # CMS-Specific Vulnerabilities
 │   ├── email_harvester.py        # Email Address Discovery
-│   ├── tech_visualizer.py        # Architecture Map Generator
-│   └── ai_analyst.py             # AI Analyst (Groq / Llama 3.3 70B)
+│   ├── ssrf_scanner.py           # Server-Side Request Forgery (SSRF)
+│   ├── tech_visualizer.py        # Architecture Map Generator (servicio auxiliar)
+│   └── ai_analyst.py             # AI Analyst (Groq / Llama 3.3 70B, servicio auxiliar)
 │
 ├── ui/                           # Interfaz gráfica
 │   └── main_window.py            # GUI completa (CustomTkinter + Matplotlib)
@@ -165,7 +166,7 @@ VulnSeeker/
 │   ├── report_generator.py       # Exportador JSON/CSV
 │   └── pdf_generator.py          # Generador PDF (ReportLab + gráficos)
 │
-├── tests/                        # 108 tests unitarios (pytest)
+├── tests/                        # 133 tests unitarios (pytest)
 │   ├── test_sqli.py
 │   ├── test_xss.py
 │   ├── test_cmd_injection.py
@@ -243,14 +244,14 @@ VulnSeeker/
 
 ## 🧪 Tests
 
-VulnSeeker cuenta con **108 pruebas unitarias** organizadas en 22 archivos de test. Todos los módulos están cubiertos con tests que utilizan mocking de respuestas HTTP para garantizar ejecución determinista y sin dependencia de red.
+VulnSeeker cuenta con **133 pruebas unitarias** organizadas en 30 archivos de test. Todos los módulos están cubiertos con tests que utilizan mocking de respuestas HTTP para garantizar ejecución determinista y sin dependencia de red.
 
 ```bash
 # Ejecutar la suite completa
 pytest tests/ -v
 
 # Resultado esperado
-108 passed ✅
+133 passed ✅
 ```
 
 La integración continua ejecuta la suite completa en cada push vía **GitHub Actions**.

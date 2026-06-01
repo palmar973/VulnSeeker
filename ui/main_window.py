@@ -24,33 +24,8 @@ from core.db_manager import DatabaseManager
 from core.engine import VulnSeekerEngine
 from core.config import GlobalConfig
 
-# Módulos de Escaneo
-from modules.sqli_module import SQLInjectionScanner
-from modules.xss_module import XSSScanner
-from modules.header_analyzer import HeaderAnalyzer
-from modules.port_scanner import PortScanner
-from modules.path_fuzzer import PathFuzzer
-from modules.waf_detector import WAFDetector
-from modules.cms_auditor import CMSAuditor
-from modules.exposure_scanner import ExposureScanner
-from modules.email_harvester import EmailHarvester
-from modules.subdomain_takeover import SubdomainTakeover
-from modules.lfi_scanner import LFIScanner
-from modules.cookie_scanner import CookieScanner
-from modules.rfi_scanner import RFIScanner
-from modules.cmd_injection import CommandInjectionScanner
-from modules.open_redirect import OpenRedirectScanner
-from modules.csrf_auditor import CSRFAuditor
-from modules.tls_checker import TLSChecker
-from modules.brute_force_detector import BruteForceDetector
-from modules.file_upload_detector import FileUploadDetector
-from modules.weak_session_auditor import WeakSessionAuditor
-from modules.cors_scanner import CORSMisconfigScanner
-from modules.http_method_scanner import HTTPMethodTamperingScanner
-from modules.dir_listing_detector import DirectoryListingDetector
-from modules.sensitive_data_scanner import SensitiveDataExposure
-from modules.cve_lookup import CVELookupScanner
-from modules.ssrf_scanner import SSRFScanner
+# Módulos de Escaneo (registro centralizado)
+from core.module_registry import get_default_modules
 
 from modules.ai_analyst import GroqAIAnalyst
 from reports.report_generator import ReportGenerator
@@ -736,32 +711,8 @@ class VulnSeekerApp(ctk.CTk):
             }
 
             engine = VulnSeekerEngine(config=config)
-            engine.register_module(SQLInjectionScanner())
-            engine.register_module(XSSScanner())
-            engine.register_module(HeaderAnalyzer())
-            engine.register_module(PortScanner())
-            engine.register_module(PathFuzzer())
-            engine.register_module(WAFDetector())
-            engine.register_module(CMSAuditor())
-            engine.register_module(ExposureScanner())
-            engine.register_module(EmailHarvester())
-            engine.register_module(SubdomainTakeover())
-            engine.register_module(LFIScanner())
-            engine.register_module(CookieScanner())
-            engine.register_module(RFIScanner())
-            engine.register_module(CommandInjectionScanner())
-            engine.register_module(OpenRedirectScanner())
-            engine.register_module(CSRFAuditor())
-            engine.register_module(TLSChecker())
-            engine.register_module(BruteForceDetector())
-            engine.register_module(FileUploadDetector())
-            engine.register_module(WeakSessionAuditor())
-            engine.register_module(CORSMisconfigScanner())
-            engine.register_module(HTTPMethodTamperingScanner())
-            engine.register_module(DirectoryListingDetector())
-            engine.register_module(SensitiveDataExposure())
-            engine.register_module(CVELookupScanner())
-            engine.register_module(SSRFScanner())
+            for module in get_default_modules():
+                engine.register_module(module)
 
             logger.info(
                 f"⚡ Motor de análisis iniciado (módulos activos, {threads_cfg} hilos, Subdomains: {'ON' if enable_subs_cfg else 'OFF'})...")
