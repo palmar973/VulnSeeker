@@ -110,7 +110,23 @@ class VulnSeekerEngine:
         else:
             logger.warning("⚠️ No se encontraron endpoints para atacar. Verifica la URL.")
 
-        logger.info(f"🏁 Auditoría completada: {len(self.results)} vulnerabilidades.")
+        logger.info(f"🏁 Auditoría completada: {len(self.results)} hallazgos brutos.")
+
+        # Deduplicación: eliminar hallazgos idénticos (mismo nombre + URL + payload)
+        seen = set()
+        unique_results = []
+        for v in self.results:
+            key = (v.name, v.target_url, getattr(v, 'payload', ''))
+            if key not in seen:
+                seen.add(key)
+                unique_results.append(v)
+
+        dedup_count = len(self.results) - len(unique_results)
+        if dedup_count > 0:
+            logger.info(f"🔄 Deduplicación: {dedup_count} duplicados eliminados.")
+        self.results = unique_results
+
+        logger.info(f"📊 Resultado final: {len(self.results)} vulnerabilidades únicas.")
         logger.info(f"🌐 Subdominios expandidos: {len(self.subdomain_data)}")
         return self.results
 

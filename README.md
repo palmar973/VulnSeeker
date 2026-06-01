@@ -128,6 +128,7 @@ VulnSeeker/
 │   ├── crawler.py                # Web Crawler con autenticación por cookies
 │   ├── fingerprinter.py          # Fingerprinting tecnológico (Server/CMS/Backend)
 │   ├── subdomain_scanner.py      # OSINT de subdominios (crt.sh + HackerTarget)
+│   ├── module_registry.py        # Registro centralizado de los 26 módulos
 │   └── db_manager.py             # Persistencia SQLite (Singleton)
 │
 ├── modules/                      # 26 módulos de escaneo independientes
@@ -171,7 +172,7 @@ VulnSeeker/
 │   ├── test_xss.py
 │   ├── test_cmd_injection.py
 │   ├── test_cve_lookup.py
-│   ├── ...                       # 22 archivos de test
+│   ├── ...                       # 30 archivos de test
 │   └── test_weak_session.py
 │
 ├── .github/workflows/ci.yml     # CI/CD Pipeline (GitHub Actions)
