@@ -34,7 +34,7 @@ El sistema opera bajo una arquitectura modular extensible donde cada módulo her
 
 ### ¿Por qué VulnSeeker?
 
-- **Cobertura real.** No es un script que lanza payloads a ciegas. VulnSeeker ejecuta una cadena completa: reconocimiento → fingerprinting → crawling → ataque multihilo → análisis IA → reporte.
+- **Cobertura real.** No es un script que lanza payloads a ciegas. VulnSeeker ejecuta una cadena completa: reconocimiento → fingerprinting → crawling → ataque multihilo → deduplicación → análisis IA → reporte.
 - **8/10 categorías del OWASP Top 10 (2021).** Las 2 restantes (A08, A09) no son evaluables externamente mediante DAST.
 - **Inteligencia Artificial integrada.** Llama 3.3 70B actúa como un CISO virtual que traduce hallazgos técnicos en riesgos de negocio ejecutivos.
 - **CVEs en tiempo real.** Integración con la API 2.0 del NIST NVD para consultar vulnerabilidades conocidas asociadas a las tecnologías detectadas.
@@ -307,7 +307,10 @@ source .venv/bin/activate
 # 4. Instalar dependencias
 pip install -r requirements.txt
 
-# 5. Ejecutar la GUI
+# 5. (Opcional) Instalar dependencias de desarrollo
+pip install -r requirements-dev.txt
+
+# 6. Ejecutar la GUI
 python gui.py
 ```
 
