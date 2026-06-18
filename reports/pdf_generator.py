@@ -381,7 +381,7 @@ class PDFReportGenerator:
             ])
 
         findings_table = Table(table_data,
-                               colWidths=[0.4 * inch, 2 * inch, 1 * inch, 3.1 * inch])
+                               colWidths=[0.55 * inch, 1.9 * inch, 1 * inch, 3.05 * inch])
 
         # Estilo tabla oscura
         table_style_cmds = [
@@ -544,8 +544,10 @@ class PDFReportGenerator:
             [Paragraph(
                 f'<font color="{accent_color.hexval()}" size="28"><b>{value}</b></font>',
                 ParagraphStyle('KPIVal', alignment=TA_CENTER,
-                               textColor=accent_color, fontSize=28)
+                               textColor=accent_color, fontSize=28,
+                               leading=34)
             )],
+            [Spacer(1, 6)],
             [Paragraph(
                 f'<font color="#888888" size="9">{label}</font>',
                 ParagraphStyle('KPILabel', alignment=TA_CENTER,
