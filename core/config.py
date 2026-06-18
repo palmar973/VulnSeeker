@@ -11,6 +11,9 @@ class GlobalConfig:
 
     MAX_CRAWL_PAGES: int = 50
 
+    # Profundidad máxima de crawling (previene spider traps)
+    MAX_CRAWL_DEPTH: int = 4
+
     # 10 hilos es el punto dulce entre velocidad y estabilidad.
     MAX_THREADS: int = 10
 
