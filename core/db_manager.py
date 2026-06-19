@@ -406,35 +406,111 @@ class DatabaseManager:
             logger.error(f"☢️ Error haciendo NUKE DB: {e}")
             return False
 
-    def export_to_csv(self, output_path: str) -> bool:
-        """Exporta DB a CSV nativo de Excel (UTF-8-SIG)."""
+    def export_to_csv(self, output_path: str, scan_id: int | None = None) -> bool:
+        """
+        Exporta hallazgos a CSV profesional para Excel.
+        Si scan_id es None, exporta el escaneo más reciente.
+
+        Estructura del CSV:
+        - Bloque de metadata (scan info)
+        - Tabla de hallazgos con columnas bien separadas
+        - Resumen de severidades al final
+        """
         try:
             import csv
+
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                query = """
-                    SELECT 
-                        s.id, s.scan_date, s.target_url,
-                        v.name, v.severity, v.description, v.target_url, v.payload
-                    FROM vulnerabilities v
-                    JOIN scans s ON v.scan_id = s.id
-                    ORDER BY s.scan_date DESC
-                """
-                rows = cursor.execute(query).fetchall()
 
-            headers = ["ID Scan", "Fecha", "Objetivo", "Vulnerabilidad", "Severidad", "Descripción", "URL", "Payload"]
+                # Si no se especifica scan_id, usar el más reciente
+                if scan_id is None:
+                    result = cursor.execute(
+                        "SELECT id FROM scans ORDER BY id DESC LIMIT 1"
+                    ).fetchone()
+                    if not result:
+                        logger.error("No hay escaneos en la base de datos.")
+                        return False
+                    scan_id = result[0]
+
+                # Info del scan
+                scan_info = cursor.execute(
+                    "SELECT id, scan_date, target_url FROM scans WHERE id = ?",
+                    (scan_id,)
+                ).fetchone()
+                if not scan_info:
+                    logger.error(f"Scan {scan_id} no encontrado.")
+                    return False
+
+                sid, scan_date, target_url = scan_info
+
+                # Hallazgos ordenados por severidad (mayor a menor)
+                query = """
+                    SELECT v.name, v.severity, v.description, v.target_url, v.payload
+                    FROM vulnerabilities v
+                    WHERE v.scan_id = ?
+                    ORDER BY v.severity DESC, v.name ASC
+                """
+                rows = cursor.execute(query, (scan_id,)).fetchall()
+
             sev_map = {0: "INFO", 1: "LOW", 2: "MEDIUM", 3: "HIGH", 4: "CRITICAL"}
+
+            # Contar por severidad
+            sev_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0, "INFO": 0}
+            for _, sev, *_ in rows:
+                sev_text = sev_map.get(sev, "UNKNOWN")
+                if sev_text in sev_counts:
+                    sev_counts[sev_text] += 1
 
             with open(output_path, "w", newline="", encoding="utf-8-sig") as f:
                 writer = csv.writer(f)
+
+                # ── Bloque de metadata ──
+                writer.writerow(["VULNSEEKER — REPORTE DE AUDITORÍA DAST"])
+                writer.writerow([])
+                writer.writerow(["Objetivo", target_url])
+                writer.writerow(["Scan ID", f"#{sid}"])
+                writer.writerow(["Fecha", scan_date])
+                writer.writerow(["Total Vulnerabilidades", len(rows)])
+                writer.writerow(["Críticas/Alta",
+                                 sev_counts["CRITICAL"] + sev_counts["HIGH"]])
+                writer.writerow(["Media/Baja",
+                                 sev_counts["MEDIUM"] + sev_counts["LOW"]])
+                writer.writerow([])
+
+                # ── Resumen por severidad ──
+                writer.writerow(["DISTRIBUCIÓN POR SEVERIDAD"])
+                for sev_name in ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]:
+                    if sev_counts[sev_name] > 0:
+                        writer.writerow([sev_name, sev_counts[sev_name]])
+                writer.writerow([])
+
+                # ── Tabla de hallazgos ──
+                headers = ["#", "Vulnerabilidad", "Severidad", "URL", "Descripción",
+                           "Payload"]
                 writer.writerow(headers)
-                for scan_id, date, target, v_name, v_sev, v_desc, v_url, v_pay in rows:
+
+                for idx, (v_name, v_sev, v_desc, v_url, v_pay) in enumerate(rows, 1):
                     sev_text = sev_map.get(v_sev, "UNKNOWN")
-                    clean_desc = str(v_desc).replace("\n", " ").replace("\r", "").strip() if v_desc else ""
-                    clean_pay = str(v_pay).replace("\n", " ").replace("\r", "").strip() if v_pay else ""
-                    writer.writerow([scan_id, date, target, v_name, sev_text, clean_desc, v_url, clean_pay])
+
+                    # Limpieza de texto para Excel
+                    clean_desc = (str(v_desc).replace("\n", " ").replace("\r", "")
+                                  .strip()[:200] if v_desc else "")
+                    clean_pay = (str(v_pay).replace("\n", " ").replace("\r", "")
+                                 .strip()[:150] if v_pay else "")
+                    clean_url = str(v_url).strip()[:120] if v_url else ""
+
+                    writer.writerow([
+                        idx, v_name, sev_text, clean_url, clean_desc, clean_pay
+                    ])
+
+                # ── Footer ──
+                writer.writerow([])
+                writer.writerow([f"Generado por VulnSeeker Enterprise — {scan_date}"])
+
             return True
+
         except Exception as e:
             logger.error(f"❌ Error exportando CSV: {e}")
             return False
+
 
