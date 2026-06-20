@@ -48,7 +48,7 @@ def test_vulnerability_almacena_datos():
 
 def test_scanner_types_reexporta_los_mismos_objetos():
     """scanner_types.py debe re-exportar exactamente los mismos objetos de models.py."""
-    from core.scanner_types import Severity as S2, Target as T2, Vulnerability as V2
+    from core.models import Severity as S2, Target as T2, Vulnerability as V2
     assert Severity is S2
     assert Target is T2
     assert Vulnerability is V2

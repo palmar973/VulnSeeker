@@ -73,14 +73,6 @@ class PathFuzzer(ScannerModule):
         vulnerabilities: List[Vulnerability] = []
         base_url = str(target.url)
 
-        logger = None  # Evita dependencias circulares
-
-        def log_if_debug(msg: str):
-            # Logging silencioso para no romper el engine
-            pass
-
-        log_if_debug(f"🕵️‍♂️ Fuzzing {len(self.CRITICAL_PATHS)} paths críticos...")
-
         # Fuzzing paralelo (max 8 threads por balance velocidad/estabilidad)
         with ThreadPoolExecutor(max_workers=8) as executor:
             # Submit todos los paths
@@ -107,10 +99,9 @@ class PathFuzzer(ScannerModule):
                             payload=f"¡ELIMINAR inmediatamente! {path} expuesto → Riesgo CRÍTICO"
                         ))
 
-                        log_if_debug(f"✅ CRÍTICO: {path} → {full_url}")
+
 
                 except Exception:
                     pass
 
-        log_if_debug(f"🎯 PathFuzzer completado: {len(vulnerabilities)} secretos encontrados")
         return vulnerabilities

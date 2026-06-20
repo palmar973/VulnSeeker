@@ -1,7 +1,7 @@
 import requests
 import logging
 import re
-from core.scanner_types import ScannerModule, Vulnerability, Target, Severity
+from core.models import ScannerModule, Vulnerability, Target, Severity
 
 logger = logging.getLogger("VulnSeeker.CmdInjection")
 

@@ -1,17 +1,10 @@
 import sys
 import os
-import logging
 
 # Ajuste de sys.path porque se ejecuta desde subcarpeta
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from core.crawler import WebCrawler
-
-# Configuro el logging para ver todo lo que pasa en la consola.
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
 
 
 def test_crawler_standalone() -> None:

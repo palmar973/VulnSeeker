@@ -6,12 +6,7 @@ dnspython>=2.4.0      # Resolución DNS (subdomain_takeover)
 # --- Análisis de HTML ---
 beautifulsoup4>=4.12.0 # Para leer el código fuente de las webs
 
-# --- Estilo y Consola ---
-colorama>=0.4.6       # Para que la terminal se vea hacker (colores)
-tqdm>=4.66.0          # Barras de carga pro
 
-# --- Reportes ---
-jinja2>=3.1.2         # Para crear reportes HTML bonitos
 networkx>=3.1         # Grafo de arquitectura (TechVisualizer)
 
 # --- GUI ---

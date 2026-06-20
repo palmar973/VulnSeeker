@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List
 # Necesario para extraer el dominio antes del recon de subdominios
 from urllib.parse import urlparse
-from core.scanner_types import Target, Vulnerability, PageElement, ScannerModule
+from core.models import Target, Vulnerability, PageElement, ScannerModule
 from core.crawler import WebCrawler
 from core.config import GlobalConfig
 from core.fingerprinter import TechFingerprinter
@@ -185,9 +185,4 @@ class VulnSeekerEngine:
         return findings
 
     # GETTERS para UI/DB
-    def get_subdomains(self) -> List[str]:
-        return self.subdomain_data
-
-    def get_fingerprint(self) -> str:
-        return self.fingerprint_data
 

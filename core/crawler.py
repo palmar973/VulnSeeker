@@ -3,7 +3,7 @@ import requests
 from urllib.parse import urljoin, urlparse, parse_qs, urlencode, parse_qsl
 from bs4 import BeautifulSoup
 from typing import Set, List, Dict, Optional, Tuple
-from core.scanner_types import PageElement
+from core.models import PageElement
 from core.config import GlobalConfig
 
 logger = logging.getLogger(__name__)

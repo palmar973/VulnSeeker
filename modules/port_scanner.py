@@ -6,7 +6,7 @@ Escanea puertos críticos con timeout agresivo (0.5s).
 
 import socket
 from typing import List
-from core.scanner_types import ScannerModule, Vulnerability, Target, Severity
+from core.models import ScannerModule, Vulnerability, Target, Severity
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 

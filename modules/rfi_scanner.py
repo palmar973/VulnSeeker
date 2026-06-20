@@ -1,6 +1,7 @@
 import requests
 import logging
-from core.scanner_types import ScannerModule, Vulnerability, Target, Severity
+import re
+from core.models import ScannerModule, Vulnerability, Target, Severity
 
 logger = logging.getLogger("VulnSeeker.RFIScanner")
 
@@ -62,8 +63,6 @@ class RFIScanner(ScannerModule):
                 if "?" in target.url:
                     # Estrategia simple: Reemplazar valor del parámetro si existe, o añadirlo
                     if param in target.url:
-                        # Reemplazo básico (podría mejorarse con urllib)
-                        import re
                         # Reemplaza param=loquesea por param=payload
                         attack_url = re.sub(f"{param}=[^&]*", f"{param}={payload_url}", target.url)
                     else:

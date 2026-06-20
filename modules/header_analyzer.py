@@ -6,7 +6,7 @@ Detecta ausencia de headers críticos (X-Frame-Options, CSP, HSTS, etc).
 
 import requests
 from typing import List
-from core.scanner_types import ScannerModule, Vulnerability, Target, Severity
+from core.models import ScannerModule, Vulnerability, Target, Severity
 
 
 class HeaderAnalyzer(ScannerModule):

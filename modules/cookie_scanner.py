@@ -1,6 +1,6 @@
 import requests
 import logging
-from core.scanner_types import ScannerModule, Vulnerability, Target, Severity
+from core.models import ScannerModule, Vulnerability, Target, Severity
 
 logger = logging.getLogger("VulnSeeker.CookieScanner")
 
@@ -58,9 +58,7 @@ class CookieScanner(ScannerModule):
                 is_httponly = False
                 if cookie.has_nonstandard_attr('HttpOnly'):
                     is_httponly = True
-                elif getattr(cookie, '_rest', {}).get('HttpOnly'):
-                    is_httponly = True
-                elif 'HttpOnly' in getattr(cookie, '_rest', {}).keys():
+                elif getattr(cookie, '_rest', {}).get('HttpOnly') is not None or 'HttpOnly' in getattr(cookie, '_rest', {}):
                     is_httponly = True
 
                 if not is_httponly:

@@ -14,8 +14,8 @@
 **Escáner Modular de Vulnerabilidades Web · Enterprise Edition**
 
 [![Python](https://img.shields.io/badge/Python-3.14-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/Tests-137%20passing-brightgreen?logo=pytest&logoColor=white)]()
-[![Modules](https://img.shields.io/badge/Modules-26%20scanners-orange?logo=shield&logoColor=white)]()
+[![Tests](https://img.shields.io/badge/Tests-134%20passing-brightgreen?logo=pytest&logoColor=white)]()
+[![Modules](https://img.shields.io/badge/Modules-25%20scanners-orange?logo=shield&logoColor=white)]()
 [![OWASP](https://img.shields.io/badge/OWASP%20Top%2010-8%2F10-red?logo=owasp&logoColor=white)]()
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)]()
@@ -28,7 +28,7 @@
 
 ## 🔍 ¿Qué es VulnSeeker?
 
-**VulnSeeker Enterprise** es un framework DAST (Dynamic Application Security Testing) avanzado, desarrollado en Python, diseñado para realizar auditorías de seguridad automatizadas de forma integral. A diferencia de escáneres básicos que se limitan a un solo vector de ataque, VulnSeeker orquesta **26 módulos independientes** de análisis — desde inyecciones SQL y XSS hasta reconocimiento OSINT de subdominios, consulta de CVEs en tiempo real contra la NVD del NIST, y análisis con Inteligencia Artificial.
+**VulnSeeker Enterprise** es un framework DAST (Dynamic Application Security Testing) avanzado, desarrollado en Python, diseñado para realizar auditorías de seguridad automatizadas de forma integral. A diferencia de escáneres básicos que se limitan a un solo vector de ataque, VulnSeeker orquesta **25 módulos independientes** de análisis — desde inyecciones SQL y XSS hasta reconocimiento OSINT de subdominios, consulta de CVEs en tiempo real contra la NVD del NIST, y análisis con Inteligencia Artificial.
 
 El sistema opera bajo una arquitectura modular extensible donde cada módulo hereda de la clase base `ScannerModule` y se registra en el motor central, permitiendo agregar nuevas capacidades de escaneo sin modificar el núcleo del sistema.
 
@@ -38,7 +38,7 @@ El sistema opera bajo una arquitectura modular extensible donde cada módulo her
 - **8/10 categorías del OWASP Top 10 (2021).** Las 2 restantes (A08, A09) no son evaluables externamente mediante DAST.
 - **Inteligencia Artificial integrada.** Llama 3.3 70B actúa como un CISO virtual que traduce hallazgos técnicos en riesgos de negocio ejecutivos.
 - **CVEs en tiempo real.** Integración con la API 2.0 del NIST NVD para consultar vulnerabilidades conocidas asociadas a las tecnologías detectadas.
-- **137 tests unitarios.** Suite completa con `pytest` y pipeline CI/CD en GitHub Actions.
+- **134 tests unitarios.** Suite completa con `pytest` y pipeline CI/CD en GitHub Actions.
 - **Persistencia histórica.** Cada escaneo se almacena en SQLite, permitiendo análisis de tendencias y comparación entre auditorías.
 
 ---
@@ -128,10 +128,10 @@ VulnSeeker/
 │   ├── crawler.py                # Web Crawler con autenticación por cookies
 │   ├── fingerprinter.py          # Fingerprinting tecnológico (Server/CMS/Backend)
 │   ├── subdomain_scanner.py      # OSINT de subdominios (crt.sh + HackerTarget)
-│   ├── module_registry.py        # Registro centralizado de los 26 módulos
+│   ├── module_registry.py        # Registro centralizado de los 25 módulos
 │   └── db_manager.py             # Persistencia SQLite (Singleton)
 │
-├── modules/                      # 26 módulos de escaneo independientes
+├── modules/                      # 25 módulos de escaneo independientes
 │   ├── sqli_module.py            # SQL Injection (Error-Based)
 │   ├── xss_module.py             # Reflected XSS
 │   ├── cmd_injection.py          # Command Injection / RCE
@@ -157,7 +157,6 @@ VulnSeeker/
 │   ├── cms_auditor.py            # CMS-Specific Vulnerabilities
 │   ├── email_harvester.py        # Email Address Discovery
 │   ├── ssrf_scanner.py           # Server-Side Request Forgery (SSRF)
-│   ├── tech_visualizer.py        # Architecture Map Generator (servicio auxiliar)
 │   └── ai_analyst.py             # AI Analyst (Groq / Llama 3.3 70B, servicio auxiliar)
 │
 ├── ui/                           # Interfaz gráfica
@@ -167,7 +166,7 @@ VulnSeeker/
 │   ├── report_generator.py       # Exportador JSON/CSV
 │   └── pdf_generator.py          # Generador PDF (ReportLab + gráficos)
 │
-├── tests/                        # 137 tests unitarios (pytest)
+├── tests/                        # 134 tests unitarios (pytest)
 │   ├── test_sqli.py
 │   ├── test_xss.py
 │   ├── test_cmd_injection.py
@@ -203,7 +202,7 @@ VulnSeeker/
 └────────┬────────┘
          ▼
 ┌──────────────────────────────────────────────┐
-│     ATAQUE MULTIHILO (26 módulos en paralelo)│
+│     ATAQUE MULTIHILO (25 módulos en paralelo)│
 │  ┌────────┐ ┌────────┐ ┌──────────────────┐ │
 │  │ SQLi   │ │  XSS   │ │ Header Analyzer  │ │
 │  │ LFI    │ │  RFI   │ │ CORS Scanner     │ │
@@ -251,14 +250,14 @@ VulnSeeker/
 
 ## 🧪 Tests
 
-VulnSeeker cuenta con **137 pruebas unitarias** organizadas en 30 archivos de test. Todos los módulos están cubiertos con tests que utilizan mocking de respuestas HTTP para garantizar ejecución determinista y sin dependencia de red.
+VulnSeeker cuenta con **134 pruebas unitarias** organizadas en 30 archivos de test. Todos los módulos están cubiertos con tests que utilizan mocking de respuestas HTTP para garantizar ejecución determinista y sin dependencia de red.
 
 ```bash
 # Ejecutar la suite completa
 pytest tests/ -v
 
 # Resultado esperado
-137 passed ✅
+134 passed in 2.12s✅
 ```
 
 La integración continua ejecuta la suite completa en cada push vía **GitHub Actions**.

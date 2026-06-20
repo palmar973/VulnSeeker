@@ -8,7 +8,7 @@ from core.models import ScannerModule, Vulnerability, Target, Severity
 logger = logging.getLogger("VulnSeeker.TLS")
 
 # Protocolos considerados inseguros
-WEAK_PROTOCOLS = {"SSLv2", "SSLv3", "TLSv1", "TLSv1.1"}
+
 
 
 class TLSChecker(ScannerModule):

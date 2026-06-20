@@ -10,7 +10,7 @@ from modules.port_scanner import PortScanner
 from modules.path_fuzzer import PathFuzzer
 from modules.waf_detector import WAFDetector
 from modules.cms_auditor import CMSAuditor
-from modules.exposure_scanner import ExposureScanner
+
 from modules.email_harvester import EmailHarvester
 from modules.subdomain_takeover import SubdomainTakeover
 from modules.lfi_scanner import LFIScanner
@@ -41,7 +41,7 @@ def get_default_modules():
         PathFuzzer(),
         WAFDetector(),
         CMSAuditor(),
-        ExposureScanner(),
+
         EmailHarvester(),
         SubdomainTakeover(),
         LFIScanner(),

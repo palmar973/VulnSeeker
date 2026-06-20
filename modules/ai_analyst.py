@@ -7,7 +7,6 @@ Llama 3.3 70B como CISO Ejecutivo.
 from groq import Groq
 from typing import List, Dict, Any, Optional
 from core.models import Vulnerability, Severity
-import json
 import logging
 from datetime import datetime
 

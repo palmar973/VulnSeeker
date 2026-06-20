@@ -1,5 +1,6 @@
 import logging
 import requests
+from urllib.parse import urlparse
 from core.models import ScannerModule, Vulnerability, Target, Severity
 
 logger = logging.getLogger("VulnSeeker.DirListing")
@@ -43,7 +44,6 @@ class DirectoryListingDetector(ScannerModule):
             self._check_url(target.url, headers, vulns)
 
             # Check 2: Probar directorios comunes
-            from urllib.parse import urlparse
             parsed = urlparse(target.url)
             base_url = f"{parsed.scheme}://{parsed.netloc}"
 

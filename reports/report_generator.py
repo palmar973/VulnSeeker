@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime
 from dataclasses import asdict
-from core.scanner_types import Vulnerability
+from core.models import Vulnerability
 
 
 class ReportGenerator:
