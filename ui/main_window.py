@@ -71,7 +71,7 @@ class GUILogHandler(logging.Handler):
 class VulnSeekerApp(ctk.CTk):
     def __init__(self) -> None:
         super().__init__()
-        self.title("VulnSeeker Enterprise")
+        self.title("VulnSeeker — Framework DAST Modular")
         self.minsize(1150, 720)
         self.resizable(True, True)
         self.configure(fg_color=COLOR_BG)

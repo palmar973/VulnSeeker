@@ -11,9 +11,9 @@
 
 [![CI — Tests](https://github.com/palmar973/VulnSeeker/actions/workflows/ci.yml/badge.svg)](https://github.com/palmar973/VulnSeeker/actions/workflows/ci.yml)
 
-**Escáner Modular de Vulnerabilidades Web · Enterprise Edition**
+**Escáner Modular de Vulnerabilidades Web**
 
-[![Python](https://img.shields.io/badge/Python-3.14-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/Tests-134%20passing-brightgreen?logo=pytest&logoColor=white)]()
 [![Modules](https://img.shields.io/badge/Modules-25%20scanners-orange?logo=shield&logoColor=white)]()
 [![OWASP](https://img.shields.io/badge/OWASP%20Top%2010-8%2F10-red?logo=owasp&logoColor=white)]()
@@ -28,15 +28,15 @@
 
 ## 🔍 ¿Qué es VulnSeeker?
 
-**VulnSeeker Enterprise** es un framework DAST (Dynamic Application Security Testing) avanzado, desarrollado en Python, diseñado para realizar auditorías de seguridad automatizadas de forma integral. A diferencia de escáneres básicos que se limitan a un solo vector de ataque, VulnSeeker orquesta **25 módulos independientes** de análisis — desde inyecciones SQL y XSS hasta reconocimiento OSINT de subdominios, consulta de CVEs en tiempo real contra la NVD del NIST, y análisis con Inteligencia Artificial.
+**VulnSeeker** es un framework DAST (Dynamic Application Security Testing) avanzado, desarrollado en Python, diseñado para realizar auditorías de seguridad automatizadas de forma integral. A diferencia de escáneres básicos que se limitan a un solo vector de ataque, VulnSeeker orquesta **25 módulos independientes** de análisis — desde inyecciones SQL y XSS hasta reconocimiento OSINT de subdominios, consulta de CVEs en tiempo real contra la NVD del NIST, y análisis con Inteligencia Artificial.
 
 El sistema opera bajo una arquitectura modular extensible donde cada módulo hereda de la clase base `ScannerModule` y se registra en el motor central, permitiendo agregar nuevas capacidades de escaneo sin modificar el núcleo del sistema.
 
 ### ¿Por qué VulnSeeker?
 
-- **Cobertura real.** No es un script que lanza payloads a ciegas. VulnSeeker ejecuta una cadena completa: reconocimiento → fingerprinting → crawling → ataque multihilo → deduplicación → análisis IA → reporte.
+- **Cobertura integrada.** VulnSeeker ejecuta una cadena completa: reconocimiento → fingerprinting → crawling → ataque multihilo → deduplicación → análisis IA → reporte.
 - **8/10 categorías del OWASP Top 10 (2021).** Las 2 restantes (A08, A09) no son evaluables externamente mediante DAST.
-- **Inteligencia Artificial integrada.** Llama 3.3 70B actúa como un CISO virtual que traduce hallazgos técnicos en riesgos de negocio ejecutivos.
+- **Inteligencia Artificial integrada.** Llama 3.3 70B realiza un análisis contextual de los hallazgos técnicos y los prioriza según el riesgo de negocio.
 - **CVEs en tiempo real.** Integración con la API 2.0 del NIST NVD para consultar vulnerabilidades conocidas asociadas a las tecnologías detectadas.
 - **134 tests unitarios.** Suite completa con `pytest` y pipeline CI/CD en GitHub Actions.
 - **Persistencia histórica.** Cada escaneo se almacena en SQLite, permitiendo análisis de tendencias y comparación entre auditorías.
@@ -104,7 +104,7 @@ El sistema opera bajo una arquitectura modular extensible donde cada módulo her
 | Característica | Detalle |
 |---------------|---------|
 | **Modelo** | Llama 3.3 70B vía Groq API |
-| **Función** | Generación de informes ejecutivos CISO con análisis de riesgo de negocio |
+| **Función** | Generación de informes ejecutivos con análisis de riesgo de negocio |
 | **Output** | Nivel de riesgo global, top amenazas, plan de acción inmediato (48h) y recomendaciones estratégicas |
 
 ### Reportes
@@ -220,7 +220,7 @@ VulnSeeker/
                   ▼
 ┌──────────────────────────────────────────────┐
 │     ANÁLISIS IA (Llama 3.3 70B via Groq)     │
-│   Informe CISO + Riesgo de Negocio           │
+│   Informe Ejecutivo + Riesgo de Negocio      │
 └─────────────────┬────────────────────────────┘
                   ▼
        ┌──────────┴──────────┐

@@ -882,9 +882,9 @@ VulnSeeker integra el modelo Llama 3.3 70B de Meta, accedido a través de la API
 de Groq, para generar informes ejecutivos que incluyen: nivel de riesgo global,
 las cinco amenazas más críticas con explicación contextualizada, un plan de
 acción inmediato (48 horas) y recomendaciones estratégicas a mediano plazo. Este
-enfoque posiciona a VulnSeeker como una de las primeras herramientas DAST de
-código abierto en incorporar análisis asistido por inteligencia artificial
-generativa.
+enfoque integra análisis asistido por inteligencia artificial generativa dentro
+de una arquitectura DAST modular.
+
 
 % ── Análisis comparativo de herramientas ────────────────────────────────
 \subsection{Análisis Comparativo de Herramientas Existentes}
@@ -1220,7 +1220,7 @@ cada componente fue elegido con la deliberación con la que un arquitecto
 selecciona los materiales de una obra, evaluando resistencia, compatibilidad
 y costo.
 
-\textbf{Python 3.14} fue seleccionado como lenguaje base por su posición
+\textbf{Python 3.10 o superior} (con entorno de desarrollo bajo versión 3.14) fue seleccionado como lenguaje base por su posición
 privilegiada en el ecosistema de ciberseguridad. Así como el acero estructural
 combina resistencia y ductilidad, Python combina potencia en scripting de red
 con un ecosistema de librerías maduras (\texttt{requests}, \texttt{BeautifulSoup},
@@ -1336,7 +1336,10 @@ optimizando el tiempo total de escaneo.
 
 Esta fase comprendió la traducción de los diseños lógicos a código de
 producción. Se utilizó Python como lenguaje de programación base, aprovechando su
-madurez y portabilidad. La implementación se dividió en dos bloques paralelos de
+madurez y portabilidad. Los módulos de inyección SQLi y XSS constituyeron el
+alcance mínimo inicial del objetivo específico, el cual fue posteriormente ampliado
+durante el desarrollo iterativo hasta alcanzar los 25~módulos de la versión final.
+La implementación se dividió en dos bloques paralelos de
 desarrollo. En el primer bloque se construyó el núcleo operativo del sistema,
 programando el motor de orquestación multihilo (\texttt{Engine}), el crawler con
 soporte para persistencia de cookies de sesión (\texttt{Crawler}) y el detector de
@@ -1586,7 +1589,7 @@ categorías críticas principales:
 
 Los módulos de inyección (SQLi, XSS, Command Injection, LFI) detectaron
 correctamente todas las vulnerabilidades documentadas de DVWA sin generar
-falsos positivos, lo cual se atribuye al uso de payloads específicos y al
+falsos positivos observados durante el escenario experimental definido, lo cual se atribuye al uso de payloads específicos y al
 análisis de patrones de error en las respuestas HTTP. Los módulos de
 configuración (Headers, TLS, HSTS, Server Disclosure) reportaron 496~hallazgos
 cada uno, correspondientes a las 496~URLs descubiertas, lo cual constituye
@@ -1595,9 +1598,8 @@ ningún header de seguridad configurado.
 
 \subsection{Resultados del Escaneo Externo contra Altoro Mutual (Scan~\#93)}
 
-Con el propósito de evaluar la efectividad del framework en un entorno de producción
-no controlado y desplegado sobre la internet pública, se ejecutó una auditoría dinámica
-(Scan~\#93) contra el portal financiero de prueba Altoro Mutual (\texttt{demo.testfire.net}).
+Con el propósito de evaluar la efectividad del framework en infraestructuras desplegadas en la internet pública, se ejecutó una auditoría dinámica
+(Scan~\#93) contra la plataforma de pruebas Altoro Mutual (\texttt{demo.testfire.net}).
 A diferencia de DVWA, que opera bajo una red local Dockerizada y sin latencia, este escaneo
 externo permitió verificar el comportamiento del crawler ante respuestas dinámicas,
 múltiples parámetros y latencia de red variable.
@@ -1657,7 +1659,7 @@ y fallos de inyección activa:
     31~páginas del portal indexadas por el crawler.
 \end{itemize}
 
-Este escaneo externo valida la robustez de VulnSeeker en producción: la herramienta
+Este escaneo externo valida la robustez de VulnSeeker ante variables operativas de red real: la herramienta
 completó la auditoría de forma remota bajo condiciones normales de tráfico y latencia
 sin generar denegación de servicio (DoS) ni bloqueos de red, demostrando la precisión de sus
 motores heurísticos en entornos no locales.
@@ -1769,7 +1771,7 @@ independientes y PYMEs---, los resultados tienen tres implicaciones
 principales:
 
 \begin{enumerate}
-    \item \textbf{Costo cero de operación:} Como se detalla en la
+    \item \textbf{Costo incremental de licenciamiento nulo:} Como se detalla en la
     Tabla~\ref{tab:costos}, VulnSeeker opera íntegramente con
     tecnologías gratuitas, eliminando la barrera económica identificada
     en el planteamiento del problema y confirmada por Altulaihan et~al.
@@ -1825,15 +1827,14 @@ específicos planteados, se derivan las siguientes conclusiones:
     exitosamente 25~módulos de detección que cubren 8 de las 10~categorías
     del OWASP Top~10 (2021). La integración con la NVD API~2.0 del NIST y
     el modelo Llama 3.3 70B amplió las capacidades de la herramienta más allá
-    de la detección estática, posicionando a VulnSeeker como una de las
-    primeras herramientas DAST de código abierto en integrar análisis con
-    inteligencia artificial generativa.
+    de la detección estática, integrando análisis asistido por inteligencia artificial
+    generativa dentro de una arquitectura DAST modular.
 
     \item \textbf{Objetivo 4 — Validación experimental:} Las 134~pruebas
     unitarias alcanzaron un 100\% de aprobación. Los escaneos controlados
     contra DVWA confirmaron la capacidad de detección de vulnerabilidades
-    críticas (SQLi, XSS, Command Injection, LFI) sin falsos positivos en
-    los módulos de inyección. Estos resultados validan la tesis central de
+    críticas (SQLi, XSS, Command Injection, LFI) sin falsos positivos observados
+    en los módulos de inyección durante el escenario experimental definido. Estos resultados validan la tesis central de
     Abdulghaffar et~al. (\citeyear*{abdulghaffar2023}): la integración de
     múltiples motores en una arquitectura concurrente maximiza la tasa de
     detección, tal como se evidenció en los 6.302~hallazgos distribuidos
@@ -1995,14 +1996,14 @@ desacoplada:
             Gratis &
             2.000 minutos/mes en plan free \\
         \midrule
-        \textbf{Costo total} &
+        \textbf{Costo incremental} &
             \textbf{\$0 USD} &
-            \textbf{100\% operativo sin inversión} \\
-        \bottomrule
+            \textbf{No requiere licencias ni infraestructura dedicada adicional} \\
+        \midrule
     \end{tabular}
 \end{table}
 
-El costo operativo total de VulnSeeker es de \$0~USD, lo cual valida la
+El costo incremental de licenciamiento e infraestructura de VulnSeeker es de \$0~USD, lo cual valida la
 hipótesis de viabilidad económica planteada en el Capítulo~I y confirma que
 la herramienta elimina las barreras financieras que actualmente impiden a
 desarrolladores y PYMEs acceder a auditorías de seguridad automatizadas.
