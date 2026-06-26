@@ -77,6 +77,24 @@ class VulnSeekerApp(ctk.CTk):
         self.configure(fg_color=COLOR_BG)
         self.after(100, self._maximize_window)
 
+        # Windows taskbar icon association fix
+        if sys.platform == 'win32':
+            try:
+                import ctypes
+                myappid = 'claudio.vulnseeker.enterprise.1.0'
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+            except Exception:
+                pass
+
+        # Configurar icono de la aplicación
+        icon_path = Path(__file__).parent / "assets" / "icon.ico"
+        if icon_path.exists():
+            try:
+                self.iconbitmap(str(icon_path))
+            except Exception as e:
+                logger.warning(f"No se pudo cargar el icono .ico: {e}")
+
+
         self.log_queue = queue.Queue()
         self.log_update_interval_ms = 100
 
