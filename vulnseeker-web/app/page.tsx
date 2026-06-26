@@ -275,9 +275,7 @@ export default function Page() {
       />
       <nav className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 md:px-12 py-6 bg-gradient-to-b from-[#0a0a0a] to-transparent">
         <a className="flex items-center gap-3 font-mono font-bold text-lg" href="#">
-          <span className="flex h-8 w-8 items-center justify-center bg-[#00ff88] text-[#0a0a0a] font-extrabold">
-            V
-          </span>
+          <img src="/logo.png" alt="VulnSeeker Logo" className="h-8 w-auto" />
           VulnSeeker
         </a>
         <div className="hidden md:flex items-center gap-10 text-sm text-gray-400">
@@ -820,9 +818,7 @@ export default function Page() {
         <footer className="footer px-6 py-12 md:px-12">
           <div className="footer__content mx-auto flex max-w-6xl flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="footer__brand flex items-center gap-2 font-mono font-bold">
-              <span className="footer__brand-icon flex h-7 w-7 items-center justify-center bg-[#00ff88] text-[#0a0a0a] text-sm font-extrabold">
-                V
-              </span>
+              <img src="/logo.png" alt="VulnSeeker Logo" className="h-7 w-auto" />
               VulnSeeker v2.4.0
             </div>
             <div className="footer__links flex flex-wrap gap-4 text-sm text-gray-500">
