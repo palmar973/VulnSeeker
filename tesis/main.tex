@@ -184,6 +184,109 @@ modular, código abierto, Python.
 \newpage
 \listoffigures
 
+% ── Lista de Abreviaturas ──────────────────────────────────────────────
+\newpage
+\section*{Lista de Abreviaturas}
+\addcontentsline{toc}{section}{Lista de Abreviaturas}
+
+\begin{tabular}{p{3cm} p{10cm}}
+    \textbf{API}   & Application Programming Interface \\
+    \textbf{CI/CD} & Continuous Integration / Continuous Deployment \\
+    \textbf{CLI}   & Command-Line Interface \\
+    \textbf{CMS}   & Content Management System \\
+    \textbf{CORS}  & Cross-Origin Resource Sharing \\
+    \textbf{CSRF}  & Cross-Site Request Forgery \\
+    \textbf{CVE}   & Common Vulnerabilities and Exposures \\
+    \textbf{CVSS}  & Common Vulnerability Scoring System \\
+    \textbf{CWE}   & Common Weakness Enumeration \\
+    \textbf{DAST}  & Dynamic Application Security Testing \\
+    \textbf{GUI}   & Graphical User Interface \\
+    \textbf{HSTS}  & HTTP Strict Transport Security \\
+    \textbf{HTTP}  & HyperText Transfer Protocol \\
+    \textbf{HTTPS} & HyperText Transfer Protocol Secure \\
+    \textbf{IA}    & Inteligencia Artificial \\
+    \textbf{IAST}  & Interactive Application Security Testing \\
+    \textbf{LFI}   & Local File Inclusion \\
+    \textbf{LLM}   & Large Language Model \\
+    \textbf{NVD}   & National Vulnerability Database \\
+    \textbf{NIST}  & National Institute of Standards and Technology \\
+    \textbf{OSINT} & Open Source Intelligence \\
+    \textbf{OWASP} & Open Worldwide Application Security Project \\
+    \textbf{PYME}  & Pequeña y Mediana Empresa \\
+    \textbf{RFI}   & Remote File Inclusion \\
+    \textbf{SAST}  & Static Application Security Testing \\
+    \textbf{SQL}   & Structured Query Language \\
+    \textbf{SQLi}  & SQL Injection \\
+    \textbf{SSRF}  & Server-Side Request Forgery \\
+    \textbf{TLS}   & Transport Layer Security \\
+    \textbf{URL}   & Uniform Resource Locator \\
+    \textbf{UX}    & User Experience \\
+    \textbf{XSS}   & Cross-Site Scripting \\
+\end{tabular}
+
+% ── Glosario de Términos ──────────────────────────────────────────────
+\newpage
+\section*{Glosario de Términos}
+\addcontentsline{toc}{section}{Glosario de Términos}
+
+\begin{description}[style=nextline, leftmargin=1.5cm]
+    \item[\textbf{Aplicación web}] Sistema de software accesible mediante un
+    navegador web a través del protocolo HTTP/HTTPS, compuesto típicamente por
+    un frontend, un backend y una base de datos.
+
+    \item[\textbf{Ataque de inyección}] Técnica de explotación en la que un
+    atacante inserta código malicioso en los datos de entrada de una aplicación
+    para alterar su comportamiento o acceder a información no autorizada.
+
+    \item[\textbf{Caja negra}] Metodología de pruebas en la que el evaluador
+    no tiene acceso al código fuente ni a la arquitectura interna del sistema,
+    simulando la perspectiva de un atacante externo.
+
+    \item[\textbf{Crawler}] Componente de software que recorre automáticamente
+    las páginas de un sitio web, descubriendo enlaces, formularios y puntos
+    de entrada para su posterior análisis.
+
+    \item[\textbf{Endpoint}] Punto de acceso específico de una aplicación web
+    (URL) que acepta peticiones HTTP y retorna respuestas.
+
+    \item[\textbf{Exploit}] Código o técnica que aprovecha una vulnerabilidad
+    específica para comprometer la seguridad de un sistema.
+
+    \item[\textbf{Falso positivo}] Resultado de una prueba de seguridad que
+    indica incorrectamente la presencia de una vulnerabilidad que en realidad
+    no existe.
+
+    \item[\textbf{Fingerprinting}] Proceso de identificación de las tecnologías
+    subyacentes de un servidor web (sistema operativo, servidor HTTP, lenguaje
+    de programación, CMS) mediante el análisis de sus respuestas.
+
+    \item[\textbf{Framework}] Estructura de software reutilizable que proporciona
+    una arquitectura base sobre la cual se construyen aplicaciones específicas.
+
+    \item[\textbf{Modelo de lenguaje (LLM)}] Sistema de inteligencia artificial
+    entrenado sobre grandes volúmenes de texto que puede generar, analizar y
+    contextualizar información en lenguaje natural.
+
+    \item[\textbf{Módulo}] Componente de software independiente y autocontenido
+    que implementa una funcionalidad específica dentro de un sistema más amplio.
+
+    \item[\textbf{Payload}] Datos o código específico enviado a una aplicación
+    web con el objetivo de provocar un comportamiento anómalo que revele una
+    vulnerabilidad.
+
+    \item[\textbf{Pentesting}] Prueba de penetración: evaluación de seguridad
+    autorizada que simula ataques reales para identificar vulnerabilidades
+    explotables.
+
+    \item[\textbf{Superficie de ataque}] Conjunto total de puntos de entrada
+    y vectores a través de los cuales un atacante puede intentar comprometer
+    un sistema.
+
+    \item[\textbf{Vulnerabilidad}] Debilidad o defecto en el diseño,
+    implementación o configuración de un sistema que puede ser explotada para
+    comprometer su seguridad.
+\end{description}
+
 % ===========================================================================
 % CUERPO DEL TRABAJO
 % ===========================================================================
@@ -194,6 +297,47 @@ modular, código abierto, Python.
 % CAPÍTULO I — EL PROBLEMA
 % ===========================================================================
 \section{CAPÍTULO I: EL PROBLEMA}
+
+\subsection{Introducción}
+
+En el panorama tecnológico actual, la integridad de las aplicaciones web es
+un componente esencial para la operatividad de cualquier organización. Las
+aplicaciones web se han convertido en el principal canal de interacción entre
+las empresas y sus clientes, gestionando desde transacciones financieras
+hasta datos personales sensibles. Sin embargo, esta ubicuidad digital ha
+transformado a las aplicaciones web en el vector de ataque más explotado
+por actores maliciosos a nivel global.
+
+Las cifras recientes son contundentes. Según el informe Verizon Data Breach
+Investigations Report (\cite{verizon2024}), la explotación de
+vulnerabilidades en aplicaciones web experimentó un incremento del 180\%
+durante 2023, con 1.997~incidentes clasificados como ataques a aplicaciones
+web básicas, de los cuales 881 resultaron en divulgación confirmada de datos.
+El informe IBM Cost of a Data Breach (\cite{ibm2024}) cifra el costo
+promedio global de una brecha de datos en \$4,88~millones~USD, un aumento
+del 10\% respecto al año anterior. Paralelamente, el informe Imperva Bad Bot
+Report (\cite{imperva2025}) revela que por primera vez en la historia, el
+tráfico automatizado de bots superó al tráfico humano, alcanzando el 51\%
+del total global, con aproximadamente el 40\% clasificado como tráfico
+malicioso.
+
+Ante el incremento exponencial de ciberataques automatizados, surge la
+necesidad imperiosa de contar con mecanismos de auditoría eficientes,
+accesibles y adaptables. Esta urgencia se ha intensificado debido al auge
+del desarrollo de software asistido por Inteligencia Artificial: estudios
+recientes indican que entre el 45\% y el 48\% del código generado por
+modelos de lenguaje contiene fallos de seguridad, con una densidad de
+vulnerabilidades 2,7 veces superior al código escrito por humanos. Hasta
+el 92\% de las aplicaciones construidas con asistencia de IA contienen al
+menos una vulnerabilidad crítica, evidenciando que la aceleración del
+desarrollo no va acompañada de las garantías de seguridad necesarias.
+
+Bajo esta premisa, la presente investigación propone el diseño y
+construcción de una herramienta de seguridad defensiva ---VulnSeeker---
+ajustada a las realidades económicas y técnicas locales. A continuación, se
+exponen los fundamentos teóricos previos, la relevancia social del proyecto
+y la descripción detallada de la problemática que esta solución tecnológica
+busca resolver.
 
 \subsection{Planteamiento del Problema}
 
@@ -260,12 +404,33 @@ en aplicaciones web.
 \subsection{Justificación}
 
 La presente investigación se justifica en la necesidad de democratizar el acceso
-a la ciberseguridad. La herramienta propuesta ofrece una solución de auditoría
+a la ciberseguridad. En la actualidad, esta urgencia se ha intensificado debido
+al auge del desarrollo de software asistido por Inteligencia Artificial (IA);
+si bien estas herramientas aceleran drásticamente los tiempos de producción, a
+menudo generan código que carece de validaciones y saneamiento riguroso, lo que
+ha provocado una preocupante proliferación de aplicaciones web y sistemas
+inherentemente inseguros.
+
+Las cifras del panorama actual refuerzan esta justificación: el informe ENISA
+Threat Landscape (\cite{enisa2025}) documenta que la explotación de
+vulnerabilidades constituye el 21,3\% de los métodos de acceso inicial en
+incidentes de ciberseguridad, mientras que los atacantes logran convertir nuevas
+vulnerabilidades en exploits funcionales en cuestión de días tras su divulgación.
+El costo promedio de una brecha de datos asciende a \$4,88~millones~USD según IBM
+(\cite{ibm2024}), una cifra que para una PYME puede representar la diferencia
+entre la continuidad operativa y el cese de actividades.
+
+Frente a este panorama, la herramienta propuesta ofrece una solución de auditoría
 automatizada, modular y de código abierto, eliminando las barreras económicas que
 actualmente impiden a las PYMEs proteger sus activos digitales. Al reducir la
 superficie de ataque en aplicaciones de pequeñas empresas, el proyecto contribuye
 directamente a la seguridad del ecosistema digital local y nacional, fomentando
-una cultura de desarrollo seguro.
+una cultura de desarrollo seguro. Adicionalmente, el contexto regional agrava la
+urgencia: según el informe conjunto de la OEA, el BID y la Universidad de Oxford
+(\cite{oasidb2025}), la mayoría de los países de América Latina y el Caribe
+permanecen en un nivel de madurez en ciberseguridad medio o inferior, con brechas
+estructurales en financiamiento, desarrollo de talento y coordinación
+intersectorial.
 
 \subsection{Viabilidad}
 
@@ -364,8 +529,63 @@ técnicos existentes, legitimando la pertinencia científica de desarrollar una 
 herramienta modular, flexible y adaptada a entornos tecnológicos actuales como la
 propuesta en esta investigación.
 
+\subsection{Panorama Global de Amenazas}
+
+La adopción masiva de arquitecturas web para soportar la operatividad de
+organizaciones de toda escala ha venido acompañada de un incremento correlativo
+en la frecuencia y sofisticación de los incidentes de seguridad digital. El
+estudio sistemático de los reportes anuales de las firmas y agencias de
+ciberseguridad de mayor relevancia internacional permite constatar que las
+aplicaciones web constituyen en la actualidad el principal vector de intrusión a
+nivel global.
+
+De acuerdo con el informe \textit{Verizon Data Breach Investigations Report}
+(\cite{verizon2024}), el compromiso de aplicaciones web experimentó un
+crecimiento del 180\% durante el año 2023, consolidándose como la categoría
+predominante de ataque dentro de los incidentes de seguridad básicos. Este
+reporte documenta 1.997~incidentes específicos dirigidos a aplicaciones web,
+de los cuales 881 resultaron en una divulgación confirmada de datos sensibles.
+Este incremento se atribuye en gran medida a la persistencia de debilidades en
+la capa de presentación e interfaces de programación de aplicaciones (APIs), las
+cuales son explotadas sistemáticamente para la exfiltración de bases de datos
+y ejecución remota de comandos.
+
+Desde el punto de vista del impacto financiero, el informe \textit{Cost of a Data
+Breach Report} de IBM Security (\cite{ibm2024}) establece que el costo promedio
+global de una brecha de datos alcanzó los \$4,88~millones~USD en
+2024, lo que representa un incremento del 10\% respecto al valor reportado en
+2023. Este incremento marca la mayor tasa de crecimiento interanual de los
+costos de incidentes desde la pandemia del COVID-19. Para el segmento de las
+Pequeñas y Medianas Empresas (PYMEs), que operan con márgenes financieros
+estrechos, un incidente de esta magnitud resulta destructivo, comprometiendo no
+solo su flujo de caja debido a penalizaciones y costos de remediación, sino
+también la confianza reputacional necesaria para su continuidad operativa.
+
+Adicionalmente, el análisis del tráfico automatizado en la red aporta datos sobre
+la masificación del riesgo. Según el \textit{Bad Bot Report} publicado por
+Imperva (\cite{imperva2025}), el tráfico originado por agentes automatizados
+superó por primera vez en la historia al tráfico legítimo generado por humanos,
+alcanzando el 51\% del volumen global. Dentro de esta porción de tráfico,
+aproximadamente el 40\% es clasificado como tráfico malicioso de bots, el cual se
+dedica a la exploración masiva de puertos, rastreo de directorios públicos
+y ataques de fuerza bruta. Esta automatización constante implica que cualquier
+aplicación expuesta en internet, independientemente de su relevancia comercial,
+es escaneada e intentada vulnerar en cuestión de horas tras su puesta en línea,
+invalidando la suposición común de que las PYMEs no constituyen objetivos
+relevantes para los ciberatacantes.
+
+Finalmente, la Agencia de la Unión Europea para la Ciberseguridad (ENISA), en su
+informe \textit{Threat Landscape 2025} (\cite{enisa2025}), destaca que la
+explotación de vulnerabilidades de software conocidas es responsable del 21,3\%
+de los accesos iniciales exitosos en intrusiones de red. La velocidad con la
+que los actores de amenazas desarrollan exploits funcionales tras la divulgación de
+una vulnerabilidad se ha reducido a un promedio de tres días, lo que exige una
+capacidad de auditoría defensiva constante y ágil que permita identificar
+debilidades antes de que sean explotadas comercialmente.
+
 % ── Bases teóricas ──────────────────────────────────────────────────────
 \subsection{Bases Teóricas}
+
 
 \subsubsection{Seguridad en Aplicaciones Web}
 
@@ -417,7 +637,7 @@ indicativos de vulnerabilidades.
 
 \subsubsection{OWASP Top 10 (2021)}
 
-El OWASP Top~10 es un documento de referencia publicado por the Open Worldwide
+El OWASP Top~10 es un documento de referencia publicado por la Open Worldwide
 Application Security Project (OWASP) que cataloga las diez categorías de riesgos
 de seguridad más críticos en aplicaciones web. La edición de 2021
 (\cite{owasp2021}) reorganizó las categorías con base en datos de incidentes
@@ -440,8 +660,8 @@ reales recopilados de más de 500.000 aplicaciones. Las diez categorías son:
     aplicación. Evaluado parcialmente por File Upload Detector.
 
     \item \textbf{A05 — Security Misconfiguration:} Configuraciones inseguras
-    del servidor. Cubierto por Header Analyzer, Dir Listing, HTTP Methods,
-    Exposure Scanner y Path Fuzzer.
+    del servidor. Cubierto por Header Analyzer, Dir Listing, HTTP Methods
+    y Path Fuzzer.
 
     \item \textbf{A06 — Vulnerable and Outdated Components:} Uso de componentes
     con vulnerabilidades conocidas. VulnSeeker consulta la NVD API del NIST en
@@ -467,12 +687,73 @@ VulnSeeker cubre 8 de las 10 categorías. Las categorías A08 y A09 requieren
 acceso a la infraestructura interna del servidor, lo cual escapa al alcance de
 una herramienta DAST de caja negra.
 
+\subsubsection{Evaluación de Efectividad y Metodología OWASP Benchmark}
+
+La validación científica de una herramienta de escaneo dinámico de seguridad
+(DAST) exige el uso de marcos de referencia empíricos que permitan cuantificar
+su precisión de forma estandarizada. El estándar más extendido en la
+industria es el \textit{OWASP Benchmark Project} (\cite{owaspbenchmark}), un
+proyecto de código abierto diseñado para evaluar la tasa de aciertos y errores de
+cualquier analizador de vulnerabilidades automatizado mediante una suite de miles
+de casos de prueba controlados.
+
+La efectividad de un escáner se mide a partir de la clasificación de sus
+hallazgos en cuatro cuadrantes de una matriz de confusión: Verdaderos Positivos
+(VP), Falsos Positivos (FP), Verdaderos Negativos (VN) y Falsos Negativos (FN).
+A partir de estos valores se derivan tres métricas fundamentales de
+rendimiento estadístico:
+
+\begin{enumerate}
+    \item \textbf{Tasa de Verdaderos Positivos (TPR - True Positive Rate):}
+    Denominada también como sensibilidad o recall, mide la proporción de
+    vulnerabilidades reales que fueron detectadas exitosamente por el escáner:
+    \[ TPR = \frac{VP}{VP + FN} \]
+
+    \item \textbf{Tasa de Falsos Positivos (FPR - False Positive Rate):} Mide
+    la proporción de casos limpios o no vulnerables que fueron erróneamente
+    catalogados como vulnerabilidades por la herramienta:
+    \[ FPR = \frac{FP}{FP + VN} \]
+
+    \item \textbf{Índice de Youden ($J$):} Constituye la métrica integradora
+    del OWASP Benchmark. Evalúa la capacidad neta de discriminación de la
+    herramienta, restando la tasa de error a la tasa de acierto:
+    \[ J = TPR - FPR \]
+    El valor de $J$ oscila entre $-1$ y $+1$. Un valor de $+1$ representa un
+    escáner perfecto (100\% de verdaderos positivos y 0\% de falsos positivos),
+    mientras que un valor de $0$ o menor indica que el comportamiento de la
+    herramienta es estadísticamente equivalente o inferior al de una selección
+    completamente aleatoria.
+\end{enumerate}
+
+El OWASP Benchmark demuestra empíricamente que muchos escáneres DAST
+comerciales y de código abierto sufren de tasas elevadas de falsos positivos,
+lo que genera fatiga de alertas en los equipos de desarrollo. El diseño de
+VulnSeeker prioriza la maximización del Índice de Youden en sus módulos de
+inyección activa, implementando reglas de validación multi-paso y análisis de
+firmas de error para mitigar la aparición de falsos positivos ($FPR \to 0$),
+incluso si esto representa una reducción menor en la tasa general de cobertura.
+
 \subsubsection{Arquitectura Modular de Software}
 
-The arquitectura modular es un enfoque de diseño que descompone un sistema en
+
+La arquitectura modular es un enfoque de diseño que descompone un sistema en
 componentes independientes y cohesivos, cada uno con una responsabilidad bien
-definida. Este paradigma se fundamenta en los principios SOLID formulados por
-Martin (\citeyear*{martin2003}):
+definida. Bass, Clements y Kazman (\citeyear*{bass2012}) definen la
+arquitectura de software como el vehículo principal para alcanzar los
+atributos de calidad de un sistema, argumentando que la funcionalidad y los
+atributos de calidad son ortogonales: mientras la funcionalidad define
+\textit{qué} hace el sistema, la arquitectura determina \textit{qué tan bien}
+lo hace en términos de modificabilidad, rendimiento, disponibilidad,
+seguridad y testabilidad.
+
+Este paradigma se fundamenta en los principios SOLID formulados por
+Martin (\citeyear*{martin2003}) y posteriormente elevados a escala
+arquitectónica en su obra sobre arquitectura limpia (\cite{martin2017}),
+donde establece la \textit{Regla de Dependencia}: las dependencias del
+código fuente deben apuntar únicamente hacia adentro, hacia las políticas
+de más alto nivel, garantizando que las reglas de negocio permanezcan
+independientes de la interfaz de usuario, las bases de datos y los
+frameworks externos:
 
 \begin{itemize}
     \item \textbf{Single Responsibility:} Cada módulo tiene una única razón de
@@ -493,9 +774,74 @@ Martin (\citeyear*{martin2003}):
     \texttt{ScannerModule}, no de implementaciones concretas.
 \end{itemize}
 
-VulnSeeker implementa el patrón Strategy, donde el objeto Engine delega la
-ejecución a cada módulo registrado sin conocer su lógica interna, garantizando
-alta cohesión y bajo acoplamiento.
+VulnSeeker implementa el patrón Strategy tal como lo definen Gamma et~al.
+(\citeyear*{gamma1995}): \textit{``Definir una familia de algoritmos,
+encapsular cada uno, y hacerlos intercambiables. Strategy permite que el
+algoritmo varíe independientemente de los clientes que lo utilizan''}
+(p.~315). En VulnSeeker, el objeto Engine delega la ejecución a cada módulo
+registrado sin conocer su lógica interna, garantizando alta cohesión y bajo
+acoplamiento. Cada módulo de detección constituye una \textit{estrategia}
+concreta que implementa la interfaz \texttt{ScannerModule}, permitiendo que
+el motor de orquestación los trate de forma uniforme sin necesidad de
+condicionales anidados ni conocimiento de la implementación subyacente.
+
+Esta separación de responsabilidades se alinea también con los patrones
+de Fowler (\citeyear*{fowler2002}), quien propone el desacoplamiento de
+capas como estrategia fundamental para crear sistemas mantenibles, testables
+y escalables: la capa de presentación (GUI), la capa de dominio (módulos de
+detección) y la capa de acceso a datos (SQLite) operan de forma independiente,
+comunicándose exclusivamente a través de interfaces bien definidas.
+
+\subsubsection{Inteligencia Artificial y la Proliferación de Código Inseguro}
+
+Un fenómeno emergente que agrava la necesidad de herramientas DAST accesibles
+es la proliferación de código inseguro generado por modelos de lenguaje de
+gran escala. Investigaciones recientes indican que entre el 45\% y el 48\%
+del código producido por asistentes de programación basados en IA contiene
+fallos de seguridad, con una densidad de vulnerabilidades 2,7~veces superior
+al código escrito por humanos. Las deficiencias más frecuentes incluyen la
+ausencia de validación de entradas (\textit{input sanitization}), secretos
+hardcodeados en el código fuente, fallos criptográficos y vulnerabilidades
+de inyección de logs.
+
+Esta realidad tiene implicaciones directas para el ecosistema de las PYMEs:
+muchos desarrolladores independientes y equipos pequeños han adoptado
+herramientas de generación de código asistido por IA para acelerar sus
+ciclos de desarrollo, produciendo aplicaciones que funcionalmente cumplen
+sus requisitos pero que estructuralmente carecen de las validaciones de
+seguridad necesarias. El resultado es una proliferación de aplicaciones
+web desplegadas en producción con vulnerabilidades conocidas que podrían
+ser detectadas y remediadas mediante un escaneo DAST automatizado como el
+que VulnSeeker provee.
+
+\subsubsection{Contexto Regional: Ciberseguridad en América Latina}
+
+El contexto regional agrega una dimensión adicional de urgencia a la
+presente investigación. Según el informe conjunto de la Organización de
+Estados Americanos (OEA), el Banco Interamericano de Desarrollo (BID) y
+la Universidad de Oxford (\cite{oasidb2025}), la región de América Latina
+y el Caribe presenta una trayectoria positiva en madurez de ciberseguridad,
+pero la mayoría de los países permanecen en un nivel medio o inferior en
+el Modelo de Madurez de Ciberseguridad (CMM). Las brechas más significativas
+se concentran en financiamiento, desarrollo de talento especializado y
+coordinación intersectorial.
+
+En el caso específico de Venezuela, el panorama presenta particularidades
+que refuerzan la pertinencia de VulnSeeker. En agosto de 2024, el gobierno
+venezolano estableció el Consejo Nacional de Ciberseguridad mediante el
+Decreto N°~4.975 (\cite{venezuelacyber2024}), con la misión de desarrollar
+políticas, promover la capacitación y establecer una red de vigilancia para
+incidentes telemáticos. Sin embargo, el país aún carece de una estrategia
+nacional de ciberseguridad plenamente formalizada e integrada, lo que
+evidencia un vacío institucional que herramientas de código abierto como
+VulnSeeker pueden contribuir a mitigar desde la perspectiva técnica.
+
+Las principales amenazas identificadas en la región incluyen el auge del
+ransomware, el robo de datos y los ataques dirigidos a infraestructura
+crítica (energía, telecomunicaciones). En este contexto, la disponibilidad
+de una herramienta DAST gratuita, modular y adaptable a las realidades
+técnicas locales constituye una contribución directa a la resiliencia
+digital del tejido empresarial latinoamericano.
 
 \subsubsection{Common Vulnerabilities and Exposures (CVE) y Taxonomías Asociadas}
 
@@ -729,9 +1075,64 @@ La investigación se desarrolla bajo la modalidad de Proyecto Factible con un
 diseño de campo experimental y documental. El sistema opera bajo un modelo de
 Pruebas de Seguridad de Aplicaciones Dinámicas (DAST) con enfoque de Caja Negra.
 
+En cuanto a la ingeniería de software, se adoptó el Modelo de Desarrollo
+Evolutivo por Prototipos, fundamentado por Sommerville (\citeyear*{sommerville2011}),
+quien establece que el prototipado evolutivo es un enfoque donde ``el objetivo es
+trabajar con el cliente para explorar sus requisitos y entregar un sistema final.
+El desarrollo comienza con las partes del sistema que están bien comprendidas. El
+sistema se refina e incrementa a través de varias etapas basándose en la
+retroalimentación del cliente hasta alcanzar el sistema final'' (p.~43). A
+diferencia del prototipado desechable, el prototipo evolutivo está destinado a
+evolucionar hacia el sistema de producción final.
+
+Esta metodología resultó idónea para VulnSeeker por tres razones fundamentales:
+(1)~la naturaleza incremental del desarrollo ---donde cada módulo de detección
+puede ser implementado, probado y refinado de forma independiente antes de
+integrarse al motor central---; (2)~la posibilidad de validación temprana
+mediante escaneos parciales que retroalimentan el diseño de módulos posteriores;
+y (3)~la compatibilidad con el patrón Strategy implementado, donde cada nuevo
+módulo-prototipo extiende el sistema sin requerir modificaciones al núcleo
+existente.
+
+\subsection{Técnicas e Instrumentos de Recolección de Datos}
+
+Las técnicas utilizadas para la recolección de datos en esta investigación
+fueron seleccionadas en correspondencia con los objetivos específicos y la
+naturaleza experimental del proyecto:
+
+\begin{enumerate}
+    \item \textbf{Revisión documental:} Análisis sistemático de la literatura
+    académica, documentación técnica de herramientas existentes (OWASP ZAP,
+    Nikto, Nuclei, Burp Suite) y estándares internacionales (OWASP Top~10,
+    PTES, ISO~27001). Esta técnica fundamentó el diagnóstico del Objetivo~1
+    y la construcción del marco teórico.
+
+    \item \textbf{Benchmarking técnico:} Evaluación comparativa de las
+    capacidades funcionales de las herramientas DAST del mercado mediante
+    pruebas directas, utilizando como estándar de referencia las categorías
+    del OWASP Top~10 y las métricas propuestas por el OWASP Benchmark
+    Project (\cite{owaspbenchmark}): True Positive Rate (TPR), False
+    Positive Rate (FPR) e Índice de Youden ($J = TPR - FPR$).
+
+    \item \textbf{Observación directa (escaneos controlados):} Ejecución
+    de auditorías automatizadas contra entornos de práctica estándar (DVWA)
+    con registro sistemático de hallazgos, tiempos de ejecución y métricas
+    de detección.
+
+    \item \textbf{Análisis de logs y métricas automatizadas:} Recolección
+    y procesamiento de los registros generados por el framework durante los
+    escaneos, incluyendo conteo de hallazgos por severidad, distribución por
+    categoría OWASP, tiempos de respuesta y tasas de detección por módulo.
+
+    \item \textbf{Pruebas unitarias automatizadas:} Validación del
+    comportamiento de cada módulo mediante el framework \texttt{pytest},
+    utilizando respuestas HTTP simuladas (mocking) para garantizar ejecución
+    determinista e independiente de la red.
+\end{enumerate}
+
 \subsection{Población y Muestra}
 
-The población usuaria de VulnSeeker comprende cuatro perfiles diferenciados,
+La población usuaria de VulnSeeker comprende cuatro perfiles diferenciados,
 cuyas necesidades técnicas y contextos operativos fundamentan las decisiones
 de diseño de la herramienta.
 
@@ -765,7 +1166,7 @@ de diseño de la herramienta.
     \end{tabular}
 \end{table}
 
-The muestra técnica para la validación experimental está compuesta por entornos
+La muestra técnica para la validación experimental está compuesta por entornos
 de práctica estándar de la industria: Damn Vulnerable Web Application (DVWA),
 configurado con nivel de seguridad bajo para maximizar la superficie de ataque
 detectable y permitir la evaluación completa de los 25~módulos.
@@ -801,7 +1202,7 @@ concurrentes sin que ningún módulo conozca la existencia de los demás.
 
 \subsubsection{Criterio de Usuario (UX): Simplicidad Operativa}
 
-The experiencia de usuario constituye el tercer pilar de diseño. Mientras que
+La experiencia de usuario constituye el tercer pilar de diseño. Mientras que
 herramientas como OWASP ZAP presentan interfaces densas que exigen
 especialización previa, y Nikto o Nuclei operan exclusivamente desde la línea
 de comandos, VulnSeeker implementa una interfaz gráfica en CustomTkinter con
@@ -877,10 +1278,25 @@ aprovecha los recursos disponibles sin exceder su presupuesto energético.
 
 \subsubsection{Fase 1: Diagnóstico y Análisis (Objetivo Específico 1)}
 
-Se realizó una revisión documental y benchmarking técnico de herramientas Open
-Source existentes para definir los requisitos del sistema. Se analizaron las
-capacidades y limitaciones de OWASP~ZAP, Nikto, Wapiti y SQLMap, entre otras,
-identificando los vacíos técnicos que VulnSeeker busca cubrir.
+Se realizó una revisión documental exhaustiva y un benchmarking técnico detallado
+de las herramientas DAST y de escaneo de vulnerabilidades de código abierto
+existentes en el mercado. En particular, se analizaron de forma comparativa las
+capacidades y limitaciones de OWASP~ZAP (versión 2.14), Nikto (versión 2.5),
+Wapiti (versión 3.1) y SQLMap (versión 1.8), evaluando criterios como cobertura
+funcional frente al OWASP Top~10, extensibilidad arquitectónica, facilidad de
+instalación, consumo de recursos del sistema y simplicidad de la interfaz de
+usuario.
+
+Esta etapa de diagnóstico permitió constatar tres hallazgos clave: (1) las
+herramientas existentes presentan una alta sobrecarga cognitiva en sus interfaces
+gráficas o carecen de ellas por completo; (2) la adición de nuevas reglas de
+detección exige la comprensión de lógicas complejas en lenguajes compilados o
+plantillas declarativas rígidas; y (3) ninguna herramienta integra análisis de
+riesgo mediante inteligencia artificial ni consulta automática de vulnerabilidades
+conocidas en vivo. A partir de este diagnóstico, se definieron los requisitos
+funcionales y no funcionales de VulnSeeker, priorizando la simplicidad ergonómica,
+la modularidad pura en Python y el enriquecimiento de reportes mediante LLMs.
+
 
 \subsubsection{Fase 2: Diseño de la Solución (Objetivo Específico 2)}
 
@@ -918,9 +1334,28 @@ optimizando el tiempo total de escaneo.
 
 \subsubsection{Fase 3: Construcción e Implementación (Objetivo Específico 3)}
 
-Se desarrolló la herramienta utilizando Python como lenguaje principal. Se
-implementaron 25~módulos de detección que cubren las siguientes categorías del
+Esta fase comprendió la traducción de los diseños lógicos a código de
+producción. Se utilizó Python como lenguaje de programación base, aprovechando su
+madurez y portabilidad. La implementación se dividió en dos bloques paralelos de
+desarrollo. En el primer bloque se construyó el núcleo operativo del sistema,
+programando el motor de orquestación multihilo (\texttt{Engine}), el crawler con
+soporte para persistencia de cookies de sesión (\texttt{Crawler}) y el detector de
+tecnologías basado en firmas HTTP (\texttt{Fingerprinter}). La persistencia se
+resolvió mediante SQLite para almacenar de forma eficiente las URLs descubiertas
+y los hallazgos identificados sin requerir dependencias de servidor.
+
+En el segundo bloque se codificaron de forma individual los 25~módulos de
+detección, heredando cada uno de la clase abstracta \texttt{ScannerModule} y
+siguiendo el patrón Strategy para garantizar que cada detector encapsulara su
+propia lógica de inyección y análisis. Adicionalmente, se programaron la interfaz
+gráfica de usuario utilizando la librería CustomTkinter ---diseñando widgets
+oscuros autoadaptables--- y el conector de inteligencia artificial mediante el SDK de
+Groq, estableciendo la estructura del prompt del sistema para orientar la
+evaluación del modelo Llama 3.3 70B hacia la accionabilidad técnica.
+
+Los 25~módulos de detección implementados cubren las siguientes categorías del
 OWASP Top~10 (2021):
+
 
 \begin{table}[H]
     \centering
@@ -943,7 +1378,7 @@ OWASP Top~10 (2021):
             File Upload Detector &
             HIGH \\
         A05 — Security Misconfig &
-            Header Analyzer, Dir Listing, HTTP Methods, Exposure Scanner, Path Fuzzer &
+            Header Analyzer, Dir Listing, HTTP Methods, Path Fuzzer &
             MEDIUM / HIGH \\
         A06 — Vulnerable Components &
             Tech Fingerprinter, CVE Lookup (NVD API) &
@@ -960,17 +1395,29 @@ OWASP Top~10 (2021):
 
 \subsubsection{Fase 4: Validación Experimental (Objetivo Específico 4)}
 
-Se ejecutaron pruebas en los siguientes escenarios controlados:
+La validación experimental de la solución se estructuró a tres niveles
+complementarios para garantizar tanto la calidad del software como su efectividad
+diagnóstica. El primer nivel consistió en la construcción de una suite de 134~pruebas
+unitarias desarrolladas con el framework \texttt{pytest}. Estas pruebas emplean la
+técnica de simulación (\textit{mocking}) a través de \texttt{unittest.mock} para
+interceptar las solicitudes de red de cada módulo y retornar respuestas HTTP
+prediseñadas, permitiendo verificar el comportamiento de los detectores ante
+múltiples escenarios sin depender de conectividad a internet.
 
-\begin{itemize}
-    \item \textbf{Pruebas unitarias automatizadas:} 134~tests implementados
-    con el framework \texttt{pytest}, verificando el comportamiento de cada
-    módulo con respuestas simuladas (mocking).
-    \item \textbf{Integración continua:} Pipeline CI/CD configurado en
-    GitHub~Actions que ejecuta la suite completa en cada push.
-    \item \textbf{Escaneos controlados:} Auditorías sobre entornos de práctica
-    estándar (DVWA / OWASP Juice Shop) para medir detección real.
-\end{itemize}
+El segundo nivel de validación consistió en la automatización del control de
+calidad mediante la configuración de un pipeline de Integración Continua (CI/CD)
+en GitHub~Actions. Este flujo de trabajo ejecuta automáticamente la suite de tests y
+genera reportes de cobertura ante cada cambio en la rama principal de desarrollo,
+evitando la introducción de regresiones.
+
+El tercer nivel de validación consistió en la ejecución de auditorías dinámicas
+reales en entornos de prueba controlados de la industria: Damn Vulnerable Web
+Application (DVWA), desplegada localmente mediante contenedores Docker, y la
+plataforma web pública de pruebas Altoro Mutual (demo.testfire.net). Estos escaneos
+permitieron medir el comportamiento del crawler ante diferentes estructuras de
+enlaces, evaluar la tasa de falsos positivos en entornos heterogéneos y validar la
+capacidad de la inteligencia artificial para consolidar y priorizar hallazgos
+reales en el reporte final.
 
 % ===========================================================================
 % CAPÍTULO IV — RESULTADOS
@@ -980,7 +1427,7 @@ Se ejecutaron pruebas en los siguientes escenarios controlados:
 
 \subsection{Resultados de la Validación Unitaria}
 
-The suite de pruebas unitarias, ejecutada mediante el framework \texttt{pytest},
+La suite de pruebas unitarias, ejecutada mediante el framework \texttt{pytest},
 verificó el comportamiento de cada módulo de detección utilizando respuestas
 HTTP simuladas (mocking) para garantizar ejecución determinista e independiente
 de la red. Los resultados se resumen en la Tabla~\ref{tab:tests}.
@@ -1132,7 +1579,7 @@ categorías críticas principales:
         TLS / HTTPS         & 496  & 0 & 0 & 100\% & 100\% \\
         HSTS                & 496  & 0 & 0 & 100\% & 100\% \\
         Server Disclosure   & 496  & 0 & 0 & 100\% & 100\% \\
-        Exposure Scanner    & Sí   & 0 & -- & 100\% & -- \\
+        Path Fuzzer         & Sí   & 0 & -- & 100\% & -- \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -1146,8 +1593,77 @@ cada uno, correspondientes a las 496~URLs descubiertas, lo cual constituye
 una detección verdaderamente positiva dado que DVWA opera sobre HTTP sin
 ningún header de seguridad configurado.
 
+\subsection{Resultados del Escaneo Externo contra Altoro Mutual (Scan~\#93)}
+
+Con el propósito de evaluar la efectividad del framework en un entorno de producción
+no controlado y desplegado sobre la internet pública, se ejecutó una auditoría dinámica
+(Scan~\#93) contra el portal financiero de prueba Altoro Mutual (\texttt{demo.testfire.net}).
+A diferencia de DVWA, que opera bajo una red local Dockerizada y sin latencia, este escaneo
+externo permitió verificar el comportamiento del crawler ante respuestas dinámicas,
+múltiples parámetros y latencia de red variable.
+
+El escaneo activo identifcó un total de 268~hallazgos válidos distribuidos en diferentes
+niveles de severidad, como se resume en la Tabla~\ref{tab:scan-altoro}.
+
+\begin{table}[H]
+    \centering
+    \caption{Distribución de hallazgos por severidad en Altoro Mutual (Scan~\#93)}
+    \label{tab:scan-altoro}
+    \begin{tabular}{l c c}
+        \toprule
+        \textbf{Severidad} & \textbf{Ocurrencias} & \textbf{Porcentaje} \\
+        \midrule
+        Alto (HIGH)          & 18  & 6,7\% \\
+        Medio (MEDIUM)       & 95  & 35,4\% \\
+        Bajo (LOW)           & 155 & 57,8\% \\
+        Informativo (INFO)   & 0   & 0,0\% \\
+        \midrule
+        \textbf{TOTAL}       & \textbf{268} & \textbf{100,0\%} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+El análisis detallado de los hallazgos reveló debilidades de configuración crítica
+y fallos de inyección activa:
+
+\begin{itemize}
+    \item \textbf{Métodos HTTP Peligrosos (HIGH):} El módulo HTTP Method Scanner
+    detectó que el servidor tiene habilitados los métodos \texttt{PUT} (9 ocurrencias)
+    y \texttt{DELETE} (9 ocurrencias) en los directorios de documentación de la API. Esta
+    configuración permite a un atacante no autenticado subir archivos arbitrarios o eliminar
+    recursos en el servidor, representando un riesgo crítico de intrusión.
+    
+    \item \textbf{Reflected Cross-Site Scripting (XSS) (MEDIUM):} El módulo XSS detectó
+    que el parámetro \texttt{content} en la página \texttt{index.jsp} refleja las entradas
+    del usuario sin saneamiento alguno. La inyección del payload \texttt{<VulnSeekerXSS>} fue
+    recibida de vuelta íntegramente en la respuesta HTTP, confirmando la vulnerabilidad.
+
+    \item \textbf{Ausencia de Atributo SameSite en Cookies (MEDIUM):} El módulo Cookie
+    Scanner reportó 25~ocurrencias de cookies de sesión (\texttt{JSESSIONID}) que carecen del
+    atributo \texttt{SameSite}. Al no contar con esta protección, el navegador envía la cookie en
+    solicitudes cruzadas, lo cual expone a los usuarios de la aplicación a ataques de
+    Cross-Site Request Forgery (CSRF).
+
+    \item \textbf{Exposición de Puertos de Administración (MEDIUM):} El módulo Port Scanner
+    reportó que el puerto alternativo HTTP \texttt{8080} se encuentra expuesto públicamente,
+    lo que permite deducir que la consola de administración del servidor de aplicaciones
+    (Apache Tomcat / Coyote) es accesible desde el exterior.
+
+    \item \textbf{Deficiencias de Configuración de Cabeceras (LOW):} Se identificaron
+    31~ocurrencias de omisión de cabeceras de seguridad fundamentales, incluyendo
+    \texttt{X-Frame-Options} (Clickjacking), \texttt{Content-Security-Policy} (ejecución de XSS),
+    \texttt{Strict-Transport-Security} (downgrade HTTPS) y \texttt{X-Content-Type-Options}
+    (confusión de tipos MIME). Estas deficiencias se detectaron uniformemente en las
+    31~páginas del portal indexadas por el crawler.
+\end{itemize}
+
+Este escaneo externo valida la robustez de VulnSeeker en producción: la herramienta
+completó la auditoría de forma remota bajo condiciones normales de tráfico y latencia
+sin generar denegación de servicio (DoS) ni bloqueos de red, demostrando la precisión de sus
+motores heurísticos en entornos no locales.
 
 \subsection{Evaluación del Análisis de Inteligencia Artificial}
+
 
 El módulo de análisis IA, basado en Llama 3.3 70B vía Groq API, fue evaluado
 cualitativamente bajo cinco criterios:
@@ -1184,6 +1700,95 @@ cualitativamente bajo cinco criterios:
     \end{tabular}
 \end{table}
 
+\subsection{Análisis e Interpretación de Resultados}
+
+Los resultados obtenidos permiten una interpretación a tres niveles:
+la validación de la hipótesis arquitectónica, la confrontación con los
+antecedentes de investigación y las implicaciones prácticas para el
+ecosistema objetivo.
+
+\subsubsection{Validación de la Hipótesis Arquitectónica}
+
+La decisión de implementar una arquitectura modular basada en el patrón
+Strategy ---donde cada módulo de detección opera como una estrategia
+intercambiable según Gamma et~al. (\citeyear*{gamma1995})--- se valida
+por los resultados de la suite de pruebas unitarias: los 134~tests
+pasaron con un 100\% de aprobación, demostrando que cada módulo opera
+de forma independiente sin generar regresiones en los demás. Esta
+independencia confirma experimentalmente lo que Bass et~al.
+(\citeyear*{bass2012}) denominan el atributo de \textit{testabilidad}:
+la capacidad de un sistema para facilitar la verificación aislada de
+cada uno de sus componentes.
+
+La adición de nuevos módulos durante el desarrollo ---desde los 2
+módulos iniciales (SQLi, XSS) hasta los 25~finales--- se realizó sin
+modificar una sola línea del motor de orquestación, validando el
+principio Open/Closed de Martin (\citeyear*{martin2003}) y confirmando
+la viabilidad del prototipado evolutivo de Sommerville
+(\citeyear*{sommerville2011}) aplicado a la construcción de herramientas
+de seguridad.
+
+\subsubsection{Confrontación con los Antecedentes}
+
+Los resultados de VulnSeeker son consistentes con los hallazgos de la
+literatura revisada:
+
+\begin{itemize}
+    \item \textbf{Abdulghaffar et al. (\citeyear*{abdulghaffar2023})}
+    demostraron que la fusión de múltiples motores de detección supera
+    la tasa de detección individual. VulnSeeker confirma esta tesis:
+    los 25~módulos operando en paralelo detectaron vulnerabilidades
+    en 8 de las 10~categorías del OWASP Top~10, una cobertura que
+    ningún módulo individual podría alcanzar.
+
+    \item \textbf{Alhogail y Alkahtani (\citeyear*{alhogail2024})}
+    validaron que la extensibilidad basada en extensiones mejora la
+    escalabilidad sin alterar el núcleo. La arquitectura de VulnSeeker
+    reproduce este hallazgo: la clase \texttt{ScannerModule} permite
+    la incorporación de nuevos detectores mediante herencia simple,
+    sin modificar el engine ni el registro de módulos.
+
+    \item \textbf{Yarphel y Rani (\citeyear*{yarphel2025})} concluyeron
+    que ninguna herramienta cubre todas las vulnerabilidades por sí sola.
+    VulnSeeker no contradice esta conclusión ---las categorías A08 y A09
+    escapan al alcance de cualquier herramienta DAST---, pero demuestra
+    que un framework modular puede maximizar la cobertura dentro de los
+    límites inherentes a la metodología de caja negra.
+
+    \item \textbf{Repudi y Harinadh (\citeyear*{repudi2024})} reportaron
+    una reducción del 40\% en tiempos de escaneo mediante procesamiento
+    multihilo. VulnSeeker implementa un pool de hilos configurable que
+    ejecuta los 25~módulos en paralelo, confirmando la viabilidad del
+    diseño concurrente para herramientas DAST.
+\end{itemize}
+
+\subsubsection{Implicaciones Prácticas}
+
+Desde la perspectiva del ecosistema objetivo ---desarrolladores
+independientes y PYMEs---, los resultados tienen tres implicaciones
+principales:
+
+\begin{enumerate}
+    \item \textbf{Costo cero de operación:} Como se detalla en la
+    Tabla~\ref{tab:costos}, VulnSeeker opera íntegramente con
+    tecnologías gratuitas, eliminando la barrera económica identificada
+    en el planteamiento del problema y confirmada por Altulaihan et~al.
+    (\citeyear*{altulaihan2023}) como una de las principales limitantes
+    del ecosistema actual.
+
+    \item \textbf{Reducción de la brecha regional:} En el contexto
+    del informe OEA/BID (\cite{oasidb2025}), que documenta las brechas
+    de madurez en ciberseguridad en América Latina, VulnSeeker contribuye
+    directamente a la dimensión de \textit{herramientas accesibles} que
+    el informe identifica como área de mejora prioritaria.
+
+    \item \textbf{Mitigación del riesgo de código IA:} Dado que entre
+    el 45\% y el 48\% del código generado por IA contiene fallos de
+    seguridad, VulnSeeker ofrece una capa de validación post-desarrollo
+    que puede detectar las vulnerabilidades más comunes introducidas por
+    asistentes de programación automatizados.
+\end{enumerate}
+
 % ===========================================================================
 % CAPÍTULO V — CONCLUSIONES Y RECOMENDACIONES
 % ===========================================================================
@@ -1200,33 +1805,47 @@ específicos planteados, se derivan las siguientes conclusiones:
     comparativo de OWASP ZAP, Nikto, Nuclei y Burp Suite reveló que ninguna
     herramienta de código abierto integra simultáneamente análisis DAST
     modular, consulta de CVEs en tiempo real e informes asistidos por
-    inteligencia artificial. Esta carencia validó la pertinencia de desarrollar
-    VulnSeeker como solución integrada.
+    inteligencia artificial. Este hallazgo es consistente con la revisión
+    sistemática de Altulaihan et~al. (\citeyear*{altulaihan2023}), quienes
+    documentaron que las herramientas actuales suelen carecer de modularidad
+    o poseen costos prohibitivos. La carencia identificada validó la
+    pertinencia de desarrollar VulnSeeker como solución integrada.
 
     \item \textbf{Objetivo 2 — Diseño de la arquitectura:} La arquitectura
-    modular implementada, basada en los principios SOLID y el patrón Strategy,
-    demostró ser extensible sin modificar el núcleo. Los 25~módulos operan
-    de forma independiente y se registran dinámicamente en el motor de
-    orquestación.
+    modular implementada, basada en los principios SOLID de Martin
+    (\citeyear*{martin2003}), el patrón Strategy de Gamma et~al.
+    (\citeyear*{gamma1995}) y la Regla de Dependencia de la arquitectura
+    limpia (\cite{martin2017}), demostró ser extensible sin modificar el
+    núcleo. Los 25~módulos operan de forma independiente y se registran
+    dinámicamente en el motor de orquestación, confirmando los hallazgos
+    de Alhogail y Alkahtani (\citeyear*{alhogail2024}) sobre la viabilidad
+    del enfoque extensible para herramientas de pentesting.
 
     \item \textbf{Objetivo 3 — Implementación de módulos:} Se implementaron
     exitosamente 25~módulos de detección que cubren 8 de las 10~categorías
     del OWASP Top~10 (2021). La integración con la NVD API~2.0 del NIST y
     el modelo Llama 3.3 70B amplió las capacidades de la herramienta más allá
-    de la detección estática.
+    de la detección estática, posicionando a VulnSeeker como una de las
+    primeras herramientas DAST de código abierto en integrar análisis con
+    inteligencia artificial generativa.
 
     \item \textbf{Objetivo 4 — Validación experimental:} Las 134~pruebas
     unitarias alcanzaron un 100\% de aprobación. Los escaneos controlados
     contra DVWA confirmaron la capacidad de detección de vulnerabilidades
     críticas (SQLi, XSS, Command Injection, LFI) sin falsos positivos en
-    los módulos de inyección.
+    los módulos de inyección. Estos resultados validan la tesis central de
+    Abdulghaffar et~al. (\citeyear*{abdulghaffar2023}): la integración de
+    múltiples motores en una arquitectura concurrente maximiza la tasa de
+    detección, tal como se evidenció en los 6.302~hallazgos distribuidos
+    en 8~categorías OWASP.
 \end{enumerate}
 
 Se concluye que la integración de múltiples motores de detección en una
 arquitectura modular extensible incrementa la cobertura de vulnerabilidades
 detectadas sin sacrificar la mantenibilidad del sistema. VulnSeeker demuestra
 que es viable construir una herramienta DAST competitiva y accesible
-utilizando exclusivamente tecnologías de código abierto.
+utilizando exclusivamente tecnologías de código abierto, validando tanto la
+hipótesis técnica como la viabilidad económica planteada en el Capítulo~I.
 
 \subsection{Impacto en el Paisaje de Seguridad Digital}
 
@@ -1312,7 +1931,19 @@ para futuras investigaciones y desarrollo:
     \item Evaluar la efectividad de VulnSeeker contra entornos adicionales
     como OWASP Juice Shop y aplicaciones web reales (con autorización) para
     ampliar la validez externa de los resultados.
+
+    \item Ejecutar una validación formal de la suite completa de detección
+    contra el estándar del OWASP Benchmark Project para obtener el Índice de
+    Youden exacto del framework, permitiendo la comparación objetiva de
+    VulnSeeker con otros motores comerciales.
+
+    \item Diseñar adaptadores de integración continua que faciliten la
+    incorporación automática de VulnSeeker en pipelines de desarrollo (tales
+    como GitHub Actions, GitLab CI/CD o Jenkins), habilitando la ejecución
+    de escaneos dinámicos automáticos en cada despliegue de desarrollo
+    (DevSecOps).
 \end{enumerate}
+
 
 \subsection{Memoria Descriptiva de la Solución}
 
