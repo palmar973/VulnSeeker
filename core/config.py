@@ -9,7 +9,7 @@ class GlobalConfig:
     """
     USER_AGENT: str = "VulnSeeker/1.0 (Academic Security Scanner)"
 
-    MAX_CRAWL_PAGES: int = 50
+    MAX_CRAWL_PAGES: int = 500
 
     # Profundidad máxima de crawling (previene spider traps)
     MAX_CRAWL_DEPTH: int = 4

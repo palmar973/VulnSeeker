@@ -59,7 +59,8 @@ class RFIScanner(ScannerModule):
         # Obtener respuesta baseline
         baseline_text = ""
         try:
-            resp_base = session.get(target.url, headers=headers, timeout=5, verify=False)
+            resp_base = session.get(target.url, headers=headers, timeout=5, verify=False,
+                                    allow_redirects=False)
             baseline_text = resp_base.text
         except Exception:
             pass
@@ -79,8 +80,13 @@ class RFIScanner(ScannerModule):
                     attack_url = f"{target.url}?{param}={payload_url}"
 
                 try:
-                    # Timeout corto porque las conexiones externas pueden tardar
-                    resp = session.get(attack_url, headers=headers, timeout=5, verify=False)
+                    # Timeout corto porque las conexiones externas pueden tardar.
+                    # allow_redirects=False evita confundir un Open Redirect (302 hacia la
+                    # URL del payload) con una inclusión remota real: solo es RFI si el
+                    # servidor INCLUYE el contenido remoto en la respuesta (200), no si
+                    # simplemente redirige hacia él.
+                    resp = session.get(attack_url, headers=headers, timeout=5, verify=False,
+                                       allow_redirects=False)
 
                     # Verificación: ¿El contenido del archivo remoto apareció en la respuesta
                     # y NO estaba ya en el baseline (descarta falsos positivos pre-existentes)?

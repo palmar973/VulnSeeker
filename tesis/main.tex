@@ -1493,52 +1493,89 @@ en cada commit.
 
 \subsection{Resultados de los Escaneos Controlados}
 
-Se ejecutó un escaneo completo (Scan~\#90) con los 25~módulos activos contra
-DVWA (Damn~Vulnerable Web~Application) v1.10 desplegada localmente en un
-contenedor Docker con nivel de seguridad configurado en \textit{``low''} para
-maximizar la superficie de ataque detectable. El crawler autenticado
-identificó 496~puntos de entrada únicos (endpoints y formularios), y cada
-módulo evaluó todos los puntos de entrada descubiertos.
+Se ejecutó un escaneo completo con los 25~módulos activos contra DVWA
+(Damn~Vulnerable Web~Application) desplegada localmente en un contenedor
+Docker con nivel de seguridad configurado en \textit{``low''} para maximizar
+la superficie de ataque detectable. El crawler autenticado ---tras realizar
+el inicio de sesión de forma automática mediante la extracción del token CSRF
+de DVWA--- identificó 61~puntos de entrada estructuralmente únicos (endpoints
+y formularios), sobre los cuales cada módulo ejecutó su batería de pruebas.
 
 \begin{table}[H]
     \centering
-    \caption{Resumen del escaneo controlado contra DVWA (Scan~\#90)}
+    \caption{Resumen del escaneo de validación contra DVWA}
     \label{tab:scan-dvwa}
     \begin{tabular}{l r}
         \toprule
         \textbf{Métrica} & \textbf{Valor} \\
         \midrule
-        Total de hallazgos        & 6.302 \\
-        Críticos (CRITICAL)       & 1.441 (22,9\%) \\
-        Altos (HIGH)              & 1.766 (28,0\%) \\
-        Medios (MEDIUM)           & 914 (14,5\%) \\
-        Bajos (LOW)               & 1.985 (31,5\%) \\
-        Informativos (INFO)       & 196 (3,1\%) \\
-        Críticos + Altos          & 3.207 (50,9\%) \\
-        Puntos de entrada descubiertos & 496 \\
+        Total de hallazgos        & 398 \\
+        Críticos (CRITICAL)       & 3 (0,8\%) \\
+        Altos (HIGH)              & 60 (15,1\%) \\
+        Medios (MEDIUM)           & 75 (18,8\%) \\
+        Bajos (LOW)               & 259 (65,1\%) \\
+        Informativos (INFO)       & 1 (0,3\%) \\
+        Puntos de entrada únicos  & 61 \\
         Subdominios descubiertos  & 0 (escaneo local) \\
         Risk Score (IA)           & 100 / 100 --- CRÍTICO \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-La alta cantidad de hallazgos se explica porque cada URL evaluada genera
-reportes independientes por vulnerabilidad. Por ejemplo, los 496~puntos de
-entrada descubiertos carecen del header \texttt{X-Frame-Options}, generando
-496~hallazgos individuales de tipo \textit{``Missing X-Frame-Options''},
-lo cual es coherente con el enfoque DAST de auditoría exhaustiva por
-endpoint. Para reducir ruido en los reportes, el motor aplica una etapa de
-deduplicación post-escaneo que elimina hallazgos exactamente idénticos
-(mismo nombre de vulnerabilidad, URL objetivo y payload). Sin embargo,
-hallazgos del mismo tipo en URLs distintas se conservan intencionalmente,
-ya que cada endpoint representa un punto de entrada independiente que
-requiere remediación individual.
+Buena parte de los hallazgos corresponde a deficiencias de configuración
+evaluadas de forma independiente en cada endpoint: por ejemplo, cada punto de
+entrada servido sobre HTTP sin el header \texttt{X-Frame-Options} genera un
+hallazgo individual, lo cual es coherente con el enfoque DAST de auditoría
+exhaustiva por endpoint. El motor aplica una etapa de deduplicación
+post-escaneo que elimina hallazgos exactamente idénticos (mismo nombre de
+vulnerabilidad, URL objetivo y payload), conservando intencionalmente los del
+mismo tipo en URLs distintas, ya que cada endpoint representa un punto de
+entrada independiente que requiere remediación individual.
+
+\subsubsection{Depuración de Falsos Positivos}
+
+Un resultado metodológicamente relevante del proceso de validación fue la
+reducción sistemática de la tasa de falsos positivos a lo largo de la
+evolución del framework. Las versiones iniciales de los módulos de inyección
+activa carecían de un mecanismo de comparación contra una respuesta de
+referencia (\textit{baseline}): un mismo indicador ---por ejemplo, la cadena
+esperada de la salida de un comando del sistema--- se reportaba en numerosos
+endpoints donde ya estaba presente de forma legítima, inflando artificialmente
+el número de hallazgos. La introducción de la validación contra baseline
+---verificar que el indicador no estuviera presente en la respuesta original
+\textit{antes} del ataque--- depuró estos falsos positivos. La
+Tabla~\ref{tab:fp} ilustra esta evolución para el módulo de Command Injection,
+cuyo conteo de hallazgos en DVWA ---un entorno con un único punto real de
+inyección de comandos--- pasó de 449 (mayoritariamente falsos positivos) a un
+único verdadero positivo.
+
+\begin{table}[H]
+    \centering
+    \caption{Reducción de falsos positivos de Command Injection (RCE) en DVWA}
+    \label{tab:fp}
+    \begin{tabular}{l c c}
+        \toprule
+        \textbf{Versión del framework} & \textbf{Hallazgos RCE} & \textbf{Naturaleza} \\
+        \midrule
+        Inicial (sin baseline)     & 449 & Mayoría falsos positivos \\
+        Validación parcial         & 18  & Falsos positivos residuales \\
+        Final (baseline completo)  & 1   & Verdadero positivo (\texttt{/exec/}) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Esta depuración constituye una contribución concreta del trabajo: prioriza la
+\textit{precisión} (ausencia de falsos positivos) sobre el volumen bruto de
+hallazgos, en coherencia con el criterio de minimización de la tasa de falsos
+positivos descrito en el marco teórico y con la realidad operativa de los
+equipos de seguridad, que padecen fatiga de alertas ante reportes ruidosos.
 
 \subsection{Top~5 Vulnerabilidades Recurrentes}
 
-El análisis de frecuencia reveló que las cinco vulnerabilidades más recurrentes
+El análisis de frecuencia reveló que las vulnerabilidades más recurrentes
 corresponden a deficiencias de configuración de seguridad (OWASP~A05),
-detectadas de forma uniforme en los 496~puntos de entrada descubiertos:
+detectadas de forma uniforme en los endpoints servidos por la aplicación
+(55~ocurrencias cada una):
 
 \begin{table}[H]
     \centering
@@ -1549,19 +1586,19 @@ detectadas de forma uniforme en los 496~puntos de entrada descubiertos:
         \textbf{\#} & \textbf{Vulnerabilidad} & \textbf{Ocurrencias} &
         \textbf{Severidad} \\
         \midrule
-        1 & Server Version Disclosure        & 496 & MEDIUM \\
-        2 & No HTTPS                         & 496 & HIGH \\
-        3 & Missing X-Frame-Options          & 496 & MEDIUM \\
-        4 & Missing X-Content-Type-Options   & 496 & MEDIUM \\
-        5 & Missing HSTS                     & 496 & HIGH \\
+        1 & No HTTPS                         & 55 & HIGH \\
+        2 & Missing HSTS                     & 55 & HIGH \\
+        3 & Server Version Disclosure        & 55 & MEDIUM \\
+        4 & Missing X-Frame-Options          & 55 & MEDIUM \\
+        5 & Missing Content-Security-Policy   & 55 & MEDIUM \\
         \bottomrule
     \end{tabular}
 \end{table}
 
 Estos resultados son consistentes con el comportamiento esperado: DVWA es una
 aplicación intencionalmente vulnerable desplegada sobre HTTP sin configuración
-de headers de seguridad. La detección uniforme en 496~endpoints confirma que
-el crawler descubrió exhaustivamente la superficie de la aplicación y que el
+de headers de seguridad. La detección uniforme en los endpoints servidos
+confirma que el crawler recorrió la superficie de la aplicación y que el
 módulo Header~Analyzer evaluó cada endpoint de forma independiente.
 
 \subsection{Efectividad por Módulo}
@@ -1574,38 +1611,43 @@ escenario experimental. La Tabla~\ref{tab:efectividad} resume estos valores.
 
 \begin{table}[H]
     \centering
-    \caption{Precisión observada por módulo contra DVWA (Scan~\#90)}
+    \caption{Precisión observada por módulo contra DVWA}
     \label{tab:efectividad}
     \small
-    \begin{tabular}{p{3.8cm} r c c}
+    \begin{tabular}{p{4cm} p{4.2cm} c c}
         \toprule
-        \textbf{Módulo} & \textbf{Hallazgos (VP)} & \textbf{FP observados} &
-        \textbf{Precisión observada} \\
+        \textbf{Módulo} & \textbf{VP (ubicación en DVWA)} & \textbf{FP} &
+        \textbf{Precisión} \\
         \midrule
-        SQL Injection       & 331       & 0 & 100\% \\
-        XSS (Reflected)     & 245       & 0 & 100\% \\
-        Auth / Session      & 173       & 0 & 100\% \\
-        Command Injection   & detectado & 0 & 100\% \\
-        LFI                 & detectado & 0 & 100\% \\
-        Header Analyzer     & 2.480     & 0 & 100\% \\
-        CSRF Auditor        & detectado & 0 & 100\% \\
-        TLS / HTTPS         & 496       & 0 & 100\% \\
-        HSTS                & 496       & 0 & 100\% \\
-        Server Disclosure   & 496       & 0 & 100\% \\
-        Path Fuzzer         & detectado & 0 & 100\% \\
+        \multicolumn{4}{l}{\textit{Módulos de inyección activa}} \\
+        SQL Injection      & 2 (\texttt{/sqli/}, \texttt{/brute/}) & 0 & 100\% \\
+        Reflected XSS      & 1 (\texttt{/xss\_r/})             & 0 & 100\% \\
+        Command Injection  & 1 (\texttt{/exec/})               & 0 & 100\% \\
+        LFI                & 1 (\texttt{/fi/})                 & 0 & 100\% \\
+        RFI                & 1 (\texttt{/fi/})                 & 0 & 100\% \\
+        File Upload        & 2 (\texttt{/upload/})             & 0 & 100\% \\
+        Open Redirect      & 1 (\texttt{/open\_redirect/})     & 0 & 100\% \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Módulos de configuración (1 hallazgo por endpoint)}} \\
+        Header Analyzer    & 220 (4 headers $\times$ 55)       & 0 & 100\% \\
+        TLS / No HTTPS     & 55                                & 0 & 100\% \\
+        Server Disclosure  & 55                                & 0 & 100\% \\
+        CSRF Auditor       & 9                                 & 0 & 100\% \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-Los módulos de inyección (SQLi, XSS, Command Injection, LFI) detectaron las
-vulnerabilidades correspondientes documentadas en DVWA sin generar falsos
-positivos observados durante el escenario experimental definido, lo cual se
-atribuye al uso de payloads específicos y al análisis de patrones de error en
-las respuestas HTTP. Los módulos de configuración (Headers, TLS, HSTS, Server
-Disclosure) reportaron 496~hallazgos cada uno, correspondientes a los
-496~puntos de entrada descubiertos, lo cual constituye una detección
-verdaderamente positiva dado que DVWA opera sobre HTTP sin ningún header de
-seguridad configurado.
+Los módulos de inyección activa detectaron correctamente cada clase de
+vulnerabilidad en su ubicación esperada dentro de DVWA ---SQL Injection en los
+formularios de \texttt{/sqli/} y \texttt{/brute/}, XSS reflejado en
+\texttt{/xss\_r/}, ejecución de comandos en \texttt{/exec/}, inclusión de
+archivos local y remota en \texttt{/fi/}, carga de archivos en \texttt{/upload/}
+y redirección abierta en \texttt{/open\_redirect/}--- sin generar falsos
+positivos observados, gracias al uso de payloads específicos, al análisis de
+patrones de error y a la validación contra baseline descrita en la sección
+anterior. Los módulos de configuración reportaron un hallazgo por endpoint
+afectado, lo cual constituye una detección verdaderamente positiva dado que
+DVWA opera sobre HTTP sin headers de seguridad configurados.
 
 Es importante precisar el alcance de estas métricas. La precisión observada
 ($VP / (VP + FP)$) cuantifica la ausencia de falsos positivos en los hallazgos
@@ -1857,13 +1899,17 @@ específicos planteados, se derivan las siguientes conclusiones:
 
     \item \textbf{Objetivo 4 — Validación experimental:} Las 145~pruebas
     unitarias alcanzaron un 100\% de aprobación. Los escaneos controlados
-    contra DVWA confirmaron la capacidad de detección de vulnerabilidades
-    críticas (SQLi, XSS, Command Injection, LFI) sin falsos positivos observados
-    en los módulos de inyección durante el escenario experimental definido. Estos resultados validan la tesis central de
-    Abdulghaffar et~al. (\citeyear*{abdulghaffar2023}): la integración de
-    múltiples motores en una arquitectura concurrente maximiza la tasa de
-    detección, tal como se evidenció en los 6.302~hallazgos distribuidos
-    en 8~categorías OWASP.
+    contra DVWA confirmaron la detección correcta de las distintas clases de
+    vulnerabilidad (SQLi, XSS, Command Injection, LFI, RFI, File Upload y Open
+    Redirect), cada una en su ubicación esperada y sin falsos positivos
+    observados en los módulos de inyección. Adicionalmente, la introducción de
+    la validación contra baseline depuró los falsos positivos de inyección
+    (reduciendo, por ejemplo, los hallazgos de Command Injection de 449 a un
+    único verdadero positivo), priorizando la precisión sobre el volumen bruto.
+    Estos resultados validan la tesis central de Abdulghaffar et~al.
+    (\citeyear*{abdulghaffar2023}): la integración de múltiples motores en una
+    arquitectura concurrente amplía la cobertura, abarcando 8~categorías del
+    OWASP Top~10.
 \end{enumerate}
 
 Se concluye que la integración de múltiples motores de detección en una

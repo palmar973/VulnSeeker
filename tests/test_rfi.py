@@ -56,3 +56,32 @@ def test_no_reporta_respuesta_normal(MockSession, scanner):
     vulns = scanner.run(target)
     rfi_vulns = [v for v in vulns if v.name == "Remote File Inclusion (RFI)"]
     assert len(rfi_vulns) == 0
+
+
+@patch("modules.rfi_scanner.requests.Session")
+def test_no_confunde_open_redirect_con_rfi(MockSession, scanner):
+    """Un Open Redirect (302 hacia la URL del payload) no debe reportarse como RFI.
+
+    Regresión: antes el módulo seguía la redirección hasta el recurso remoto y
+    confundía su contenido (p. ej. robots.txt) con una inclusión remota real.
+    """
+    session = MockSession.return_value
+    limpia = MagicMock(text="<html>home</html>", status_code=200)
+    # Con allow_redirects=False, el open redirect devuelve 302 sin el contenido remoto.
+    redir = MagicMock(text="", status_code=302,
+                      headers={"Location": "http://www.google.com/robots.txt"})
+
+    llamadas = {"n": 0}
+
+    def get_side_effect(url, **kwargs):
+        # El módulo debe solicitar explícitamente NO seguir redirecciones.
+        assert kwargs.get("allow_redirects") is False, "RFI debe usar allow_redirects=False"
+        llamadas["n"] += 1
+        return limpia if llamadas["n"] == 1 else redir
+
+    session.get.side_effect = get_side_effect
+
+    target = Target(url="http://localhost/open_redirect?redirect=info.php")
+    vulns = scanner.run(target)
+    rfi_vulns = [v for v in vulns if v.name == "Remote File Inclusion (RFI)"]
+    assert len(rfi_vulns) == 0
