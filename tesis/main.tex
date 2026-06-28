@@ -161,7 +161,7 @@ de fingerprinting tecnológico y 25~módulos de detección que cubren 8 de las
 10~categorías del OWASP Top~10. La herramienta incorpora consultas en tiempo real
 a la base de datos nacional de vulnerabilidades del NIST (NVD~API~2.0) y genera
 reportes técnicos con análisis asistido por inteligencia artificial. La validación
-se realizó mediante 145~pruebas unitarias automatizadas y escaneos controlados
+se realizó mediante 150~pruebas unitarias automatizadas y escaneos controlados
 sobre entornos de práctica estándar. Los resultados demostraron que la integración
 de múltiples motores de detección en una arquitectura modular incrementa la
 cobertura de vulnerabilidades detectadas sin sacrificar extensibilidad. VulnSeeker
@@ -1407,7 +1407,7 @@ OWASP Top~10 (2021):
 
 La validación experimental de la solución se estructuró a tres niveles
 complementarios para garantizar tanto la calidad del software como su efectividad
-diagnóstica. El primer nivel consistió en la construcción de una suite de 145~pruebas
+diagnóstica. El primer nivel consistió en la construcción de una suite de 150~pruebas
 unitarias desarrolladas con el framework \texttt{pytest}. Estas pruebas emplean la
 técnica de simulación (\textit{mocking}) a través de \texttt{unittest.mock} para
 interceptar las solicitudes de red de cada módulo y retornar respuestas HTTP
@@ -1451,11 +1451,11 @@ de la red. Los resultados se resumen en la Tabla~\ref{tab:tests}.
         \toprule
         \textbf{Módulo} & \textbf{Tests} & \textbf{Passed} & \textbf{Status} \\
         \midrule
-        SQL Injection       & 8  & 8  & \checkmark \\
+        SQL Injection       & 12 & 12 & \checkmark \\
         Cross-Site Scripting & 3  & 3  & \checkmark \\
         Command Injection   & 4  & 4  & \checkmark \\
         Local File Inclusion & 4  & 4  & \checkmark \\
-        Remote File Inclusion & 3  & 3  & \checkmark \\
+        Remote File Inclusion & 4  & 4  & \checkmark \\
         Open Redirect       & 4  & 4  & \checkmark \\
         CORS Scanner        & 6  & 6  & \checkmark \\
         CSRF Auditor        & 5  & 5  & \checkmark \\
@@ -1482,7 +1482,7 @@ de la red. Los resultados se resumen en la Tabla~\ref{tab:tests}.
         Crawler (core)      & 7  & 7  & \checkmark \\
         Fingerprinter (core) & 6 & 6  & \checkmark \\
         \midrule
-        \textbf{TOTAL}      & \textbf{145} & \textbf{145} & \textbf{100\%} \\
+        \textbf{TOTAL}      & \textbf{150} & \textbf{150} & \textbf{100\%} \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -1509,11 +1509,11 @@ y formularios), sobre los cuales cada módulo ejecutó su batería de pruebas.
         \toprule
         \textbf{Métrica} & \textbf{Valor} \\
         \midrule
-        Total de hallazgos        & 398 \\
+        Total de hallazgos        & 395 \\
         Críticos (CRITICAL)       & 3 (0,8\%) \\
-        Altos (HIGH)              & 60 (15,1\%) \\
-        Medios (MEDIUM)           & 75 (18,8\%) \\
-        Bajos (LOW)               & 259 (65,1\%) \\
+        Altos (HIGH)              & 61 (15,4\%) \\
+        Medios (MEDIUM)           & 75 (19,0\%) \\
+        Bajos (LOW)               & 255 (64,6\%) \\
         Informativos (INFO)       & 1 (0,3\%) \\
         Puntos de entrada únicos  & 61 \\
         Subdominios descubiertos  & 0 (escaneo local) \\
@@ -1588,9 +1588,9 @@ detectadas de forma uniforme en los endpoints servidos por la aplicación
         \midrule
         1 & No HTTPS                         & 55 & HIGH \\
         2 & Missing HSTS                     & 55 & HIGH \\
-        3 & Server Version Disclosure        & 55 & MEDIUM \\
-        4 & Missing X-Frame-Options          & 55 & MEDIUM \\
-        5 & Missing Content-Security-Policy   & 55 & MEDIUM \\
+        3 & Missing X-Frame-Options          & 55 & MEDIUM \\
+        4 & Missing Content-Security-Policy   & 55 & MEDIUM \\
+        5 & Missing X-Content-Type-Options    & 55 & MEDIUM \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -1620,7 +1620,8 @@ escenario experimental. La Tabla~\ref{tab:efectividad} resume estos valores.
         \textbf{Precisión} \\
         \midrule
         \multicolumn{4}{l}{\textit{Módulos de inyección activa}} \\
-        SQL Injection      & 2 (\texttt{/sqli/}, \texttt{/brute/}) & 0 & 100\% \\
+        SQLi (error-based)  & 2 (\texttt{/sqli/}, \texttt{/brute/}) & 0 & 100\% \\
+        SQLi (blind time-based) & 1 (\texttt{/sqli\_blind/})    & 0 & 100\% \\
         Reflected XSS      & 1 (\texttt{/xss\_r/})             & 0 & 100\% \\
         Command Injection  & 1 (\texttt{/exec/})               & 0 & 100\% \\
         LFI                & 1 (\texttt{/fi/})                 & 0 & 100\% \\
@@ -1631,21 +1632,22 @@ escenario experimental. La Tabla~\ref{tab:efectividad} resume estos valores.
         \multicolumn{4}{l}{\textit{Módulos de configuración (1 hallazgo por endpoint)}} \\
         Header Analyzer    & 220 (4 headers $\times$ 55)       & 0 & 100\% \\
         TLS / No HTTPS     & 55                                & 0 & 100\% \\
-        Server Disclosure  & 55                                & 0 & 100\% \\
+        Server Disclosure  & 53                                & 0 & 100\% \\
         CSRF Auditor       & 9                                 & 0 & 100\% \\
         \bottomrule
     \end{tabular}
 \end{table}
 
 Los módulos de inyección activa detectaron correctamente cada clase de
-vulnerabilidad en su ubicación esperada dentro de DVWA ---SQL Injection en los
-formularios de \texttt{/sqli/} y \texttt{/brute/}, XSS reflejado en
-\texttt{/xss\_r/}, ejecución de comandos en \texttt{/exec/}, inclusión de
+vulnerabilidad en su ubicación esperada dentro de DVWA ---SQL Injection
+basada en errores en los formularios de \texttt{/sqli/} y \texttt{/brute/},
+SQL Injection ciega basada en tiempo en \texttt{/sqli\_blind/}, XSS reflejado
+en \texttt{/xss\_r/}, ejecución de comandos en \texttt{/exec/}, inclusión de
 archivos local y remota en \texttt{/fi/}, carga de archivos en \texttt{/upload/}
 y redirección abierta en \texttt{/open\_redirect/}--- sin generar falsos
 positivos observados, gracias al uso de payloads específicos, al análisis de
-patrones de error y a la validación contra baseline descrita en la sección
-anterior. Los módulos de configuración reportaron un hallazgo por endpoint
+patrones de error y de latencia, y a la validación contra baseline descrita en
+la sección anterior. Los módulos de configuración reportaron un hallazgo por endpoint
 afectado, lo cual constituye una detección verdaderamente positiva dado que
 DVWA opera sobre HTTP sin headers de seguridad configurados.
 
@@ -1781,7 +1783,7 @@ ecosistema objetivo.
 La decisión de implementar una arquitectura modular basada en el patrón
 Strategy ---donde cada módulo de detección opera como una estrategia
 intercambiable según Gamma et~al. (\citeyear*{gamma1995})--- se valida
-por los resultados de la suite de pruebas unitarias: los 145~tests
+por los resultados de la suite de pruebas unitarias: los 150~tests
 pasaron con un 100\% de aprobación, demostrando que cada módulo opera
 de forma independiente sin generar regresiones en los demás. Esta
 independencia confirma experimentalmente lo que Bass et~al.
@@ -1897,7 +1899,7 @@ específicos planteados, se derivan las siguientes conclusiones:
     de la detección estática, integrando análisis asistido por inteligencia artificial
     generativa dentro de una arquitectura DAST modular.
 
-    \item \textbf{Objetivo 4 — Validación experimental:} Las 145~pruebas
+    \item \textbf{Objetivo 4 — Validación experimental:} Las 150~pruebas
     unitarias alcanzaron un 100\% de aprobación. Los escaneos controlados
     contra DVWA confirmaron la detección correcta de las distintas clases de
     vulnerabilidad (SQLi, XSS, Command Injection, LFI, RFI, File Upload y Open
@@ -1944,12 +1946,15 @@ tanto para contextualizar los resultados como para orientar futuras
 investigaciones:
 
 \begin{enumerate}
-    \item \textbf{Detección heurística:} Los módulos de inyección utilizan
-    técnicas basadas en errores (\textit{error-based}) y análisis de
-    respuestas HTTP. Esto implica que variantes avanzadas como Blind SQLi
-    (\textit{time-based}), XSS almacenado (\textit{stored}) y DOM XSS no
-    son detectadas en la versión actual. Esta es una limitación compartida
-    con la mayoría de escáneres DAST de código abierto.
+    \item \textbf{Detección heurística:} Los módulos de inyección combinan
+    técnicas basadas en errores (\textit{error-based}), análisis de respuestas
+    HTTP y ---en el caso de SQL Injection--- detección ciega basada en tiempo
+    (\textit{time-based}) mediante la inyección de retardos controlados con
+    confirmación proporcional. No obstante, otras variantes avanzadas como el
+    XSS almacenado (\textit{stored}) y el DOM XSS no son detectadas en la
+    versión actual, por requerir el seguimiento de estado entre peticiones o la
+    ejecución de JavaScript del lado del cliente. Esta es una limitación
+    compartida con la mayoría de escáneres DAST de código abierto.
 
     \item \textbf{SSRF in-band:} El módulo SSRF detecta vulnerabilidades
     mediante análisis heurístico de la respuesta HTTP (presencia de

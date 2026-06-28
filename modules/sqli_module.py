@@ -1,4 +1,5 @@
 import logging
+import time
 import requests
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from core.models import ScannerModule, Target, Vulnerability, Severity
@@ -30,13 +31,31 @@ class SQLInjectionScanner(ScannerModule):
         "com.mysql.jdbc.exceptions",
     ]
 
+    # Payloads para SQLi ciego basado en tiempo ({d} = retardo en segundos).
+    # Cubren MySQL/MariaDB (SLEEP), MSSQL (WAITFOR) y PostgreSQL (pg_sleep).
+    TIME_DELAY: int = 3
+    TIME_PAYLOADS: list[str] = [
+        "' AND SLEEP({d})-- -",
+        "\" AND SLEEP({d})-- -",
+        "' OR SLEEP({d})-- -",
+        "1' AND SLEEP({d})-- -",
+        "'; WAITFOR DELAY '0:0:{d}'-- -",
+        "'; SELECT pg_sleep({d})-- -",
+    ]
+
+    def __init__(self, enable_blind: bool = True) -> None:
+        # SQLi ciego (time-based) activable. Solo añade latencia real en
+        # parámetros verdaderamente vulnerables; los demás responden de inmediato.
+        self.enable_blind = enable_blind
+
     @property
     def name(self) -> str:
         return "SQL Injection Module (Error-Based)"
 
     @property
     def description(self) -> str:
-        return "Detecta vulnerabilidades SQLi inyectando caracteres especiales y buscando errores de BD."
+        return ("Detecta SQLi basada en errores (inyección de caracteres especiales) y "
+                "SQLi ciega basada en tiempo (retardos controlados con confirmación proporcional).")
 
     def run(self, target: Target) -> list[Vulnerability]:
         """Analiza parámetros GET y POST para disparar errores SQL visibles."""
@@ -59,6 +78,12 @@ class SQLInjectionScanner(ScannerModule):
             elif element.is_form and element.method.upper() == "GET" and element.params:
                 logger.info(f"SQLi Scanner: Fuzzing GET form params en {element.url}")
                 self._fuzz_get_form_params(target, element, vulnerabilities)
+
+        # Estrategia 4: SQLi ciego basado en tiempo (Blind Time-Based).
+        # Actúa como complemento del error-based: solo se evalúan los parámetros
+        # cuya URL no fue ya marcada, evitando duplicar hallazgos y costo.
+        if self.enable_blind:
+            self._run_blind_time(target, query_params, vulnerabilities)
 
         return vulnerabilities
 
@@ -206,3 +231,84 @@ class SQLInjectionScanner(ScannerModule):
             logger.debug(f"Error de conexión probando payload: {e}")
 
         return False
+
+    # ------------------------------------------------------------------
+    # SQLi ciego basado en tiempo (Blind Time-Based)
+    # ------------------------------------------------------------------
+    def _run_blind_time(self, target, query_params, vulnerabilities):
+        """Aplica la detección time-based a los parámetros (query y formularios)
+        cuya URL no fue ya marcada por la detección basada en errores."""
+        urls_con_error = {v.target_url for v in vulnerabilities}
+
+        if query_params and target.url not in urls_con_error:
+            base = {k: v[0] for k, v in query_params.items()}
+            self._blind_check(target, "GET", target.url, base, vulnerabilities)
+
+        for element in target.elements:
+            if element.is_form and element.params and element.url not in urls_con_error:
+                self._blind_check(target, element.method.upper(), element.url,
+                                  dict(element.params), vulnerabilities)
+
+    def _blind_check(self, target, method, url, base_params, vulnerabilities):
+        """Mide la latencia diferencial: si inyectar un retardo controlado demora
+        la respuesta de forma proporcional, el parámetro es vulnerable a SQLi ciego."""
+        headers = target.headers or {'User-Agent': 'VulnSeeker/1.0'}
+        parsed = urlparse(url)
+
+        for param_name in list(base_params.keys()):
+            original = base_params.get(param_name, "")
+
+            t_base = self._timed_inject(method, parsed, param_name, original, base_params, headers)
+            if t_base is None:
+                continue
+
+            for tmpl in self.TIME_PAYLOADS:
+                payload = f"{original}{tmpl.format(d=self.TIME_DELAY)}"
+                t1 = self._timed_inject(method, parsed, param_name, payload, base_params, headers)
+                if t1 is None or t1 < t_base + self.TIME_DELAY * 0.7:
+                    continue
+
+                # Confirmación anti-falsos-positivos: el retardo debe escalar al
+                # duplicar el SLEEP. Esto descarta lentitudes puntuales de red.
+                payload2 = f"{original}{tmpl.format(d=self.TIME_DELAY * 2)}"
+                t2 = self._timed_inject(method, parsed, param_name, payload2, base_params, headers)
+                if t2 is not None and t2 >= t_base + self.TIME_DELAY * 2 * 0.7:
+                    logger.warning(f"  [!!!] Blind SQLi (time-based) en '{param_name}' ({method})")
+                    vulnerabilities.append(Vulnerability(
+                        name="SQL Injection (Blind Time-Based)",
+                        severity=Severity.HIGH,
+                        description=(
+                            f"El parámetro '{param_name}' es vulnerable a SQLi ciego basado "
+                            f"en tiempo vía {method}: la inyección de retardos controlados "
+                            f"({self.TIME_DELAY}s y {self.TIME_DELAY * 2}s) produjo demoras "
+                            f"proporcionales en la respuesta."
+                        ),
+                        target_url=url,
+                        evidence=(
+                            f"Baseline {t_base:.2f}s | SLEEP({self.TIME_DELAY})->{t1:.2f}s | "
+                            f"SLEEP({self.TIME_DELAY * 2})->{t2:.2f}s"
+                        ),
+                        payload=payload,
+                    ))
+                    break  # un hallazgo por parámetro
+
+    def _timed_inject(self, method, parsed_url, param_name, value, base_params, headers):
+        """Inyecta 'value' en 'param_name' y devuelve el tiempo de respuesta en
+        segundos (None si la petición falla)."""
+        fuzzed = dict(base_params)
+        fuzzed[param_name] = value
+        timeout = self.TIME_DELAY * 2 + 5
+        try:
+            start = time.perf_counter()
+            if method == "POST":
+                post_url = urlunparse((parsed_url.scheme, parsed_url.netloc, parsed_url.path,
+                                       parsed_url.params, "", parsed_url.fragment))
+                requests.post(post_url, data=fuzzed, headers=headers, timeout=timeout, verify=False)
+            else:
+                query = urlencode(fuzzed)
+                get_url = urlunparse((parsed_url.scheme, parsed_url.netloc, parsed_url.path,
+                                      parsed_url.params, query, parsed_url.fragment))
+                requests.get(get_url, headers=headers, timeout=timeout, verify=False)
+            return time.perf_counter() - start
+        except Exception:
+            return None
