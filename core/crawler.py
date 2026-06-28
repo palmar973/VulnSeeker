@@ -95,10 +95,12 @@ class WebCrawler:
         """
         Descargador con modales. Intenta obtener el HTML de la página.
         """
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         headers: Dict[str, str] = {'User-Agent': GlobalConfig.USER_AGENT}
         try:
             response = requests.get(url, headers=headers, cookies=self.cookies,
-                                    timeout=GlobalConfig.REQUEST_TIMEOUT)
+                                    timeout=GlobalConfig.REQUEST_TIMEOUT, verify=False)
             if "text/html" in response.headers.get("Content-Type", ""):
                 return response.text
         except requests.RequestException:
@@ -170,6 +172,21 @@ class WebCrawler:
     def _is_in_scope(self, url: str) -> bool:
         """
         Filtro de seguridad para no terminar atacando dominios externos.
+        También ignora logout y archivos estáticos.
         """
         parsed = urlparse(url)
-        return parsed.netloc == self.base_domain and parsed.scheme in ["http", "https"]
+        if parsed.netloc != self.base_domain or parsed.scheme not in ["http", "https"]:
+            return False
+
+        # Ignorar rutas que destruyan la sesión
+        blacklist = ["logout", "signout", "exit", "logoff", "disconnect"]
+        path_lower = parsed.path.lower()
+        if any(b in path_lower for b in blacklist):
+            return False
+
+        # Ignorar archivos estáticos comunes
+        static_exts = [".jpg", ".jpeg", ".png", ".gif", ".pdf", ".css", ".js", ".ico", ".woff", ".woff2", ".svg", ".zip", ".tar", ".gz"]
+        if any(path_lower.endswith(ext) for ext in static_exts):
+            return False
+
+        return True

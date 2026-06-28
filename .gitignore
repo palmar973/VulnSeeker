@@ -3,9 +3,15 @@
 # =========================
 reports/*.pdf
 reports/*.json
+reports/*.csv
 results/
 vulnseeker.db
 tesis/
+
+# Scripts de depuración y artefactos temporales (no versionar)
+/debug_*.py
+scratch/
+nul
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

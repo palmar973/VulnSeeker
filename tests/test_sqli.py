@@ -91,3 +91,73 @@ def test_replace_strategy_detecta_sqli():
 
     assert len(vulns) >= 1
 
+
+def test_detecta_sqli_en_form_get():
+    """Debe detectar SQLi en formularios GET (params enviados como query string)."""
+    scanner = SQLInjectionScanner()
+    element = PageElement(
+        url="http://test.com/vulnerabilities/sqli/",
+        method="GET",
+        params={"id": "", "Submit": "Submit"},
+        is_form=True
+    )
+    target = Target(url="http://test.com/vulnerabilities/sqli/", elements=[element])
+
+    mock_resp = MagicMock()
+    mock_resp.text = "You have an error in your SQL syntax"
+
+    with patch("modules.sqli_module.requests.get", return_value=mock_resp):
+        vulns = scanner.run(target)
+
+    assert len(vulns) >= 1
+    assert "GET" in vulns[0].name
+    assert vulns[0].severity == Severity.HIGH
+
+
+def test_no_reporta_sqli_en_form_get_limpio():
+    """Un formulario GET sin errores de BD no debe reportar SQLi."""
+    scanner = SQLInjectionScanner()
+    element = PageElement(
+        url="http://test.com/search",
+        method="GET",
+        params={"q": "test"},
+        is_form=True
+    )
+    target = Target(url="http://test.com/search", elements=[element])
+
+    mock_resp = MagicMock()
+    mock_resp.text = "<html>resultados de búsqueda</html>"
+
+    with patch("modules.sqli_module.requests.get", return_value=mock_resp):
+        vulns = scanner.run(target)
+
+    assert len(vulns) == 0
+
+
+def test_form_get_inyecta_payload_en_query_string():
+    """El fuzzing de formularios GET debe construir la URL con el payload en la query."""
+    scanner = SQLInjectionScanner()
+    element = PageElement(
+        url="http://test.com/page",
+        method="GET",
+        params={"id": "1"},
+        is_form=True
+    )
+    target = Target(url="http://test.com/page", elements=[element])
+
+    urls_llamadas = []
+
+    def mock_get(url, **kwargs):
+        urls_llamadas.append(url)
+        resp = MagicMock()
+        resp.text = "<html>ok</html>"
+        return resp
+
+    with patch("modules.sqli_module.requests.get", side_effect=mock_get):
+        scanner.run(target)
+
+    # La URL atacada debe llevar el parámetro 'id' inyectado en la query string
+    assert urls_llamadas, "No se realizó ninguna petición"
+    assert all("http://test.com/page?" in u for u in urls_llamadas)
+    assert any("id=" in u for u in urls_llamadas)
+

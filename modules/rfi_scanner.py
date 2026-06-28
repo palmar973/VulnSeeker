@@ -56,6 +56,14 @@ class RFIScanner(ScannerModule):
         # Usamos sesión para velocidad
         session = requests.Session()
 
+        # Obtener respuesta baseline
+        baseline_text = ""
+        try:
+            resp_base = session.get(target.url, headers=headers, timeout=5, verify=False)
+            baseline_text = resp_base.text
+        except Exception:
+            pass
+
         for param in params_to_test:
             for payload_url, keyword in payloads:
                 # Construir URL de ataque
@@ -74,8 +82,9 @@ class RFIScanner(ScannerModule):
                     # Timeout corto porque las conexiones externas pueden tardar
                     resp = session.get(attack_url, headers=headers, timeout=5, verify=False)
 
-                    # Verificación: ¿El contenido del archivo remoto apareció en la respuesta?
-                    if keyword in resp.text:
+                    # Verificación: ¿El contenido del archivo remoto apareció en la respuesta
+                    # y NO estaba ya en el baseline (descarta falsos positivos pre-existentes)?
+                    if keyword in resp.text and keyword not in baseline_text:
                         desc = (f"Se detectó vulnerabilidad RFI (Remote File Inclusion).\n"
                                 f"El servidor descargó e incluyó contenido desde: {payload_url}\n"
                                 f"Parámetro vulnerable: {param}")

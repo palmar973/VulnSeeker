@@ -51,10 +51,14 @@ class SQLInjectionScanner(ScannerModule):
             self._fuzz_get_params(target, parsed_url, query_params, vulnerabilities)
 
         # Estrategia 2: Parámetros POST desde formularios
+        # Estrategia 3: Formularios GET (params como query string, no en la URL base)
         for element in target.elements:
             if element.is_form and element.method.upper() == "POST" and element.params:
                 logger.info(f"SQLi Scanner: Fuzzing POST params en {element.url}")
                 self._fuzz_post_params(target, element, vulnerabilities)
+            elif element.is_form and element.method.upper() == "GET" and element.params:
+                logger.info(f"SQLi Scanner: Fuzzing GET form params en {element.url}")
+                self._fuzz_get_form_params(target, element, vulnerabilities)
 
         return vulnerabilities
 
@@ -129,6 +133,47 @@ class SQLInjectionScanner(ScannerModule):
                     continue
                 break
 
+    def _fuzz_get_form_params(self, target, element, vulnerabilities):
+        """Inyecta payloads en formularios con método GET construyendo la URL con query string."""
+        parsed_url = urlparse(element.url)
+
+        for param_name in element.params.keys():
+            original_value = element.params.get(param_name, "")
+
+            for payload in self.PAYLOADS:
+                mutations = [
+                    original_value + payload,
+                    payload,
+                ]
+
+                for mutated_value in mutations:
+                    fuzzed_params = dict(element.params)
+                    fuzzed_params[param_name] = mutated_value
+                    new_query = urlencode(fuzzed_params)
+                    malicious_url = urlunparse((
+                        parsed_url.scheme,
+                        parsed_url.netloc,
+                        parsed_url.path,
+                        parsed_url.params,
+                        new_query,
+                        parsed_url.fragment
+                    ))
+
+                    found = self._send_and_check(
+                        method="GET",
+                        url=malicious_url,
+                        headers=target.headers,
+                        param_name=param_name,
+                        payload=mutated_value,
+                        target_url=element.url,
+                        vulnerabilities=vulnerabilities
+                    )
+                    if found:
+                        break
+                else:
+                    continue
+                break
+
     def _send_and_check(self, method, url, headers, param_name, payload,
                         target_url, vulnerabilities, data=None) -> bool:
         """Envía la petición y busca firmas de error SQL en la respuesta."""
@@ -136,9 +181,9 @@ class SQLInjectionScanner(ScannerModule):
             headers = headers or {'User-Agent': 'VulnSeeker/1.0'}
 
             if method == "POST":
-                response = requests.post(url, data=data, headers=headers, timeout=5)
+                response = requests.post(url, data=data, headers=headers, timeout=5, verify=False)
             else:
-                response = requests.get(url, headers=headers, timeout=5)
+                response = requests.get(url, headers=headers, timeout=5, verify=False)
 
             for error in self.ERROR_SIGNATURES:
                 if error.lower() in response.text.lower():

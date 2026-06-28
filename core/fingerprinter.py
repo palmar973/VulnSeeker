@@ -24,7 +24,8 @@ class TechFingerprinter:
             'apache': r'(apache|httpd)',
             'iis': r'(microsoft-iis|IIS)',
             'cloudflare': r'cloudflare',
-            'lite_speed': r'litespeed'
+            'lite_speed': r'litespeed',
+            'google': r'(google|gws)'
         }
 
         self.powered_by_patterns = {
@@ -60,6 +61,10 @@ class TechFingerprinter:
             'laravel': [
                 r'laravel_session',
                 r'X-SRF-TOKEN'
+            ],
+            'gruyere': [
+                r'gruyere',
+                r'\.gtl\b'
             ]
         }
 
@@ -94,6 +99,10 @@ class TechFingerprinter:
                 path_fingerprint = self._analyze_paths(target_url)
                 fingerprint['cms_framework'].extend(path_fingerprint)
 
+            # Si se detecta Gruyere, podemos inferir Backend Python
+            if "Gruyere" in fingerprint['cms_framework'] and "Python" not in fingerprint['powered_by']:
+                fingerprint['powered_by'].append("Python")
+
             # Confidence scoring (Puntaje de certeza)
             total_clues = len(fingerprint['server']) + len(fingerprint['powered_by']) + len(
                 fingerprint['cms_framework'])
@@ -113,7 +122,7 @@ class TechFingerprinter:
     def _get_headers(self, target_url: str) -> Dict[str, str]:
         try:
             resp = requests.head(target_url, timeout=5, headers={'User-Agent': 'VulnSeeker/1.0'}, verify=False)
-            return dict(resp.headers)
+            return {k.lower(): v for k, v in resp.headers.items()}
         except requests.RequestException:
             return {}
 
@@ -132,6 +141,10 @@ class TechFingerprinter:
         for tech, pattern in self.server_patterns.items():
             if re.search(pattern, server_header):
                 result['server'].append(tech.capitalize())
+
+        # Si el servidor indica Apache-Coyote o Tomcat, inferimos que la aplicación usa Java
+        if 'coyote' in server_header or 'tomcat' in server_header:
+            result['powered_by'].append('Java')
 
         # X-Powered-By
         powered_header = headers.get('x-powered-by', '').lower()

@@ -78,6 +78,9 @@ class VulnSeekerEngine:
             self.fingerprint_data = "Error en análisis"
             self.tech_context = {}
 
+        # FASE 1.5: AUTO-LOGIN (si es DVWA u otra plataforma soportada)
+        self._check_and_perform_autologin(start_url)
+
         # FASE 2: CRAWLING
         target_elements: List[PageElement] = []
         if crawl:
@@ -183,6 +186,122 @@ class VulnSeekerEngine:
                 logger.error(f"💥 Módulo {module.name} falló en {element.url}: {e}")
 
         return findings
+
+    def _check_and_perform_autologin(self, start_url: str) -> None:
+        """Intenta auto-login si el objetivo es una instancia de DVWA."""
+        try:
+            import requests
+            from bs4 import BeautifulSoup
+            import time
+            import urllib3
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+            parsed = urlparse(start_url)
+            base_url = f"{parsed.scheme}://{parsed.netloc}"
+            login_url = f"{base_url.rstrip('/')}/login.php"
+
+            # 1. Comprobar si el objetivo es DVWA
+            logger.info(f"🔑 Verificando si el objetivo requiere autenticación DVWA: {login_url}")
+            try:
+                r = requests.get(login_url, timeout=3, verify=False)
+                if not (r.status_code == 200 and "Login :: Damn Vulnerable Web Application" in r.text):
+                    logger.debug("El objetivo no parece ser una instancia estándar de DVWA o no requiere auto-login.")
+                    return
+            except Exception:
+                logger.debug("No se pudo conectar a la página de login para verificar si es DVWA.")
+                return
+
+            # 2. Comprobar si la sesión actual configurada ya es válida
+            cookies = self.config.get("cookies", {})
+            if cookies and "PHPSESSID" in cookies:
+                cookie_str = "; ".join(f"{k}={v}" for k, v in cookies.items())
+                test_headers = {'User-Agent': self.config.get("user_agent", GlobalConfig.USER_AGENT), 'Cookie': cookie_str}
+                try:
+                    test_r = requests.get(f"{base_url.rstrip('/')}/index.php", headers=test_headers, timeout=3, allow_redirects=False, verify=False)
+                    if test_r.status_code == 200 and "login.php" not in test_r.text and "Login :: Damn" not in test_r.text:
+                        logger.info("✅ Sesión existente válida detectada. Omitiendo auto-login.")
+                        return
+                except Exception:
+                    pass
+
+            logger.info("🤖 DVWA Detectado. Iniciando auto-login para garantizar sesión activa...")
+
+            # 3. Intentar auto-login con hasta 3 reintentos
+            for attempt in range(1, 4):
+                try:
+                    session = requests.Session()
+
+                    # Inicialización automática de la base de datos si es necesario
+                    if attempt == 1:
+                        try:
+                            setup_url = f"{base_url.rstrip('/')}/setup.php"
+                            r_setup = session.get(setup_url, timeout=5, verify=False)
+                            if r_setup.status_code == 200 and "create_db" in r_setup.text:
+                                logger.info("⚙️ Detectada base de datos sin inicializar en DVWA. Creando/reseteando base de datos automáticamente...")
+                                soup_setup = BeautifulSoup(r_setup.text, 'html.parser')
+                                setup_token_input = soup_setup.find('input', {'name': 'user_token'})
+                                setup_data = {"create_db": "Create / Reset Database"}
+                                if setup_token_input:
+                                    setup_data["user_token"] = setup_token_input.get('value')
+                                session.post(setup_url, data=setup_data, timeout=5, verify=False)
+                        except Exception as e:
+                            logger.debug(f"Error inicializando base de datos en setup.php: {e}")
+
+                    r_login = session.get(login_url, timeout=5, verify=False)
+                    soup = BeautifulSoup(r_login.text, 'html.parser')
+                    user_token_input = soup.find('input', {'name': 'user_token'})
+
+                    if not user_token_input:
+                        logger.warning(f"⚠️ Intento {attempt}/3: No se encontró token CSRF (user_token). Reintentando...")
+                        time.sleep(1)
+                        continue
+
+                    user_token = user_token_input.get('value')
+                    data = {
+                        'username': 'admin',
+                        'password': 'password',
+                        'Login': 'Login',
+                        'user_token': user_token
+                    }
+
+                    r2 = session.post(login_url, data=data, timeout=5, verify=False)
+                    if "login.php" not in r2.url and "Login :: Damn" not in r2.text:
+                        logger.info(f"✅ Auto-login en DVWA exitoso (intento {attempt}).")
+
+                        # Establecer nivel de seguridad a 'low'
+                        security_url = f"{base_url.rstrip('/')}/security.php"
+                        r_sec = session.get(security_url, timeout=5, verify=False)
+                        soup_sec = BeautifulSoup(r_sec.text, 'html.parser')
+                        sec_token_input = soup_sec.find('input', {'name': 'user_token'})
+
+                        sec_data = {
+                            'security': 'low',
+                            'seclev_submit': 'Submit'
+                        }
+                        if sec_token_input:
+                            sec_data['user_token'] = sec_token_input.get('value')
+
+                        session.post(security_url, data=sec_data, timeout=5, verify=False)
+                        logger.info("🛡️ Nivel de seguridad de DVWA configurado a: LOW")
+
+                        # Actualizar cookies en el config del motor
+                        autologin_cookies = session.cookies.get_dict()
+                        if "cookies" not in self.config:
+                            self.config["cookies"] = {}
+                        self.config["cookies"].update(autologin_cookies)
+                        logger.info(f"🍪 Sesión activa configurada: {self.config['cookies']}")
+                        return
+                    else:
+                        logger.warning(f"⚠️ Intento {attempt}/3: El login falló (credenciales incorrectas o bloqueadas). Reintentando...")
+                        time.sleep(1)
+                except Exception as ex:
+                    logger.warning(f"⚠️ Intento {attempt}/3: Error de conexión durante el login: {ex}")
+                    time.sleep(1)
+
+            logger.error("❌ Auto-login falló tras 3 intentos. Se continuará el escaneo con las cookies actuales.")
+
+        except Exception as e:
+            logger.debug(f"No se pudo realizar el chequeo de auto-login: {e}")
 
     # GETTERS para UI/DB
 

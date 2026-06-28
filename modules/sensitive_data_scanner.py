@@ -25,8 +25,7 @@ SENSITIVE_PATTERNS = [
     (r'\b4[0-9]{3}[\s-]?[0-9]{4}[\s-]?[0-9]{4}[\s-]?[0-9]{4}\b', "Credit Card Number (Visa)", Severity.CRITICAL),
     (r'\b5[1-5][0-9]{2}[\s-]?[0-9]{4}[\s-]?[0-9]{4}[\s-]?[0-9]{4}\b', "Credit Card Number (Mastercard)", Severity.CRITICAL),
 
-    # Rutas internas del servidor
-    (r'(?:C:\\\\[Uu]sers\\\\|/home/\w+/|/var/www/|/etc/passwd)', "Internal Server Path Exposed", Severity.MEDIUM),
+    (r'(?:C:\\\\[Uu]sers\\\\[\w.\-]+|/home/\w+/\w+|/var/www/\w+)', "Internal Server Path Exposed", Severity.MEDIUM),
 
     # Comentarios HTML con información sensible
     (r'<!--\s*(?:TODO|FIXME|HACK|BUG|password|secret|admin|root).*?-->', "Sensitive HTML Comment", Severity.LOW),

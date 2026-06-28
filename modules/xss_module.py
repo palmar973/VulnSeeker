@@ -22,24 +22,32 @@ class XSSScanner(ScannerModule):
     def run(self, target: Target) -> list[Vulnerability]:
         """
         Inyecta un payload inofensivo (Canario) y verifica si regresa en el HTML.
+        Soporta tanto query params en la URL como formularios GET.
         """
         vulnerabilities: list[Vulnerability] = []
 
         parsed_url = urlparse(target.url)
         query_params = parse_qs(parsed_url.query)
 
-        if not query_params:
-            logger.debug(f"Saltando {target.url} (Sin parámetros para XSS).")
-            return []
+        if query_params:
+            logger.info(f"Analizando XSS en: {target.url}")
+            self._fuzz_params(parsed_url, query_params, target.headers, vulnerabilities)
 
-        logger.info(f"Analizando XSS en: {target.url}")
+        # Formularios GET: construir URL con params del form y fuzzear
+        for element in target.elements:
+            if element.is_form and element.method.upper() == "GET" and element.params:
+                logger.info(f"Analizando XSS (GET form) en: {element.url}")
+                form_parsed = urlparse(element.url)
+                form_query_params = {k: [v] for k, v in element.params.items()}
+                self._fuzz_params(form_parsed, form_query_params, target.headers, vulnerabilities)
 
-        # Payload canario fácil de rastrear
+        return vulnerabilities
+
+    def _fuzz_params(self, parsed_url, query_params, headers, vulnerabilities):
+        """Inyecta el payload canario en cada parámetro y verifica si se refleja sin sanitizar."""
         xss_payload: str = "<VulnSeekerXSS>"
 
         for param_name in query_params.keys():
-            original_values = query_params[param_name]
-
             fuzzed_params = query_params.copy()
             fuzzed_params[param_name] = [xss_payload]
 
@@ -54,8 +62,8 @@ class XSSScanner(ScannerModule):
             ))
 
             try:
-                headers = target.headers or {'User-Agent': 'VulnSeeker/1.0'}
-                response = requests.get(malicious_url, headers=headers, timeout=5)
+                req_headers = headers or {'User-Agent': 'VulnSeeker/1.0'}
+                response = requests.get(malicious_url, headers=req_headers, timeout=5, verify=False)
 
                 # Si sanitiza, debería volver escapado; si regresa intacto es reflejado.
                 if xss_payload in response.text:
@@ -63,14 +71,12 @@ class XSSScanner(ScannerModule):
 
                     vuln = Vulnerability(
                         name="Reflected Cross-Site Scripting (XSS)",
-                        severity=Severity.MEDIUM,  # XSS suele ser Medium/High dependiendo del impacto.
+                        severity=Severity.MEDIUM,
                         description=f"El parámetro '{param_name}' refleja la entrada del usuario sin filtrar caracteres HTML.",
-                        target_url=malicious_url,  # Guardo la URL maliciosa como prueba
+                        target_url=malicious_url,
                         evidence=f"Payload inyectado: {xss_payload} encontrado en la respuesta."
                     )
                     vulnerabilities.append(vuln)
 
             except requests.RequestException as e:
                 logger.debug(f"Error de conexión probando XSS: {e}")
-
-        return vulnerabilities

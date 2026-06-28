@@ -2,9 +2,22 @@
 Tests unitarios: Motor VulnSeeker (engine.py).
 Valida registro de módulos, reset de resultados y flujo de escaneo.
 """
+import pytest
 from unittest.mock import patch, MagicMock
 from core.engine import VulnSeekerEngine
 from core.models import ScannerModule, Target, Vulnerability, Severity, PageElement
+
+
+@pytest.fixture(autouse=True)
+def _neutralizar_autologin():
+    """Evita I/O de red real: el auto-login DVWA se prueba aparte (test_autologin.py).
+
+    Sin esto, cada scan() dispararía requests.get() contra el host de prueba,
+    volviendo la suite no determinista y dependiente de la red.
+    """
+    with patch.object(VulnSeekerEngine, "_check_and_perform_autologin",
+                      lambda self, url: None):
+        yield
 
 
 class FakeModule(ScannerModule):

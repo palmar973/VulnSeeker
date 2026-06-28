@@ -74,13 +74,15 @@ class OpenRedirectScanner(ScannerModule):
                         resp = requests.post(
                             base_url, data=test_params,
                             allow_redirects=False, timeout=5,
-                            headers={"User-Agent": "VulnSeeker/1.0"}
+                            headers={"User-Agent": "VulnSeeker/1.0"},
+                            verify=False
                         )
                     else:
                         resp = requests.get(
                             base_url, params=test_params,
                             allow_redirects=False, timeout=5,
-                            headers={"User-Agent": "VulnSeeker/1.0"}
+                            headers={"User-Agent": "VulnSeeker/1.0"},
+                            verify=False
                         )
 
                     if resp.status_code in REDIRECT_CODES:

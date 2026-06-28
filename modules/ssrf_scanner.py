@@ -70,18 +70,20 @@ class SSRFScanner(ScannerModule):
         session = requests.Session()
 
         # Obtener respuesta baseline para comparar
+        baseline_text = ""
         try:
             baseline_params = dict(element_params)
             if method == "POST":
                 baseline_resp = session.post(
-                    base_url, data=baseline_params, timeout=5, headers=headers,
+                    base_url, data=baseline_params, timeout=5, headers=headers, verify=False
                 )
             else:
                 baseline_resp = session.get(
-                    base_url, params=baseline_params, timeout=5, headers=headers,
+                    base_url, params=baseline_params, timeout=5, headers=headers, verify=False
                 )
             baseline_size = len(baseline_resp.text)
             baseline_code = baseline_resp.status_code
+            baseline_text = baseline_resp.text
         except Exception:
             baseline_size = 0
             baseline_code = 200
@@ -97,17 +99,17 @@ class SSRFScanner(ScannerModule):
                     if method == "POST":
                         resp = session.post(
                             base_url, data=test_params, timeout=5,
-                            headers=headers,
+                            headers=headers, verify=False
                         )
                     else:
                         resp = session.get(
                             base_url, params=test_params, timeout=5,
-                            headers=headers,
+                            headers=headers, verify=False
                         )
 
                     # Verificar si la respuesta contiene indicadores de contenido interno
-                    if self._has_ssrf_indicators(resp, keywords, baseline_size, baseline_code):
-                        matched = [kw for kw in keywords if kw in resp.text]
+                    if self._has_ssrf_indicators(resp, keywords, baseline_size, baseline_code, baseline_text):
+                        matched = [kw for kw in keywords if kw in resp.text and kw not in baseline_text]
                         vulns.append(Vulnerability(
                             name="Server-Side Request Forgery (SSRF)",
                             description=(
@@ -140,11 +142,13 @@ class SSRFScanner(ScannerModule):
         keywords: list[str],
         baseline_size: int,
         baseline_code: int,
+        baseline_text: str = "",
     ) -> bool:
         """Comprueba si la respuesta muestra signos de SSRF exitoso."""
-        # Verificar presencia de palabras clave internas en la respuesta
+        # Verificar presencia de palabras clave internas que NO estaban en el baseline
+        # (si ya aparecían en la respuesta base, no son fruto del payload).
         for keyword in keywords:
-            if keyword in response.text:
+            if keyword in response.text and keyword not in baseline_text:
                 return True
 
         # Diferencia significativa de tamaño respecto al baseline (>50%)
@@ -152,6 +156,7 @@ class SSRFScanner(ScannerModule):
         if baseline_size > 0:
             size_diff = abs(resp_size - baseline_size) / baseline_size
             if size_diff > 0.5 and resp_size > 100:
+                # Si el baseline es pequeño y el tamaño cambia mucho, pero verifiquemos que no sea solo una redirección o error común
                 return True
 
         return False

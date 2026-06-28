@@ -11,12 +11,18 @@ def scanner():
 
 @patch("modules.ssrf_scanner.requests.Session")
 def test_detecta_ssrf_con_contenido_interno(MockSession, scanner):
-    """Respuesta incluye contenido de localhost → SSRF HIGH."""
+    """Contenido de localhost ausente del baseline → SSRF HIGH."""
     session = MockSession.return_value
-    resp = MagicMock()
-    resp.text = "<html><body>It works on localhost</body></html>"
-    resp.status_code = 200
-    session.get.return_value = resp
+    limpia = MagicMock(text="<html>safe</html>", status_code=200)
+    interno = MagicMock(text="<html><body>It works on localhost</body></html>", status_code=200)
+
+    llamadas = {"n": 0}
+
+    def get_side_effect(*args, **kwargs):
+        llamadas["n"] += 1
+        return limpia if llamadas["n"] == 1 else interno  # 1ª llamada = baseline limpio
+
+    session.get.side_effect = get_side_effect
 
     target = Target(url="http://example.com/fetch?url=http://safe.com")
     vulns = scanner.run(target)
@@ -27,17 +33,36 @@ def test_detecta_ssrf_con_contenido_interno(MockSession, scanner):
 
 @patch("modules.ssrf_scanner.requests.Session")
 def test_detecta_ssrf_con_metadata_aws(MockSession, scanner):
-    """Respuesta incluye metadata AWS (ami-id) → SSRF HIGH."""
+    """Metadata AWS (ami-id) ausente del baseline → SSRF HIGH."""
     session = MockSession.return_value
-    resp = MagicMock()
-    resp.text = "ami-id\ninstance-id\nhostname"
-    resp.status_code = 200
-    session.get.return_value = resp
+    limpia = MagicMock(text="<html>safe</html>", status_code=200)
+    interno = MagicMock(text="ami-id\ninstance-id\nhostname", status_code=200)
+
+    llamadas = {"n": 0}
+
+    def get_side_effect(*args, **kwargs):
+        llamadas["n"] += 1
+        return limpia if llamadas["n"] == 1 else interno
+
+    session.get.side_effect = get_side_effect
 
     target = Target(url="http://example.com/proxy?url=http://safe.com")
     vulns = scanner.run(target)
     ssrf_vulns = [v for v in vulns if v.name == "Server-Side Request Forgery (SSRF)"]
     assert len(ssrf_vulns) >= 1
+
+
+@patch("modules.ssrf_scanner.requests.Session")
+def test_no_reporta_ssrf_si_keyword_ya_en_baseline(MockSession, scanner):
+    """Si 'localhost' ya aparece en el baseline (y el tamaño no cambia), no es SSRF."""
+    session = MockSession.return_value
+    resp = MagicMock(text="<html>localhost dashboard</html>", status_code=200)
+    session.get.return_value = resp  # baseline == ataque (mismo texto y tamaño)
+
+    target = Target(url="http://example.com/fetch?url=http://safe.com")
+    vulns = scanner.run(target)
+    ssrf_vulns = [v for v in vulns if v.name == "Server-Side Request Forgery (SSRF)"]
+    assert len(ssrf_vulns) == 0
 
 
 @patch("modules.ssrf_scanner.requests.Session")

@@ -12,6 +12,21 @@ class TechVisualizer:
         Genera un grafo de arquitectura basado en el reconocimiento.
         Estilo: Dark/Cyberpunk sin emojis para compatibilidad.
         """
+        # Normalizar y limpiar la lista de tecnologías (dividir por '|' o ',' y quitar prefijos)
+        normalized_techs = []
+        for raw_tech in tech_list:
+            parts = []
+            for p in raw_tech.split("|"):
+                parts.extend([sp.strip() for sp in p.split(",")])
+            for part in parts:
+                clean = part.strip()
+                for prefix in ["Server:", "Backend:", "CMS:"]:
+                    if clean.lower().startswith(prefix.lower()):
+                        clean = clean[len(prefix):].strip()
+                if clean and clean not in normalized_techs:
+                    normalized_techs.append(clean)
+        tech_list = normalized_techs
+
         G = nx.DiGraph()
 
         # Nodos base sin emojis
@@ -41,7 +56,7 @@ class TechVisualizer:
         # Capa Web Server (Nginx, Apache...)
         server_found = False
         for tech in tech_list:
-            if tech.lower() in ['nginx', 'apache', 'iis', 'litespeed', 'cloudflare']:
+            if tech.lower() in ['nginx', 'apache', 'iis', 'litespeed', 'cloudflare', 'google']:
                 server_node = f"SERVER: {tech}"
                 G.add_node(server_node, type='server')
                 G.add_edge(current_source, server_node)
@@ -58,8 +73,10 @@ class TechVisualizer:
         # Capa Aplicación (CMS / Lenguaje)
         app_node_name = "APP / CMS"
         # Buscamos algo relevante para nombrar el nodo
-        relevant_apps = [t for t in tech_list if t.lower() not in ['nginx', 'apache', 'iis', 'cloudflare']]
-        if relevant_apps:
+        relevant_apps = [t for t in tech_list if t.lower() not in ['nginx', 'apache', 'iis', 'cloudflare', 'google']]
+        if "Gruyere" in relevant_apps and "Python" in relevant_apps:
+            app_node_name = "APP: Gruyere (Python)"
+        elif relevant_apps:
             app_node_name = f"APP: {relevant_apps[0]}"  # Tomamos la primera app detectada (ej: Django, WordPress)
 
         G.add_node(app_node_name, type='app')
@@ -69,7 +86,9 @@ class TechVisualizer:
         db_node = "DATABASE (?)"
         tech_str = " ".join(tech_list).lower()
 
-        if "wordpress" in tech_str or "joomla" in tech_str or "php" in tech_str:
+        if "gruyere" in tech_str:
+            db_node = "In-Memory DB"
+        elif "wordpress" in tech_str or "joomla" in tech_str or "php" in tech_str:
             db_node = "MySQL / MariaDB"
         elif "django" in tech_str or "python" in tech_str or "postgresql" in tech_str:
             db_node = "PostgreSQL"
@@ -77,6 +96,8 @@ class TechVisualizer:
             db_node = "SQL Server"
         elif "mongo" in tech_str or "express" in tech_str:
             db_node = "MongoDB"
+        elif "java" in tech_str or "jsp" in tech_str:
+            db_node = "MySQL / Oracle"
 
         G.add_node(db_node, type='db')
         G.add_edge(app_node_name, db_node)

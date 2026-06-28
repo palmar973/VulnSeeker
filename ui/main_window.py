@@ -931,6 +931,30 @@ class VulnSeekerApp(ctk.CTk):
         else:
             self.show_message("❌ Error exportando CSV.", "Error")
 
+    @staticmethod
+    def _truncate_to_width(text: str, font: "ctk.CTkFont", max_px: int, ellipsis: str = "…") -> str:
+        """Trunca 'text' por ANCHO REAL en píxeles (no por número de caracteres) y añade ellipsis.
+
+        Usa font.measure() para soportar fuentes proporcionales: garantiza que el texto
+        renderizado nunca exceda max_px, manteniendo el resto del layout (la columna de
+        hallazgos) siempre visible. Realiza una búsqueda binaria sobre la longitud del prefijo.
+        """
+        try:
+            if font.measure(text) <= max_px:
+                return text
+            ell_px = font.measure(ellipsis)
+            lo, hi = 0, len(text)
+            while lo < hi:
+                mid = (lo + hi + 1) // 2
+                if font.measure(text[:mid]) + ell_px <= max_px:
+                    lo = mid
+                else:
+                    hi = mid - 1
+            return text[:lo].rstrip() + ellipsis
+        except Exception:
+            # Fallback defensivo por caracteres si measure() no estuviera disponible
+            return (text[:48] + ellipsis) if len(text) > 48 else text
+
     def _refresh_history_table(self, table_container: ctk.CTkFrame, target_filter: str = "Todos") -> None:
         for widget in table_container.winfo_children():
             widget.destroy()
@@ -942,39 +966,48 @@ class VulnSeekerApp(ctk.CTk):
                 row=0, column=0, padx=40, pady=40)
             return
 
+        # Anchos fijos por columna (px): el OBJETIVO queda delimitado para que la columna
+        # de HALLAZGOS sea SIEMPRE visible, sin importar cuán larga sea la URL.
+        col_widths = {0: 50, 1: 135, 2: 460, 3: 95}
+        url_font = ctk.CTkFont(size=13)
+        cell_font_bold = ctk.CTkFont(size=13, weight="bold")
+        header_font = ctk.CTkFont(size=14, weight="bold")
+
         header_frame = ctk.CTkFrame(table_container, fg_color=COLOR_PANEL,
                                     border_width=1, border_color=COLOR_BORDER, corner_radius=8)
         header_frame.grid(row=0, column=0, sticky="ew", padx=15, pady=(15, 5))
         headers = ["🆔 ID", "📅 FECHA", "🎯 OBJETIVO", "🔍 HALLAZGOS"]
         for col, header_text in enumerate(headers):
-            ctk.CTkLabel(header_frame, text=header_text, font=ctk.CTkFont(size=14, weight="bold")).grid(row=0,
-                                                                                                        column=col,
-                                                                                                        padx=12,
-                                                                                                        pady=12,
-                                                                                                        sticky="w")
+            header_frame.grid_columnconfigure(col, minsize=col_widths[col], weight=1 if col == 2 else 0)
+            ctk.CTkLabel(header_frame, text=header_text, width=col_widths[col],
+                         anchor="e" if col == 3 else "w", font=header_font).grid(
+                row=0, column=col, padx=12, pady=12, sticky="ew")
 
         scrollable_frame = ctk.CTkScrollableFrame(table_container, height=350)
         scrollable_frame.grid(row=1, column=0, padx=15, pady=(5, 15), sticky="nsew")
+        scrollable_frame.grid_columnconfigure(0, weight=1)
 
         for idx, (scan_id, scan_date, target_url, vuln_count) in enumerate(scans):
             try:
                 readable_date = datetime.fromisoformat(scan_date.replace('Z', '+00:00')).strftime("%d-%m-%Y %H:%M")
-            except:
+            except Exception:
                 readable_date = scan_date[:16]
             row_color = (COLOR_PANEL, "#1a1a1a") if idx % 2 == 0 else ("#131313", "#1f1f1f")
             row_frame = ctk.CTkFrame(scrollable_frame, fg_color=row_color, height=35, corner_radius=8,
                                      border_width=1, border_color=COLOR_BORDER)
             row_frame.grid(row=idx, column=0, sticky="ew", padx=5, pady=2)
-            row_frame.grid_columnconfigure(2, weight=1)
             self.history_row_cache[scan_id] = {"frame": row_frame, "default_color": row_color}
 
-            for col, text in enumerate(
-                    [str(scan_id), readable_date, (target_url[:50] + "...") if len(target_url) > 50 else target_url,
-                     str(vuln_count)]):
-                lbl = ctk.CTkLabel(row_frame, text=text,
-                                   font=ctk.CTkFont(size=13, weight="bold" if col in [0, 3] else "normal"),
+            # La URL se trunca por ancho real en píxeles (con ellipsis) para no desbordar su columna.
+            display_url = self._truncate_to_width(target_url, url_font, col_widths[2] - 8)
+            cells = [str(scan_id), readable_date, display_url, str(vuln_count)]
+            for col, text in enumerate(cells):
+                row_frame.grid_columnconfigure(col, minsize=col_widths[col], weight=1 if col == 2 else 0)
+                lbl = ctk.CTkLabel(row_frame, text=text, width=col_widths[col],
+                                   anchor="e" if col == 3 else "w",
+                                   font=cell_font_bold if col in [0, 3] else url_font,
                                    text_color=COLOR_TEXT)
-                lbl.grid(row=0, column=col, padx=12 if col in [0, 3] else 8, pady=8, sticky="e" if col == 3 else "w")
+                lbl.grid(row=0, column=col, padx=12, pady=8, sticky="ew")
                 lbl.bind("<Button-1>", lambda e, sid=scan_id: self._on_history_row_click(sid))
             row_frame.bind("<Button-1>", lambda e, sid=scan_id: self._on_history_row_click(sid))
 

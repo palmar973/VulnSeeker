@@ -68,6 +68,18 @@ class CommandInjectionScanner(ScannerModule):
 
         session = requests.Session()
 
+        # Obtener respuesta baseline para descartar falsos positivos pre-existentes
+        baseline_text = ""
+        try:
+            if target.method == "POST":
+                post_data = element_params.copy() if element_params else {}
+                resp_base = session.post(target.url, data=post_data, headers=headers, timeout=5, verify=False)
+            else:
+                resp_base = session.get(target.url, headers=headers, timeout=5, verify=False)
+            baseline_text = resp_base.text
+        except Exception:
+            pass
+
         for param in params_to_test:
             for payload, expected_string in payloads:
                 attack_val = f"127.0.0.1{payload}"
@@ -97,7 +109,9 @@ class CommandInjectionScanner(ScannerModule):
                     else:
                         resp = session.get(attack_url, headers=headers, timeout=5, verify=False)
 
-                    if expected_string in resp.text:
+                    # Solo es RCE si la evidencia aparece tras el ataque y NO estaba
+                    # ya presente en la respuesta baseline (descarta falsos positivos).
+                    if expected_string in resp.text and expected_string not in baseline_text:
                         desc = (f"Se detectó Inyección de Comandos (RCE).\n"
                                 f"El servidor ejecutó: '{payload.strip()}'\n"
                                 f"Output encontrado: '{expected_string}'")

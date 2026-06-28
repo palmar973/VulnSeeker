@@ -39,6 +39,18 @@ class LFIScanner(ScannerModule):
         params = dict(urllib.parse.parse_qsl(parsed.query))
         targets_to_test = []
 
+        req_headers = {"User-Agent": UA_BROWSER}
+        if target.headers:
+            req_headers.update(target.headers)
+
+        # Obtener baseline para descartar falsos positivos pre-existentes
+        baseline_text = ""
+        try:
+            resp_base = requests.get(target.url, timeout=6, headers=req_headers, verify=False, allow_redirects=True)
+            baseline_text = resp_base.text or ""
+        except Exception:
+            pass
+
         if params:
             for key in params:
                 for payload in payloads:
@@ -57,10 +69,17 @@ class LFIScanner(ScannerModule):
         for test_url, param_name, payload in targets_to_test:
             try:
                 logger.info(f"📂 LFI Scanner: probando {test_url}")
-                resp = requests.get(test_url, timeout=6, headers={"User-Agent": UA_BROWSER}, allow_redirects=True)
+                resp = requests.get(test_url, timeout=6, headers=req_headers, verify=False, allow_redirects=True)
                 body = resp.text or ""
-                if re.search(r"root:x:0:0:", body, re.IGNORECASE) or re.search(r"\[(extensions|fonts)\]", body,
-                                                                              re.IGNORECASE):
+                
+                # Comprobar indicadores ignorando coincidencias pre-existentes en el baseline
+                has_lfi = False
+                if re.search(r"root:x:0:0:", body, re.IGNORECASE) and not re.search(r"root:x:0:0:", baseline_text, re.IGNORECASE):
+                    has_lfi = True
+                elif re.search(r"\[(extensions|fonts)\]", body, re.IGNORECASE) and not re.search(r"\[(extensions|fonts)\]", baseline_text, re.IGNORECASE):
+                    has_lfi = True
+                    
+                if has_lfi:
                     evidence = body[:50].replace("\n", " ").replace("\r", " ")
                     vulns.append(Vulnerability(
                         name="Local File Inclusion (LFI)",
