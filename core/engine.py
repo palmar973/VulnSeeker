@@ -88,6 +88,12 @@ class VulnSeekerEngine:
             cookies = self.config.get("cookies", {})
             crawler = WebCrawler(start_url, max_pages=GlobalConfig.MAX_CRAWL_PAGES, cookies=cookies)
             target_elements = crawler.start()
+
+            # FASE 2.5: API DISCOVERY (SPAs/REST sin navegador)
+            # El crawler estructural es ciego ante SPAs (Angular/React/Vue): los
+            # endpoints viven en JS/API, no en el HTML. Recuperamos esa superficie
+            # parseando spec OpenAPI + extrayendo rutas de los bundles JS.
+            target_elements.extend(self._discover_api_endpoints(start_url, target_elements))
         else:
             target_elements = [PageElement(url=start_url, method="GET")]
 
@@ -157,6 +163,25 @@ class VulnSeekerEngine:
         except Exception as e:
             logger.error(f"⚠️ Error Subdomain Scanner: {e}")
             self.subdomain_data = []
+
+    def _discover_api_endpoints(self, start_url: str, existing: List[PageElement]) -> List[PageElement]:
+        """Descubre endpoints de API (SPAs/REST) sin navegador y los devuelve sin duplicar.
+        En apps server-rendered (DVWA) no hay spec ni rutas de API en JS → devuelve []."""
+        try:
+            from core.api_discovery import ApiEndpointDiscovery
+            cookies = self.config.get("cookies", {})
+            headers = {'User-Agent': self.config.get("user_agent", GlobalConfig.USER_AGENT)}
+            api_elements = ApiEndpointDiscovery(start_url, headers=headers, cookies=cookies).discover()
+        except Exception as e:
+            logger.error(f"⚠️ API discovery falló: {e}")
+            return []
+
+        seen = {(e.url, e.method) for e in existing}
+        nuevos = [e for e in api_elements if (e.url, e.method) not in seen]
+        if nuevos:
+            logger.info(f"🔌 API discovery: +{len(nuevos)} endpoints REST añadidos al arsenal "
+                        f"(el crawler estructural había mapeado {len(existing)}).")
+        return nuevos
 
     def _analyze_single_element(self, element: PageElement) -> List[Vulnerability]:
         """Análisis individual por hilo."""

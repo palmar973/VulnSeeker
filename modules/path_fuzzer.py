@@ -7,6 +7,7 @@ Descubre .env, .git, backups SQL, paneles admin ocultos, etc.
 import requests
 from typing import List
 from core.models import ScannerModule, Target, Vulnerability, Severity
+from core.soft404 import CatchAllBaseline
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 from urllib.parse import urljoin
@@ -54,30 +55,38 @@ class PathFuzzer(ScannerModule):
     def description(self) -> str:
         return "Descubre archivos sensibles (.env, .git, backups, admin panels)"
 
-    def _check_path(self, base_url: str, path: str, timeout: float = 2.5) -> tuple[bool, str]:
-        """Verifica un path individual con timeout agresivo."""
+    def _check_path(self, base_url: str, path: str, headers: dict | None = None,
+                    timeout: float = 2.5) -> tuple[object, str]:
+        """Verifica un path individual con timeout agresivo. Devuelve la respuesta
+        completa (o None) para poder contrastarla contra la firma catch-all."""
         try:
             test_url = urljoin(base_url, path)
             response = requests.get(
                 test_url,
+                headers=headers or {},
                 timeout=timeout,
                 allow_redirects=False,  # No seguir redirecciones
                 verify=False
             )
-            return response.status_code == 200, test_url
+            return response, test_url
         except:
-            return False, ""
+            return None, ""
 
     def run(self, target: Target) -> List[Vulnerability]:
         """Ejecuta fuzzing paralelo de paths críticos."""
         vulnerabilities: List[Vulnerability] = []
         base_url = str(target.url)
+        headers = target.headers or {}
+
+        # Aprende la firma catch-all/soft-404 antes de fuzzear: si el servidor
+        # responde 200 a todo (SPAs), un 200 NO implica que el recurso exista.
+        baseline = CatchAllBaseline(base_url, headers=headers)
 
         # Fuzzing paralelo (max 8 threads por balance velocidad/estabilidad)
         with ThreadPoolExecutor(max_workers=8) as executor:
             # Submit todos los paths
             future_to_path = {
-                executor.submit(self._check_path, base_url, path): path
+                executor.submit(self._check_path, base_url, path, headers): path
                 for path in self.CRITICAL_PATHS.keys()
             }
 
@@ -85,7 +94,11 @@ class PathFuzzer(ScannerModule):
             for future in as_completed(future_to_path):
                 path = future_to_path[future]
                 try:
-                    is_exposed, full_url = future.result()
+                    response, full_url = future.result()
+
+                    is_exposed = (response is not None
+                                  and response.status_code == 200
+                                  and not baseline.is_false_positive(response))
 
                     if is_exposed:
                         severity = self.CRITICAL_PATHS[path]

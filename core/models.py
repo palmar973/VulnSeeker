@@ -23,11 +23,17 @@ class Severity(Enum):
 
 @dataclass(frozen=True)
 class PageElement:
-    """Punto de ataque descubierto (URL o form); frozen para seguridad entre hilos."""
+    """Punto de ataque descubierto (URL o form); frozen para seguridad entre hilos.
+
+    body_type indica cómo se transporta el cuerpo de una petición con datos:
+      - "form": parámetros application/x-www-form-urlencoded (formularios HTML clásicos)
+      - "json": cuerpo application/json (endpoints de API REST como los de una SPA)
+    """
     url: str
     method: str = "GET"
     params: Dict[str, str] = field(default_factory=dict)
     is_form: bool = False
+    body_type: str = "form"
 
 
 @dataclass

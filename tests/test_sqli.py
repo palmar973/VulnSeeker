@@ -163,6 +163,93 @@ def test_form_get_inyecta_payload_en_query_string():
     assert any("id=" in u for u in urls_llamadas)
 
 
+# --- SQLi en APIs REST con cuerpo JSON ---
+
+def test_detecta_sqli_en_json_body():
+    """Debe detectar SQLi al inyectar en un campo de un cuerpo JSON (API REST)."""
+    scanner = SQLInjectionScanner(enable_blind=False)
+    element = PageElement(
+        url="http://api.test/rest/user/login",
+        method="POST",
+        params={"email": "a@a.com", "password": "x"},
+        body_type="json",
+    )
+    target = Target(url="http://api.test/rest/user/login", elements=[element])
+
+    mock_resp = MagicMock()
+    mock_resp.text = "Error: SQLITE_ERROR: unrecognized token near \"'\""
+
+    with patch("modules.sqli_module.requests.post", return_value=mock_resp):
+        vulns = scanner.run(target)
+
+    assert any("JSON" in v.name for v in vulns)
+    assert vulns[0].severity == Severity.HIGH
+
+
+def test_detecta_sqli_json_firma_sequelize():
+    """El stack trace de un ORM (Sequelize sobre SQLite) debe contar como error SQL."""
+    scanner = SQLInjectionScanner(enable_blind=False)
+    element = PageElement(
+        url="http://api.test/rest/user/login",
+        method="POST",
+        params={"email": "a@a.com", "password": "x"},
+        body_type="json",
+    )
+    target = Target(url="http://api.test/rest/user/login", elements=[element])
+
+    mock_resp = MagicMock()
+    mock_resp.text = "at /app/node_modules/sequelize/lib/dialects/sqlite/query.js:185:27"
+
+    with patch("modules.sqli_module.requests.post", return_value=mock_resp):
+        vulns = scanner.run(target)
+
+    assert any("JSON" in v.name for v in vulns)
+
+
+def test_no_reporta_sqli_json_limpio():
+    """Una respuesta JSON sin errores de BD no debe reportar SQLi."""
+    scanner = SQLInjectionScanner(enable_blind=False)
+    element = PageElement(
+        url="http://api.test/rest/user/login",
+        method="POST",
+        params={"email": "a@a.com", "password": "x"},
+        body_type="json",
+    )
+    target = Target(url="http://api.test/rest/user/login", elements=[element])
+
+    mock_resp = MagicMock()
+    mock_resp.text = '{"authentication":{"token":"abc"}}'
+
+    with patch("modules.sqli_module.requests.post", return_value=mock_resp):
+        vulns = scanner.run(target)
+
+    assert vulns == []
+
+
+def test_json_envia_content_type_json():
+    """El fuzzing de cuerpo JSON debe enviarse como application/json."""
+    scanner = SQLInjectionScanner(enable_blind=False)
+    element = PageElement(
+        url="http://api.test/rest/user/login",
+        method="POST",
+        params={"email": "a@a.com"},
+        body_type="json",
+    )
+    target = Target(url="http://api.test/rest/user/login", elements=[element])
+
+    capturado = {}
+
+    def mock_post(url, **kwargs):
+        capturado.update(kwargs)
+        return MagicMock(text="<html>ok</html>")
+
+    with patch("modules.sqli_module.requests.post", side_effect=mock_post):
+        scanner.run(target)
+
+    assert capturado.get("headers", {}).get("Content-Type") == "application/json"
+    assert "json" in capturado  # se envió cuerpo JSON (no data form-urlencoded)
+
+
 # --- SQLi ciego basado en tiempo (Blind Time-Based) ---
 
 def test_detecta_blind_sqli_time_based():

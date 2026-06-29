@@ -16,10 +16,15 @@ class SQLInjectionScanner(ScannerModule):
     Emplea doble estrategia de mutación: concatenación y reemplazo completo.
     """
 
-    # Payloads clásicos para forzar errores de sintaxis visibles
-    PAYLOADS: list[str] = ["'", '"', "';", "--", "' OR '1'='1"]
+    # Payloads clásicos para forzar errores de sintaxis visibles.
+    # Se incluyen variantes que rompen estructuras con paréntesis/UNION, habituales
+    # en APIs REST (p. ej. el buscador de OWASP Juice Shop sobre SQLite).
+    PAYLOADS: list[str] = [
+        "'", '"', "';", "--", "' OR '1'='1",
+        "'))--", "')) OR 1=1-- -", "' UNION SELECT NULL-- -",
+    ]
 
-    # Firmas de error comunes de motores SQL
+    # Firmas de error comunes de motores SQL (MySQL, PostgreSQL, Oracle, MSSQL y SQLite).
     ERROR_SIGNATURES: list[str] = [
         "You have an error in your SQL syntax",
         "Warning: mysql_",
@@ -29,6 +34,15 @@ class SQLInjectionScanner(ScannerModule):
         "microsoft sql native client error",
         "org.postgresql.util.PSQLException",
         "com.mysql.jdbc.exceptions",
+        # SQLite (común en APIs Node/Express como Juice Shop)
+        "SQLITE_ERROR",
+        "SQLITE_CONSTRAINT",
+        "sqlite3.OperationalError",
+        "unrecognized token",
+        "SQL error or missing database",
+        # ORMs que filtran el error SQL en su stack trace (Sequelize sobre SQLite, etc.)
+        "SequelizeDatabaseError",
+        "sequelize/lib/dialects",
     ]
 
     # Payloads para SQLi ciego basado en tiempo ({d} = retardo en segundos).
@@ -71,8 +85,12 @@ class SQLInjectionScanner(ScannerModule):
 
         # Estrategia 2: Parámetros POST desde formularios
         # Estrategia 3: Formularios GET (params como query string, no en la URL base)
+        # Estrategia 3.5: Cuerpos JSON de APIs REST (SPAs / servicios)
         for element in target.elements:
-            if element.is_form and element.method.upper() == "POST" and element.params:
+            if getattr(element, "body_type", "form") == "json" and element.params:
+                logger.info(f"SQLi Scanner: Fuzzing JSON body en {element.url}")
+                self._fuzz_json_params(target, element, vulnerabilities)
+            elif element.is_form and element.method.upper() == "POST" and element.params:
                 logger.info(f"SQLi Scanner: Fuzzing POST params en {element.url}")
                 self._fuzz_post_params(target, element, vulnerabilities)
             elif element.is_form and element.method.upper() == "GET" and element.params:
@@ -198,6 +216,70 @@ class SQLInjectionScanner(ScannerModule):
                 else:
                     continue
                 break
+
+    def _fuzz_json_params(self, target, element, vulnerabilities):
+        """Inyecta payloads en cada campo de un cuerpo JSON (endpoints de API REST).
+        Es el equivalente de _fuzz_post_params pero con Content-Type application/json,
+        necesario para SPAs/servicios que reciben los datos como JSON (p. ej. el login
+        de OWASP Juice Shop: POST /rest/user/login {email, password})."""
+        headers = dict(target.headers or {})
+        headers["Content-Type"] = "application/json"
+
+        for param_name in element.params.keys():
+            original_value = element.params.get(param_name, "")
+
+            for payload in self.PAYLOADS:
+                mutations = [
+                    str(original_value) + payload,
+                    payload,
+                ]
+
+                for mutated_value in mutations:
+                    fuzzed_body = dict(element.params)
+                    fuzzed_body[param_name] = mutated_value
+
+                    found = self._send_and_check_json(
+                        url=element.url,
+                        headers=headers,
+                        json_body=fuzzed_body,
+                        param_name=param_name,
+                        payload=mutated_value,
+                        target_url=element.url,
+                        vulnerabilities=vulnerabilities
+                    )
+                    if found:
+                        break
+                else:
+                    continue
+                break
+
+    def _send_and_check_json(self, url, headers, json_body, param_name, payload,
+                             target_url, vulnerabilities) -> bool:
+        """Envía un POST con cuerpo JSON y busca firmas de error SQL en la respuesta."""
+        try:
+            response = requests.post(url, json=json_body, headers=headers, timeout=5, verify=False)
+
+            for error in self.ERROR_SIGNATURES:
+                if error.lower() in response.text.lower():
+                    logger.warning(
+                        f"  [!!!] Posible SQLi (JSON) en '{param_name}' con payload: {payload}"
+                    )
+                    vulnerabilities.append(Vulnerability(
+                        name="SQL Injection (Error Based - JSON)",
+                        severity=Severity.HIGH,
+                        description=(
+                            f"Se detectó un error de BD al inyectar en el campo JSON "
+                            f"'{param_name}' de un endpoint de API REST."
+                        ),
+                        target_url=target_url,
+                        evidence=f"Payload: {payload} | Error: {error}"
+                    ))
+                    return True
+
+        except requests.RequestException as e:
+            logger.debug(f"Error de conexión probando payload JSON: {e}")
+
+        return False
 
     def _send_and_check(self, method, url, headers, param_name, payload,
                         target_url, vulnerabilities, data=None) -> bool:

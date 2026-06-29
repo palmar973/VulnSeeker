@@ -58,3 +58,27 @@ def test_analyze_completo_con_mock():
     assert 'Nginx' in result['server']
     assert 'Php' in result['powered_by']
     assert 'Wordpress' in result['cms_framework']
+
+
+def test_analyze_paths_ignora_catch_all():
+    """Anti-FP: si una ruta aleatoria inexistente devuelve 200 (catch-all/SPA), no se
+    debe inferir CMS por path (era el origen del falso 'Joomla/WordPress' en Juice Shop)."""
+    fp = TechFingerprinter()
+    with patch("core.fingerprinter.requests.head", return_value=MagicMock(status_code=200)):
+        assert fp._analyze_paths("http://spa.local/") == []
+
+
+def test_analyze_paths_detecta_con_404_real():
+    """Con 404 real en la sonda, sí se infiere CMS por rutas conocidas (sin regresión)."""
+    fp = TechFingerprinter()
+
+    def _head(url, *args, **kwargs):
+        if url.endswith("/wp-admin/") or url.endswith("/administrator/") or url.endswith("/sites/"):
+            return MagicMock(status_code=200)
+        return MagicMock(status_code=404)
+
+    with patch("core.fingerprinter.requests.head", side_effect=_head):
+        detected = fp._analyze_paths("http://classic.local/")
+
+    assert "WordPress" in detected
+    assert "Joomla" in detected

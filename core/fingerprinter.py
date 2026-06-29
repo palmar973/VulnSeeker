@@ -166,6 +166,17 @@ class TechFingerprinter:
     def _analyze_paths(self, target_url: str) -> List[str]:
         detected = []
         try:
+            # Anti falso-positivo: si el servidor responde 200 a una ruta aleatoria
+            # inexistente (catch-all/soft-404, típico de SPAs), inferir CMS a partir
+            # de "la ruta da 200" no es fiable. Se aborta la inferencia por path.
+            import random
+            import string
+            rnd = "".join(random.choices(string.ascii_lowercase, k=20))
+            probe = requests.head(urljoin(target_url, f"{rnd}/"), timeout=3,
+                                  allow_redirects=True, verify=False)
+            if probe.status_code == 200:
+                return []
+
             for path in self.common_paths[:3]:  # Solo probar los 3 más comunes para no ser lento
                 test_url = urljoin(target_url, path)
                 resp = requests.head(test_url, timeout=3, allow_redirects=True, verify=False)

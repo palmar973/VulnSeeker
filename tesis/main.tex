@@ -1451,7 +1451,7 @@ de la red. Los resultados se resumen en la Tabla~\ref{tab:tests}.
         \toprule
         \textbf{Módulo} & \textbf{Tests} & \textbf{Passed} & \textbf{Status} \\
         \midrule
-        SQL Injection       & 12 & 12 & \checkmark \\
+        SQL Injection       & 16 & 16 & \checkmark \\
         Cross-Site Scripting & 3  & 3  & \checkmark \\
         Command Injection   & 4  & 4  & \checkmark \\
         Local File Inclusion & 4  & 4  & \checkmark \\
@@ -1464,7 +1464,7 @@ de la red. Los resultados se resumen en la Tabla~\ref{tab:tests}.
         Header Analyzer     & 3  & 3  & \checkmark \\
         Dir Listing         & 4  & 4  & \checkmark \\
         HTTP Methods        & 5  & 5  & \checkmark \\
-        Path Fuzzer         & 3  & 3  & \checkmark \\
+        Path Fuzzer         & 5  & 5  & \checkmark \\
         Brute Force         & 6  & 6  & \checkmark \\
         Weak Session        & 6  & 6  & \checkmark \\
         Sensitive Data      & 6  & 6  & \checkmark \\
@@ -1480,9 +1480,10 @@ de la red. Los resultados se resumen en la Tabla~\ref{tab:tests}.
         Models (core)       & 5  & 5  & \checkmark \\
         Engine (core)       & 5  & 5  & \checkmark \\
         Crawler (core)      & 7  & 7  & \checkmark \\
-        Fingerprinter (core) & 6 & 6  & \checkmark \\
+        Fingerprinter (core) & 8 & 8  & \checkmark \\
+        API Discovery (core) & 6 & 6  & \checkmark \\
         \midrule
-        \textbf{TOTAL}      & \textbf{150} & \textbf{150} & \textbf{100\%} \\
+        \textbf{TOTAL}      & \textbf{164} & \textbf{164} & \textbf{100\%} \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -1733,6 +1734,119 @@ completó la auditoría de forma remota bajo condiciones normales de tráfico y 
 sin generar denegación de servicio (DoS) ni bloqueos de red, demostrando la precisión de sus
 motores heurísticos en entornos no locales.
 
+\subsection{Validación contra una SPA: OWASP Juice Shop y la Extensión API-Aware}
+
+Las aplicaciones de página única (\textit{Single-Page Applications}, SPA)
+construidas con frameworks como Angular, React o Vue representan un reto
+estructural para los escáneres DAST basados en \textit{crawling} estático. En
+estas arquitecturas, la navegación, los formularios y las llamadas al
+\textit{backend} se generan dinámicamente mediante JavaScript en el cliente y se
+comunican con una API REST; el HTML inicial apenas contiene un contenedor raíz
+vacío. Para verificar el comportamiento de VulnSeeker en este escenario se
+desplegó localmente OWASP~Juice~Shop (Node.js/Express + Angular), considerada la
+aplicación insegura moderna de referencia.
+
+\subsubsection{El problema de visibilidad y su solución sin navegador}
+
+El crawler estructural, al no ejecutar JavaScript, mapeó 0~endpoints sobre la
+SPA: el motor no disponía de superficie sobre la cual atacar. Antes que recurrir
+a un motor de renderizado pesado (Selenium/Playwright) ---con su coste de
+dependencias, fragilidad y consumo de recursos--- se incorporó un módulo de
+\textbf{descubrimiento de endpoints API sin navegador} que combina tres capas:
+(i)~el parseo de una especificación OpenAPI/Swagger cuando la aplicación la
+publica; (ii)~la extracción por expresiones regulares de las rutas \texttt{/api/}
+y \texttt{/rest/} embebidas en los \textit{bundles} JavaScript de la aplicación;
+y (iii)~el sondeo validado de \textit{endpoints} REST canónicos (búsqueda y
+autenticación). El efecto sobre la visibilidad fue determinante
+(Tabla~\ref{tab:spa-visibilidad}).
+
+\begin{table}[H]
+    \centering
+    \caption{Visibilidad de la superficie de ataque en OWASP Juice Shop}
+    \label{tab:spa-visibilidad}
+    \begin{tabular}{l c}
+        \toprule
+        \textbf{Mecanismo de descubrimiento} & \textbf{Endpoints mapeados} \\
+        \midrule
+        Crawler estructural (estático)      & 0 \\
+        Descubridor API-aware (spec + JS)   & 29 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Robustez ante respuestas \textit{catch-all} (soft-404)}
+
+El despliegue de Juice Shop reveló un patrón que los entornos previos (DVWA,
+Altoro) no exhibían: como toda SPA, el servidor responde \texttt{HTTP~200} con su
+\texttt{index.html} ante \textit{cualquier} ruta inexistente (comportamiento
+\textit{catch-all} o \textit{soft-404}), para que el enrutado se resuelva en el
+cliente. Los módulos que infieren la existencia de un recurso a partir de un
+código 200 ---como el descubridor de archivos sensibles o la huella tecnológica
+por rutas--- generaban en consecuencia falsos positivos masivos: reportaban como
+expuestos 24~archivos inexistentes (\texttt{.env}, \texttt{.git/config},
+\texttt{wp-config.php.bak}, copias de base de datos, etc.) e identificaban
+erróneamente el \textit{stack} como ``Joomla/WordPress''. Se introdujo un
+mecanismo de \textit{baseline} que aprende la firma de la página
+\textit{catch-all} ---sondeando rutas aleatorias garantizadamente inexistentes---
+y descarta toda respuesta 200 que coincida con ella (Tabla~\ref{tab:soft404}). En
+servidores con 404 real (DVWA) el mecanismo no se activa y el comportamiento del
+escáner no varía.
+
+\begin{table}[H]
+    \centering
+    \caption{Depuración de falsos positivos por respuesta catch-all en Juice Shop}
+    \label{tab:soft404}
+    \begin{tabular}{l c c}
+        \toprule
+        \textbf{Indicador} & \textbf{Sin baseline} & \textbf{Con baseline} \\
+        \midrule
+        Archivos sensibles ``expuestos'' (FP) & 24 & 0 \\
+        Huella de CMS falsa (Joomla/WordPress) & Sí & No \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Hallazgos y verdaderos positivos de inyección}
+
+Con la superficie de API restaurada, el escaneo completo produjo 117~hallazgos.
+Conviene interpretarlos con rigor: la mayoría son deficiencias de configuración
+(ausencia de HTTPS, CORS con origen comodín, ausencia de CSP y HSTS) evaluadas de
+forma independiente en cada uno de los 29~endpoints, por lo que no constituyen
+117~problemas distintos sino aproximadamente siete tipos replicados por endpoint.
+Lo relevante a efectos de validación es que el motor de inyección, extendido para
+operar sobre cuerpos JSON y dotado de firmas de error de SQLite y de ORM
+(Sequelize), confirmó dos~vulnerabilidades de inyección SQL reales
+(Tabla~\ref{tab:juiceshop-sqli}): una en un parámetro de consulta (GET) y otra en
+el cuerpo JSON del \textit{endpoint} de autenticación ---donde el payload
+\texttt{' OR 1=1--} produce además un \textit{bypass} de credenciales con emisión
+de un token JWT de administrador.
+
+\begin{table}[H]
+    \centering
+    \caption{Verdaderos positivos de SQL Injection detectados en Juice Shop}
+    \label{tab:juiceshop-sqli}
+    \small
+    \begin{tabular}{p{3.8cm} p{2.4cm} p{5.0cm}}
+        \toprule
+        \textbf{Endpoint} & \textbf{Vector} & \textbf{Evidencia} \\
+        \midrule
+        \texttt{/rest/products/search} & Query GET (\texttt{q}) & Error \texttt{SQLITE\_ERROR} ante payload de ruptura \\
+        \texttt{/rest/user/login} & Cuerpo JSON (\texttt{email}) & \textit{Stack} de \texttt{sequelize/dialects/sqlite}; bypass con \texttt{' OR 1=1--} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Este caso aporta una doble lección metodológica. Por un lado, delimita la
+\textbf{validez externa} del framework: VulnSeeker cubre con solvencia las
+aplicaciones \textit{server-rendered} (DVWA, Altoro), mientras que en las SPA su
+eficacia depende de la capa de descubrimiento API-aware aquí incorporada, que
+recupera la superficie de ataque sin el coste de un navegador \textit{headless}.
+Por otro, confirma que el endurecimiento frente a falsos positivos (\textit{baseline}
+\textit{catch-all}) es indispensable para operar sobre aplicaciones modernas. Como
+trabajo futuro queda la integración de un motor de renderizado \textit{headless}
+para SPAs que no publiquen especificación ni expongan sus rutas de forma legible
+en el código JavaScript.
+
 \subsection{Evaluación del Análisis de Inteligencia Artificial}
 
 
@@ -1975,16 +2089,19 @@ investigaciones:
     cambios en el servicio, los reportes ejecutivos no están disponibles,
     aunque el resto del framework opera con normalidad.
 
-    \item \textbf{Entorno de validación controlado:} La medición de precisión
-    (100\%, 0~falsos positivos observados) se obtuvo contra DVWA, un entorno
-    intencionalmente vulnerable, y se complementó con un escaneo exploratorio
-    sobre la plataforma pública de pruebas Altoro Mutual. Estos resultados
-    reflejan contextos de prueba específicos y podrían variar en aplicaciones
-    de producción con configuraciones de seguridad parciales o comportamientos
-    ambiguos. La validación contra un conjunto más amplio de objetivos con
-    \textit{ground truth} etiquetado (p.~ej. OWASP Benchmark, Juice Shop) queda
-    planteada como trabajo futuro para cuantificar el recall y el Índice de
-    Youden del framework.
+    \item \textbf{Entorno de validación y cobertura de SPAs:} La medición de
+    precisión (0~falsos positivos observados) se obtuvo contra DVWA, un entorno
+    intencionalmente vulnerable, y se complementó con escaneos sobre la plataforma
+    pública Altoro Mutual y sobre la SPA OWASP~Juice~Shop. Esta última evidenció
+    que el crawler estático no alcanza la superficie de las aplicaciones que
+    construyen su API en JavaScript del lado del cliente; la limitación se mitigó
+    incorporando un descubridor de \textit{endpoints} API-aware sin navegador
+    (especificación OpenAPI + extracción de rutas en los \textit{bundles} JS), si
+    bien las SPAs que no publiquen especificación ni expongan sus rutas de forma
+    legible requerirían un motor de renderizado \textit{headless}, lo que queda
+    como trabajo futuro. Del mismo modo, la cuantificación del \textit{recall} y
+    del Índice de Youden contra un conjunto con \textit{ground truth} etiquetado
+    (p.~ej. OWASP~Benchmark) permanece como línea de trabajo pendiente.
 \end{enumerate}
 
 \subsection{Recomendaciones}
