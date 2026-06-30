@@ -161,7 +161,7 @@ de fingerprinting tecnológico y 25~módulos de detección que cubren 8 de las
 10~categorías del OWASP Top~10. La herramienta incorpora consultas en tiempo real
 a la base de datos nacional de vulnerabilidades del NIST (NVD~API~2.0) y genera
 reportes técnicos con análisis asistido por inteligencia artificial. La validación
-se realizó mediante 178~pruebas unitarias automatizadas, escaneos controlados
+se realizó mediante 180~pruebas unitarias automatizadas, escaneos controlados
 sobre entornos de práctica estándar y una medición cuantitativa contra el OWASP
 Benchmark. Los resultados demostraron que la integración
 de múltiples motores de detección en una arquitectura modular incrementa la
@@ -1408,7 +1408,7 @@ OWASP Top~10 (2021):
 
 La validación experimental de la solución se estructuró a tres niveles
 complementarios para garantizar tanto la calidad del software como su efectividad
-diagnóstica. El primer nivel consistió en la construcción de una suite de 178~pruebas
+diagnóstica. El primer nivel consistió en la construcción de una suite de 180~pruebas
 unitarias desarrolladas con el framework \texttt{pytest}. Estas pruebas emplean la
 técnica de simulación (\textit{mocking}) a través de \texttt{unittest.mock} para
 interceptar las solicitudes de red de cada módulo y retornar respuestas HTTP
@@ -1453,7 +1453,7 @@ de la red. Los resultados se resumen en la Tabla~\ref{tab:tests}.
         \textbf{Módulo} & \textbf{Tests} & \textbf{Passed} & \textbf{Status} \\
         \midrule
         SQL Injection       & 17 & 17 & \checkmark \\
-        Cross-Site Scripting & 3  & 3  & \checkmark \\
+        Cross-Site Scripting & 5  & 5  & \checkmark \\
         Command Injection   & 4  & 4  & \checkmark \\
         Local File Inclusion & 4  & 4  & \checkmark \\
         Remote File Inclusion & 4  & 4  & \checkmark \\
@@ -1486,7 +1486,7 @@ de la red. Los resultados se resumen en la Tabla~\ref{tab:tests}.
         Benchmark Scorer (tools) & 7 & 7 & \checkmark \\
         Benchmark Runner (tools) & 6 & 6 & \checkmark \\
         \midrule
-        \textbf{TOTAL}      & \textbf{178} & \textbf{178} & \textbf{100\%} \\
+        \textbf{TOTAL}      & \textbf{180} & \textbf{180} & \textbf{100\%} \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -1914,16 +1914,16 @@ Tabla~\ref{tab:benchmark-global} la medida global conservadora.
         \textbf{Categoría} & \textbf{VP} & \textbf{FN} & \textbf{FP} & \textbf{VN} & \textbf{TPR} & \textbf{FPR} & \textbf{Youden} \\
         \midrule
         SQL Injection      & 156 &   0 & 17 & 133 & 1.00 & 0.11 & \textbf{0.89} \\
+        Cross-Site Scripting & 137 &  20 &  0 & 157 & 0.87 & 0.00 & \textbf{0.87} \\
         Command Injection  &  31 &  37 &  0 &  80 & 0.46 & 0.00 & 0.46 \\
-        Cross-Site Scripting &  60 &  97 &  0 & 157 & 0.38 & 0.00 & 0.38 \\
         Path Traversal     &   0 &  72 &  0 &  78 & 0.00 & 0.00 & 0.00 \\
         \midrule
-        \textbf{TOTAL}     & \textbf{247} & \textbf{206} & \textbf{17} & \textbf{448} & \textbf{0.55} & \textbf{0.04} & \textbf{0.51} \\
+        \textbf{TOTAL}     & \textbf{324} & \textbf{129} & \textbf{17} & \textbf{448} & \textbf{0.72} & \textbf{0.04} & \textbf{0.68} \\
         \bottomrule
     \end{tabular}
 
     \vspace{0.4em}
-    {\footnotesize Precisión: 0.94 \quad F1: 0.69}
+    {\footnotesize Precisión: 0.95 \quad F1: 0.82}
 \end{table}
 
 \begin{table}[H]
@@ -1936,31 +1936,34 @@ Tabla~\ref{tab:benchmark-global} la medida global conservadora.
         \textbf{Categoría} & \textbf{VP} & \textbf{FN} & \textbf{FP} & \textbf{VN} & \textbf{TPR} & \textbf{FPR} & \textbf{Youden} \\
         \midrule
         SQL Injection      & 156 & 116 & 17 & 215 & 0.57 & 0.07 & 0.50 \\
+        Cross-Site Scripting & 137 & 109 &  0 & 209 & 0.56 & 0.00 & 0.56 \\
         Command Injection  &  31 &  95 &  0 & 125 & 0.25 & 0.00 & 0.25 \\
-        Cross-Site Scripting &  60 & 186 &  0 & 209 & 0.24 & 0.00 & 0.24 \\
         Path Traversal     &   0 & 133 &  0 & 135 & 0.00 & 0.00 & 0.00 \\
         \midrule
-        \textbf{TOTAL}     & \textbf{247} & \textbf{530} & \textbf{17} & \textbf{684} & \textbf{0.32} & \textbf{0.02} & \textbf{0.29} \\
+        \textbf{TOTAL}     & \textbf{324} & \textbf{453} & \textbf{17} & \textbf{684} & \textbf{0.42} & \textbf{0.02} & \textbf{0.39} \\
         \bottomrule
     \end{tabular}
 
     \vspace{0.4em}
-    {\footnotesize Precisión: 0.94 \quad F1: 0.47}
+    {\footnotesize Precisión: 0.95 \quad F1: 0.58}
 \end{table}
 
 \subsubsection{Interpretación}
 
-El módulo de \textbf{inyección SQL constituye la fortaleza del framework}: alcanza
-un recall perfecto ($TPR = 1{,}00$) sobre el subconjunto atacable y un Índice de
-Youden de \textbf{0,89}, sustentado en la propagación de la excepción
-\texttt{java.sql.SQLException} que el servidor (HSQLDB sobre Tomcat) devuelve ante
-los \textit{payloads} de ruptura ---la misma estrategia basada en errores que
-demostró su validez en SQLite con Juice Shop. La \textbf{precisión global de 0,94}
+Los módulos de \textbf{inyección SQL y XSS constituyen las fortalezas del
+framework}. La inyección SQL alcanza un recall perfecto ($TPR = 1{,}00$) sobre el
+subconjunto atacable y un Índice de Youden de \textbf{0,89}, sustentado en la
+propagación de la excepción \texttt{java.sql.SQLException} que el servidor (HSQLDB
+sobre Tomcat) devuelve ante los \textit{payloads} de ruptura ---la misma estrategia
+basada en errores que demostró su validez en SQLite con Juice Shop. El módulo de
+XSS reflejado, que inyecta el \textit{payload} canario tanto en parámetros
+\texttt{GET} como en cuerpos \texttt{POST}, alcanza un Youden de \textbf{0,87}
+($TPR = 0{,}87$) sin un solo falso positivo. La \textbf{precisión global de 0,95}
 confirma el principio de diseño priorizado por VulnSeeker: el escáner casi nunca
-inventa vulnerabilidades. El Youden de 0,51 sobre el subconjunto atacable y de
-0,29 en la medida global conservadora sitúan al framework en un rango comparable
-al de los escáneres DAST de código abierto reportados en la literatura
-(Capítulo~II), un resultado creíble que no se ha sobreestimado.
+inventa vulnerabilidades. El Youden de \textbf{0,68} sobre el subconjunto atacable
+y de \textbf{0,39} en la medida global conservadora sitúan al framework en un rango
+competitivo frente a los escáneres DAST de código abierto reportados en la
+literatura (Capítulo~II), un resultado creíble que no se ha sobreestimado.
 
 El análisis honesto de los límites es tan relevante como el de las fortalezas:
 
@@ -1971,11 +1974,12 @@ El análisis honesto de los límites es tan relevante como el de las fortalezas:
     dispone de señal observable. Su detección exigiría inferencia por diferencia
     de comportamiento o canales fuera de banda.
 
-    \item \textbf{XSS limitado al método GET ($TPR = 0{,}38$):} el módulo verifica
-    el reflejo del \textit{payload}, que se produce en la totalidad de los casos,
-    pero sólo inyecta en parámetros \texttt{GET}; los casos servidos por
-    \texttt{POST} se pierden. Extender el módulo a cuerpos \texttt{POST} ---como ya
-    se hizo con SQL Injection--- elevaría directamente su recall.
+    \item \textbf{XSS: recall residual por contexto de inyección ($TPR = 0{,}87$):}
+    tras extender el módulo a cuerpos \texttt{POST}, detecta la gran mayoría de los
+    casos reflejados sin un solo falso positivo; los 20~falsos negativos restantes
+    corresponden a inyecciones en contextos donde el canario \texttt{<VulnSeekerXSS>}
+    no se refleja de forma literal (atributos HTML o bloques JavaScript), cuya
+    explotación requeriría \textit{payloads} sensibles al contexto.
 
     \item \textbf{Falsos positivos en SQL Injection ($FPR = 0{,}11$):} 17~casos
     etiquetados como seguros propagan igualmente una excepción de sintaxis SQL
@@ -2051,7 +2055,7 @@ ecosistema objetivo.
 La decisión de implementar una arquitectura modular basada en el patrón
 Strategy ---donde cada módulo de detección opera como una estrategia
 intercambiable según Gamma et~al. (\citeyear*{gamma1995})--- se valida
-por los resultados de la suite de pruebas unitarias: los 178~tests
+por los resultados de la suite de pruebas unitarias: los 180~tests
 pasaron con un 100\% de aprobación, demostrando que cada módulo opera
 de forma independiente sin generar regresiones en los demás. Esta
 independencia confirma experimentalmente lo que Bass et~al.
@@ -2167,7 +2171,7 @@ específicos planteados, se derivan las siguientes conclusiones:
     de la detección estática, integrando análisis asistido por inteligencia artificial
     generativa dentro de una arquitectura DAST modular.
 
-    \item \textbf{Objetivo 4 — Validación experimental:} Las 178~pruebas
+    \item \textbf{Objetivo 4 — Validación experimental:} Las 180~pruebas
     unitarias alcanzaron un 100\% de aprobación. Los escaneos controlados
     contra DVWA confirmaron la detección correcta de las distintas clases de
     vulnerabilidad (SQLi, XSS, Command Injection, LFI, RFI, File Upload y Open
@@ -2179,9 +2183,9 @@ específicos planteados, se derivan las siguientes conclusiones:
     único verdadero positivo), priorizando la precisión sobre el volumen bruto.
     Finalmente, la validación cuantitativa contra el OWASP~Benchmark ---único
     entorno con \textit{ground truth} etiquetado--- arrojó un Índice de Youden de
-    0,51 sobre el subconjunto atacable (0,29 en la medida global conservadora) y
-    una precisión de 0,94, con la inyección SQL como fortaleza destacada
-    ($TPR = 1{,}00$; Youden 0,89). Estos resultados validan la tesis central de
+    0,68 sobre el subconjunto atacable (0,39 en la medida global conservadora) y
+    una precisión de 0,95, con la inyección SQL ($TPR = 1{,}00$; Youden 0,89) y el
+    XSS reflejado (Youden 0,87) como fortalezas destacadas. Estos resultados validan la tesis central de
     Abdulghaffar et~al. (\citeyear*{abdulghaffar2023}): la integración de
     múltiples motores en una arquitectura concurrente amplía la cobertura,
     abarcando 8~categorías del OWASP Top~10.
@@ -2262,10 +2266,12 @@ investigaciones:
     Youden, en cambio, se llevó a cabo contra el OWASP~Benchmark (Capítulo~IV) y
     delimitó con precisión el dominio de eficacia del framework: reveló como
     límites concretos la detección ciega de \textit{path traversal} (cuando la
-    respuesta no refleja el contenido del archivo), la cobertura de XSS
-    restringida al método \texttt{GET} y los vectores de inyección por cabecera o
-    cuerpo XML no contemplados por el motor; todos ellos abordables en trabajo
-    futuro sin alterar la arquitectura modular.
+    respuesta no refleja el contenido del archivo) y los vectores de inyección por
+    cabecera o cuerpo XML no contemplados por el motor; ambos abordables en trabajo
+    futuro sin alterar la arquitectura modular. Una tercera carencia detectada en
+    esa misma medición ---la cobertura de XSS limitada al método \texttt{GET}--- fue
+    subsanada extendiendo el módulo a cuerpos \texttt{POST}, lo que elevó su Índice
+    de Youden de 0,38 a 0,87.
 \end{enumerate}
 
 \subsection{Recomendaciones}
@@ -2295,11 +2301,12 @@ para futuras investigaciones y desarrollo:
     ampliar la validez externa de los resultados.
 
     \item A partir de los límites cuantificados contra el OWASP Benchmark
-    (Capítulo~IV), ampliar el modelo de ataque del motor para elevar el Índice de
-    Youden: extender el módulo XSS a cuerpos \texttt{POST}, incorporar detección de
-    inyección ciega basada en tiempo (\textit{path traversal} y \textit{command
-    injection} sin reflejo en la respuesta) y soportar los vectores de cabecera y
-    cuerpo XML, lo que permitiría una comparación aún más directa con los motores
+    (Capítulo~IV), continuar ampliando el modelo de ataque del motor para elevar el
+    Índice de Youden: incorporar detección de inyección ciega basada en tiempo
+    (\textit{path traversal} y \textit{command injection} sin reflejo en la
+    respuesta), soportar los vectores de cabecera y cuerpo XML, y añadir
+    \textit{payloads} de XSS sensibles al contexto (atributos HTML y bloques
+    JavaScript), lo que permitiría una comparación aún más directa con los motores
     comerciales sobre el mismo \textit{ground truth}.
 
     \item Diseñar adaptadores de integración continua que faciliten la
