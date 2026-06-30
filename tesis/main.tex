@@ -11,6 +11,12 @@
 % ── Codificación y lenguaje ────────────────────────────────────────────────
 \usepackage[utf8]{inputenc}
 \usepackage[spanish, es-nodecimaldot]{babel}
+% Español académico (APA): usar "Tabla" en vez del "Cuadro" por defecto de babel,
+% para que los rótulos coincidan con las referencias del texto ("Tabla X").
+\addto\captionsspanish{%
+  \renewcommand{\tablename}{Tabla}%
+  \renewcommand{\listtablename}{Índice de Tablas}%
+}
 
 % ── Fuente Helvetica ──────────────────────────────────────────────────────
 \usepackage[scaled]{helvet}
@@ -37,6 +43,8 @@
 
 % ── Paquetes generales ───────────────────────────────────────────────────
 \usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
 \usepackage{booktabs}
 \usepackage{float}
 \usepackage{longtable}
@@ -125,20 +133,40 @@
 % ===========================================================================
 \pagenumbering{roman}
 
-% ── Dedicatoria (placeholder) ────────────────────────────────────────────
+% ── Dedicatoria ──────────────────────────────────────────────────────────
 \newpage
 \thispagestyle{empty}
-\vspace*{5cm}
-\begin{flushright}
-    \textit{[Dedicatoria]}
-\end{flushright}
+\section*{Dedicatoria}
+\addcontentsline{toc}{section}{Dedicatoria}
+{\itshape
+A mis padres, Claudio Enrique Palmar Alvarado y Mayde Marina León González.
 
-% ── Agradecimientos (placeholder) ────────────────────────────────────────
+Por ser mi refugio constante y la fuerza detrás de cada uno de mis pasos. A mi papá, por dedicar su vida a la mía, por brindarme un techo firme y por el amor, el cuidado y los consejos de todos los días. A mi mamá, por su apoyo incondicional que nunca conoció de distancias, por su generosidad absoluta y por poner en mis manos las herramientas con las que construí mi futuro.
+
+Por darlo todo por mí, por ser los mejores padres que Dios me pudo regalar y porque sin su sacrificio infinito, este logro habría sido imposible. Esta tesis lleva mi nombre, pero es completamente de ustedes.
+\par}
+
+% ── Agradecimientos ──────────────────────────────────────────────────────
 \newpage
 \thispagestyle{empty}
 \section*{Agradecimientos}
 \addcontentsline{toc}{section}{Agradecimientos}
-\textit{[Por redactar]}
+
+A Dios, por ser el principio y el fin de todo. Por el regalo de la vida, la salud y por rodearme de mi familia, mis amigos y Yola. Gracias por moldear a la persona que soy hoy, por sembrar en mí esta inmensa pasión por la computación que hoy rinde sus frutos, por cuidarme siempre, llenarme de paz espiritual y por ser mi amparo y salvador eterno en cada paso de este camino.
+
+A mis padres, Claudio Enrique y Mayde Marina, por ser los pilares fundamentales de mi existencia. Papá, eres la persona más fuerte, trabajadora y honrada que conozco; gracias por ser mi cobijo, por hacer a un lado tu propia vida para dedicar tu esfuerzo a la mía, por cuidarme cada día, por cocinarme, por tus consejos y por tu compañía constante. Mamá, gracias por nunca dejarme de lado, por sostenernos con tu esfuerzo y por darme las herramientas literales para construir este sueño: por esa computadora sin la cual terminar esta carrera habría sido imposible, por tu apoyo incondicional y tu cuidado infinito. A ambos les debo mi mayor gratitud por sacrificar sus propias oportunidades para construir las mías. Gracias por ser ese cimiento sólido al que siempre pude sostenerme, por tolerar mis momentos complejos con una paciencia a prueba de todo, y por estar al pie del cañón en cada victoria y cada etapa de este camino universitario sin vacilar jamás. Sin ustedes dos, nada de esto existiría.
+
+A mis hermanos, Luis Enrique y Génesis Carolina. Luis, porque a pesar de la distancia y las circunstancias, eres mi hermano, te quiero y agradezco genuinamente el apoyo que nos envías, que ha sido parte vital de mi sustento. Génesis, gracias por tu cariño sincero y por haber estado siempre dispuesta a ayudarme y a compartir conmigo en cada oportunidad que hemos tenido.
+
+A mi novia, Yolanda. Mi mejor amiga, mi compañera y mi lugar seguro. Gracias por todo tu amor, por tu apoyo incondicional, por ser mi auxilio en los momentos de estrés y por cada consejo que me ayudó a seguir adelante. Gracias por tu maravillosa compañía y por amarme de una forma tan excepcional.
+
+A mi tutor, el Profesor Sigerist Rodríguez, por su apoyo constante a lo largo de toda la carrera, durante mis pasantías, el servicio comunitario y en el desarrollo de esta tesis. Agradezco que respetara mi idea original, que me diera la libertad de desarrollar mi propia visión y cada consejo preciso. Extiendo este agradecimiento a todos y cada uno de mis profesores; gracias porque todos me enseñaron, todos me moldearon, y de cada uno me llevo lecciones invaluables que formaron al profesional que soy hoy.
+
+A mis amigos de la universidad, gracias por las risas y por hacer de esta etapa algo más divertido, más pasajero y, sencillamente, mejor.
+
+A la Universidad del Zulia, mi \textit{alma máter}, por ser la casa donde forjé mi vocación, y a la institución Caproluz, por haberme abierto sus puertas y brindarme la oportunidad de dar mis primeros pasos profesionales.
+
+A todos los que, de una forma u otra, formaron parte de este proceso: gracias.
 
 % ── Resumen ──────────────────────────────────────────────────────────────
 \newpage
@@ -789,7 +817,43 @@ registrado sin conocer su lógica interna, garantizando alta cohesión y bajo
 acoplamiento. Cada módulo de detección constituye una \textit{estrategia}
 concreta que implementa la interfaz \texttt{ScannerModule}, permitiendo que
 el motor de orquestación los trate de forma uniforme sin necesidad de
-condicionales anidados ni conocimiento de la implementación subyacente.
+condicionales anidados ni conocimiento de la implementación subyacente. La
+Figura~\ref{fig:arquitectura} ilustra esta organización: el motor depende
+exclusivamente de la interfaz abstracta \texttt{ScannerModule}, de la que heredan
+los 25~módulos de detección sin acoplamiento lateral entre sí.
+
+\begin{figure}[H]
+\centering
+\singlespacing
+\begin{tikzpicture}[
+    cls/.style={rectangle, draw=black, thick, align=center, font=\small,
+                inner sep=5pt, minimum height=8mm},
+    nota/.style={font=\footnotesize}
+]
+    \node[cls, fill=orange!15, text width=5.4cm] (engine)
+        {\textbf{Engine}\\\footnotesize Motor de orquestación multihilo};
+    \node[cls, fill=blue!12, text width=6.4cm, below=14mm of engine] (iface)
+        {\textit{$\ll$\,interfaz\,$\gg$}\\\textbf{ScannerModule}\\
+         \footnotesize + run(target) : List[Vulnerability]};
+    \node[cls, fill=gray!12, text width=2.7cm, below=16mm of iface] (m2)
+        {XSSScanner};
+    \node[cls, fill=gray!12, text width=2.7cm, left=8mm of m2] (m1)
+        {SQLInjection\\Scanner};
+    \node[cls, fill=gray!12, text width=2.7cm, right=8mm of m2] (m3)
+        {CVELookup\\Scanner};
+    \node[nota, right=6mm of m3] (dots) {\dots\ (25)};
+    \draw[-{Latex[length=2.6mm]}, thick, dashed] (engine) --
+        node[right, nota] {delega} (iface);
+    \draw[-{Triangle[open, length=3mm, width=3.4mm]}, thick] (m1.north) -- (iface.south);
+    \draw[-{Triangle[open, length=3mm, width=3.4mm]}, thick] (m2.north) -- (iface.south);
+    \draw[-{Triangle[open, length=3mm, width=3.4mm]}, thick] (m3.north) -- (iface.south);
+\end{tikzpicture}
+\caption[Arquitectura modular de VulnSeeker bajo el patrón Strategy]{Arquitectura
+modular de VulnSeeker bajo el patrón Strategy. El motor delega en la interfaz
+\texttt{ScannerModule}; cada módulo concreto es una estrategia intercambiable que
+la implementa.}
+\label{fig:arquitectura}
+\end{figure}
 
 Esta separación de responsabilidades se alinea también con los patrones
 de Fowler (\citeyear*{fowler2002}), quien propone el desacoplamiento de
@@ -1281,6 +1345,253 @@ fue elegido no por ser el más sofisticado de su categoría, sino por ofrecer la
 mejor relación entre capacidad funcional, costo operativo y facilidad de
 despliegue ---el equivalente tecnológico de una construcción bioclimática que
 aprovecha los recursos disponibles sin exceder su presupuesto energético.
+
+\subsection{Análisis y Diseño del Sistema}
+
+Con anterioridad a la construcción, VulnSeeker fue objeto de un análisis y diseño
+formal que estableció su modelo de proceso de desarrollo, la frontera de sus
+entradas y salidas, el flujo de la información entre sus componentes y la
+estructura de su almacenamiento persistente. Esta sección documenta dichos
+artefactos, que constituyen los planos de ingeniería sobre los cuales se erigió
+la herramienta.
+
+\subsubsection{Ciclo de Vida del Desarrollo}
+
+El desarrollo de VulnSeeker siguió un \textbf{modelo de ciclo de vida iterativo e
+incremental} (\cite{sommerville2011}), en el cual el sistema se construyó mediante
+incrementos funcionales sucesivos en lugar de una única entrega monolítica. Cada
+incremento ---registrado en el repositorio de control de versiones como una
+\textit{fase}--- incorporó un módulo de detección completo y verificado sobre una
+base estable: se especificaba su comportamiento, se implementaba heredando de la
+interfaz \texttt{ScannerModule}, se cubría con pruebas unitarias y se integraba al
+motor de orquestación antes de iniciar el siguiente incremento.
+
+Este modelo resultó el idóneo para el proyecto por tres razones. En primer lugar,
+la arquitectura modular permite que cada incremento sea independiente y
+verificable de forma aislada, sin efectos colaterales sobre los módulos ya
+estabilizados. En segundo lugar, la retroalimentación obtenida de cada validación
+---por ejemplo, la depuración de falsos positivos descrita en el Capítulo~IV---
+se incorporaba directamente al diseño del siguiente incremento. En tercer lugar,
+el enfoque reduce el riesgo del proyecto, pues un fallo en un módulo nuevo nunca
+compromete la funcionalidad ya entregada. Las \textit{Fases Metodológicas} que se
+describen a continuación constituyen las iteraciones de mayor nivel de este ciclo.
+
+\subsubsection{Tecnologías y Herramientas de Desarrollo}
+
+La Tabla~\ref{tab:tecnologias} sistematiza el conjunto de tecnologías y
+herramientas que conforman el entorno de desarrollo y ejecución de VulnSeeker,
+cuya justificación detallada se expuso en la Memoria de Materiales.
+
+\begin{table}[H]
+    \centering
+    \caption{Tecnologías y herramientas de desarrollo de VulnSeeker}
+    \label{tab:tecnologias}
+    \small
+    \begin{tabular}{p{3.6cm} p{4.4cm} p{5.2cm}}
+        \toprule
+        \textbf{Categoría} & \textbf{Tecnología / herramienta} & \textbf{Función en el sistema} \\
+        \midrule
+        Lenguaje base & Python 3.10+ (entorno 3.14) & Núcleo, módulos de detección y lógica de orquestación \\
+        Cliente HTTP y \textit{parsing} & \texttt{requests}, \texttt{BeautifulSoup} & Peticiones y análisis de respuestas HTML \\
+        Interfaz gráfica & CustomTkinter & GUI de escritorio \\
+        Persistencia & SQLite & Historial de escaneos y hallazgos \\
+        IA generativa & Llama 3.3 70B vía Groq & Informe ejecutivo y priorización \\
+        Inteligencia de CVE & NVD API 2.0 (NIST) & Consulta de vulnerabilidades conocidas \\
+        Generación de reportes & ReportLab & Exportación a PDF \\
+        Pruebas automatizadas & \texttt{pytest} & Suite de 180 pruebas unitarias \\
+        Integración continua & GitHub Actions & Ejecución de la suite en cada \textit{commit} \\
+        Control de versiones & Git / GitHub & Gestión del código y de los incrementos \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Entradas, Procesos y Salidas}
+
+En su nivel más abstracto, el sistema puede describirse mediante el modelo clásico
+de entradas, procesos y salidas (Tabla~\ref{tab:eps}): recibe un objetivo y su
+configuración, ejecuta una cadena de procesos de reconocimiento, detección y
+análisis, y produce un conjunto de reportes y registros persistentes.
+
+\begin{table}[H]
+    \centering
+    \caption{Entradas, procesos y salidas del sistema}
+    \label{tab:eps}
+    \small
+    \begin{tabular}{p{4.6cm} p{4.6cm} p{4.6cm}}
+        \toprule
+        \textbf{Entradas} & \textbf{Procesos} & \textbf{Salidas} \\
+        \midrule
+        \textbullet~URL objetivo \newline
+        \textbullet~Configuración (User-Agent, cookies, profundidad de \textit{crawl}) \newline
+        \textbullet~Credenciales de sesión \newline
+        \textbullet~Clave de API de Groq
+        &
+        \textbullet~Reconocimiento (OSINT, \textit{fingerprinting}, \textit{crawling}) \newline
+        \textbullet~Descubrimiento API-aware \newline
+        \textbullet~Ataque multihilo (25 módulos) \newline
+        \textbullet~Deduplicación y clasificación por severidad \newline
+        \textbullet~Análisis con IA
+        &
+        \textbullet~Reporte ejecutivo en PDF \newline
+        \textbullet~Exportación en JSON y CSV \newline
+        \textbullet~Hallazgos clasificados por severidad \newline
+        \textbullet~Registro histórico en SQLite
+        \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Diagrama de Flujo de Datos}
+
+El diagrama de flujo de datos (DFD) describe el sistema desde la perspectiva del
+movimiento de la información, con independencia de su implementación. El nivel~0
+o diagrama de contexto (Figura~\ref{fig:dfd0}) representa a VulnSeeker como un
+único proceso que intercambia datos con cuatro entidades externas: el usuario, el
+sitio web auditado y los servicios de la NVD del NIST y de Groq.
+
+\begin{figure}[H]
+\centering
+\singlespacing
+\begin{tikzpicture}[
+    ext/.style={rectangle, draw=black, thick, fill=gray!12, align=center,
+                font=\small, text width=2.7cm, minimum height=9mm},
+    proc/.style={circle, draw=black, thick, fill=blue!12, align=center,
+                 font=\small, minimum size=2.1cm},
+    flujo/.style={{Latex[length=2.2mm]}-{Latex[length=2.2mm]}, thick},
+    etq/.style={font=\footnotesize}
+]
+    \node[proc] (vs) {\textbf{0}\\ VulnSeeker};
+    \node[ext, left=3cm of vs] (user) {Usuario / Auditor};
+    \node[ext, right=3cm of vs] (nvd) {NVD API (NIST)};
+    \node[ext, above=9mm of nvd] (site) {Sitio web objetivo};
+    \node[ext, below=9mm of nvd] (groq) {Groq (Llama 3.3)};
+    \draw[flujo] (user) -- node[etq, above]{URL, config / reportes} (vs);
+    \draw[flujo] (vs) -- node[etq, sloped, above]{HTTP / respuestas} (site);
+    \draw[flujo] (vs) -- node[etq, above]{tech / CVEs} (nvd);
+    \draw[flujo] (vs) -- node[etq, sloped, below]{hallazgos / informe} (groq);
+\end{tikzpicture}
+\caption{Diagrama de flujo de datos de nivel 0 (diagrama de contexto)}
+\label{fig:dfd0}
+\end{figure}
+
+El nivel~1 (Figura~\ref{fig:dfd1}) descompone el proceso principal en sus cuatro
+subprocesos ---reconocimiento, detección, análisis e informe--- y revela el
+almacén de datos \texttt{vulns.db} donde se persisten los escaneos y los
+hallazgos.
+
+\begin{figure}[H]
+\centering
+\singlespacing
+\begin{tikzpicture}[
+    ext/.style={rectangle, draw=black, thick, fill=gray!12, align=center,
+                font=\footnotesize, text width=2.2cm, minimum height=8mm},
+    proc/.style={rectangle, rounded corners, draw=black, thick, fill=blue!10,
+                 align=center, font=\small, text width=3.6cm, minimum height=9mm},
+    alm/.style={rectangle, draw=black, thick, fill=green!12, align=center,
+                font=\footnotesize, text width=3.6cm, minimum height=7mm},
+    f/.style={-{Latex[length=2.2mm]}, thick}
+]
+    \node[proc] (p1) {\textbf{1.}~Reconocimiento};
+    \node[proc, below=9mm of p1] (p2) {\textbf{2.}~Detección (25 módulos)};
+    \node[proc, below=9mm of p2] (p3) {\textbf{3.}~Análisis con IA};
+    \node[proc, below=9mm of p3] (p4) {\textbf{4.}~Informe y persistencia};
+    \node[alm, below=9mm of p4] (db) {Almacén: \texttt{vulns.db}};
+    \node[ext, left=2.5cm of p1] (user) {Usuario};
+    \node[ext, right=2.5cm of p1] (site) {Sitio objetivo};
+    \node[ext, right=2.5cm of p2] (nvd) {NVD};
+    \node[ext, right=2.5cm of p3] (groq) {Groq};
+    \draw[f] (user) -- node[font=\footnotesize, above]{URL} (p1);
+    \draw[f] (p1) -- node[right, font=\footnotesize]{superficie} (p2);
+    \draw[f] (p2) -- node[right, font=\footnotesize]{hallazgos} (p3);
+    \draw[f] (p3) -- node[right, font=\footnotesize]{informe} (p4);
+    \draw[f] (p4) -- node[right, font=\footnotesize]{escaneos} (db);
+    \draw[{Latex[length=2.2mm]}-{Latex[length=2.2mm]}, thick] (p1) -- (site);
+    \draw[{Latex[length=2.2mm]}-{Latex[length=2.2mm]}, thick] (p2) -- (nvd);
+    \draw[{Latex[length=2.2mm]}-{Latex[length=2.2mm]}, thick] (p3) -- (groq);
+    \draw[f] (p4.west) to[bend left=18] node[left, font=\footnotesize]{reportes} (user.south);
+\end{tikzpicture}
+\caption{Diagrama de flujo de datos de nivel 1}
+\label{fig:dfd1}
+\end{figure}
+
+\subsubsection{Modelo de Datos: Entidad-Relación y Diccionario}
+
+La persistencia de VulnSeeker se implementa sobre una base de datos SQLite
+estructurada en cuatro entidades. La Figura~\ref{fig:er} presenta el modelo
+entidad-relación: cada escaneo (\texttt{scans}) agrupa las vulnerabilidades y los
+subdominios que se le asocian mediante una clave foránea, en sendas relaciones de
+uno a muchos; la entidad \texttt{settings} almacena la configuración del sistema
+de forma independiente.
+
+\begin{figure}[H]
+\centering
+\singlespacing
+\begin{tikzpicture}[
+    ent/.style={rectangle, draw=black, thick, align=left, font=\footnotesize, inner sep=4pt},
+    rel/.style={font=\footnotesize, fill=white, inner sep=1pt}
+]
+    \node[ent, fill=orange!12] (scans)
+        {\textbf{scans}\\ \underline{id} : INTEGER\\ target\_url : TEXT\\
+         scan\_date : TEXT\\ total\_vulns : INTEGER\\ technologies : TEXT};
+    \node[ent, fill=gray!12, right=20mm of scans] (settings)
+        {\textbf{settings}\\ \underline{key} : TEXT\\ value : TEXT};
+    \node[ent, fill=blue!8, below=18mm of scans, xshift=-28mm] (vulns)
+        {\textbf{vulnerabilities}\\ \underline{id} : INTEGER\\ \textit{scan\_id} : INTEGER (FK)\\
+         name : TEXT\\ description : TEXT\\ severity : INTEGER\\
+         target\_url : TEXT\\ payload : TEXT};
+    \node[ent, fill=blue!8, below=18mm of scans, xshift=32mm] (subs)
+        {\textbf{subdomains}\\ \underline{id} : INTEGER\\ \textit{scan\_id} : INTEGER (FK)\\
+         subdomain : TEXT\\ status : TEXT};
+    \draw[thick] (scans.south) -- node[rel, near start]{1}
+        node[rel, midway]{\textit{contiene}} node[rel, near end]{N} (vulns.north);
+    \draw[thick] (scans.south) -- node[rel, near start]{1}
+        node[rel, midway]{\textit{descubre}} node[rel, near end]{N} (subs.north);
+\end{tikzpicture}
+\caption{Modelo entidad-relación de la base de datos de VulnSeeker}
+\label{fig:er}
+\end{figure}
+
+El diccionario de datos correspondiente (Tabla~\ref{tab:diccionario}) detalla, para
+cada entidad, sus campos con el tipo, las restricciones de integridad y la
+descripción semántica.
+
+\begin{table}[H]
+    \centering
+    \caption{Diccionario de datos de la base de datos de VulnSeeker}
+    \label{tab:diccionario}
+    \small
+    \begin{tabular}{p{2.7cm} p{1.9cm} p{2.6cm} p{4.8cm}}
+        \toprule
+        \textbf{Campo} & \textbf{Tipo} & \textbf{Restricción} & \textbf{Descripción} \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Entidad} \texttt{scans} \textit{--- escaneos realizados}} \\
+        id & INTEGER & PK, autoincr. & Identificador único del escaneo \\
+        target\_url & TEXT & NOT NULL & URL objetivo auditada \\
+        scan\_date & TEXT & NOT NULL & Fecha y hora (ISO 8601) \\
+        total\_vulns & INTEGER & DEFAULT 0 & Número de hallazgos del escaneo \\
+        technologies & TEXT & DEFAULT 'Unknown' & Tecnologías detectadas \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Entidad} \texttt{vulnerabilities} \textit{--- hallazgos}} \\
+        id & INTEGER & PK, autoincr. & Identificador del hallazgo \\
+        scan\_id & INTEGER & FK $\rightarrow$ scans & Escaneo al que pertenece \\
+        name & TEXT & NOT NULL & Nombre de la vulnerabilidad \\
+        description & TEXT & --- & Descripción técnica \\
+        severity & INTEGER & NOT NULL & Severidad (0 INFO -- 4 CRITICAL) \\
+        target\_url & TEXT & --- & URL o \textit{endpoint} afectado \\
+        payload & TEXT & --- & Vector de prueba empleado \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Entidad} \texttt{subdomains} \textit{--- subdominios OSINT}} \\
+        id & INTEGER & PK, autoincr. & Identificador del subdominio \\
+        scan\_id & INTEGER & FK $\rightarrow$ scans & Escaneo al que pertenece \\
+        subdomain & TEXT & NOT NULL & Subdominio descubierto \\
+        status & TEXT & DEFAULT 'LIVE' & Estado de actividad \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Entidad} \texttt{settings} \textit{--- configuración}} \\
+        key & TEXT & PK & Clave del parámetro \\
+        value & TEXT & NOT NULL & Valor del parámetro \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 \subsection{Fases Metodológicas}
 
@@ -2340,6 +2651,50 @@ desacoplada:
     \item \textbf{Capa de Salida:} Generación de reportes en PDF, JSON y
     CSV, con persistencia en SQLite.
 \end{enumerate}
+
+Estas capas operan de forma encadenada. La Figura~\ref{fig:flujo} sintetiza el
+flujo de ejecución completo, desde la recepción del objetivo hasta la generación
+de los reportes, e incorpora la etapa de descubrimiento API-aware que extiende el
+alcance del crawler a las aplicaciones de página única (SPA).
+
+\begin{figure}[H]
+\centering
+\singlespacing
+\begin{tikzpicture}[
+    paso/.style={rectangle, rounded corners, draw=black, thick,
+                 text width=10.2cm, align=center, font=\small, minimum height=9mm,
+                 inner sep=4pt},
+    flecha/.style={-{Latex[length=2.8mm]}, thick}
+]
+    \node[paso, fill=gray!12] (in)
+        {\textbf{URL objetivo} y configuración (GUI / CLI)};
+    \node[paso, fill=blue!9, below=6mm of in] (rec)
+        {\textbf{Reconocimiento:} OSINT de subdominios (crt.sh) $\rightarrow$
+         \emph{fingerprinting} de tecnologías $\rightarrow$ \emph{crawler}
+         autenticado (URLs, formularios y parámetros)};
+    \node[paso, fill=blue!9, below=6mm of rec] (api)
+        {\textbf{Descubrimiento API-aware:} especificación OpenAPI/Swagger y rutas
+         \texttt{/api}, \texttt{/rest} extraídas del JavaScript, para SPAs};
+    \node[paso, fill=orange!13, below=6mm of api] (atk)
+        {\textbf{Ataque multihilo:} 25 módulos en paralelo\\
+         (SQLi, XSS, RCE, LFI, RFI, SSRF, CORS, CSRF, CVE, TLS\dots)};
+    \node[paso, fill=orange!13, below=6mm of atk] (dedup)
+        {\textbf{Deduplicación} de hallazgos (nombre + URL + \emph{payload})};
+    \node[paso, fill=green!13, below=6mm of dedup] (ia)
+        {\textbf{Análisis con IA} (Llama 3.3 70B): informe ejecutivo y
+         priorización por riesgo de negocio};
+    \node[paso, fill=gray!12, below=6mm of ia] (out)
+        {\textbf{Reportes:} PDF · JSON · CSV \;y\; persistencia histórica en SQLite};
+    \draw[flecha] (in) -- (rec);
+    \draw[flecha] (rec) -- (api);
+    \draw[flecha] (api) -- (atk);
+    \draw[flecha] (atk) -- (dedup);
+    \draw[flecha] (dedup) -- (ia);
+    \draw[flecha] (ia) -- (out);
+\end{tikzpicture}
+\caption{Flujo de ejecución del proceso de escaneo de VulnSeeker}
+\label{fig:flujo}
+\end{figure}
 
 \subsubsection{Análisis de Costos Operativos}
 
