@@ -24,6 +24,24 @@ def test_detecta_error_mysql_en_respuesta():
     assert "SQL" in vulns[0].name
 
 
+def test_detecta_error_java_jdbc_hsqldb():
+    """Debe reportar SQLi cuando el backend Java/JDBC propaga la excepción SQL
+    (caso del OWASP Benchmark sobre HSQLDB, que devuelve un 500 con el stack)."""
+    scanner = SQLInjectionScanner(enable_blind=False)
+    target = Target(url="http://test.com/page?name=foo")
+
+    mock_resp = MagicMock()
+    mock_resp.text = ("HTTP Status 500 - java.sql.SQLSyntaxErrorException: "
+                      "malformed string in statement [SELECT ...]\n"
+                      "\torg.hsqldb.jdbc.JDBCUtil.sqlException(Unknown Source)")
+
+    with patch("modules.sqli_module.requests.get", return_value=mock_resp):
+        vulns = scanner.run(target)
+
+    assert len(vulns) >= 1
+    assert "SQL" in vulns[0].name
+
+
 def test_no_reporta_sqli_en_respuesta_limpia():
     """No debe reportar SQLi si la respuesta no contiene errores de BD."""
     scanner = SQLInjectionScanner()

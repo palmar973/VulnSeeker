@@ -43,6 +43,12 @@ class SQLInjectionScanner(ScannerModule):
         # ORMs que filtran el error SQL en su stack trace (Sequelize sobre SQLite, etc.)
         "SequelizeDatabaseError",
         "sequelize/lib/dialects",
+        # Java/JDBC: cualquier backend accedido vía JDBC (HSQLDB, MySQL, Oracle, etc.)
+        # propaga estas excepciones cuando el servidor no maneja el error SQL.
+        # Es el motor del OWASP Benchmark (HSQLDB sobre Tomcat).
+        "java.sql.SQLException",
+        "java.sql.SQLSyntaxErrorException",
+        "org.hsqldb",
     ]
 
     # Payloads para SQLi ciego basado en tiempo ({d} = retardo en segundos).

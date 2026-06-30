@@ -161,8 +161,9 @@ de fingerprinting tecnológico y 25~módulos de detección que cubren 8 de las
 10~categorías del OWASP Top~10. La herramienta incorpora consultas en tiempo real
 a la base de datos nacional de vulnerabilidades del NIST (NVD~API~2.0) y genera
 reportes técnicos con análisis asistido por inteligencia artificial. La validación
-se realizó mediante 150~pruebas unitarias automatizadas y escaneos controlados
-sobre entornos de práctica estándar. Los resultados demostraron que la integración
+se realizó mediante 178~pruebas unitarias automatizadas, escaneos controlados
+sobre entornos de práctica estándar y una medición cuantitativa contra el OWASP
+Benchmark. Los resultados demostraron que la integración
 de múltiples motores de detección en una arquitectura modular incrementa la
 cobertura de vulnerabilidades detectadas sin sacrificar extensibilidad. VulnSeeker
 se distribuye como software de código abierto, contribuyendo a la democratización
@@ -733,10 +734,10 @@ tasa de falsos positivos ($FPR \to 0$) en sus módulos de inyección activa
 mediante reglas de validación multi-paso, comparación contra respuestas
 \textit{baseline} y análisis de firmas de error, incluso si ello implica una
 reducción menor en la tasa general de cobertura. La aplicación formal del OWASP
-Benchmark para obtener el Índice de Youden cuantitativo del framework se plantea
-como línea de validación futura (véase la sección de Recomendaciones), dado que
-excede el alcance experimental del presente trabajo, centrado en entornos de
-práctica estándar.
+Benchmark para obtener el Índice de Youden cuantitativo del framework se desarrolla
+en el Capítulo~IV (Resultados) y constituye la validación experimental de mayor
+rigor metodológico del presente trabajo, al apoyarse en un \textit{ground truth}
+exhaustivamente etiquetado.
 
 \subsubsection{Arquitectura Modular de Software}
 
@@ -1407,7 +1408,7 @@ OWASP Top~10 (2021):
 
 La validación experimental de la solución se estructuró a tres niveles
 complementarios para garantizar tanto la calidad del software como su efectividad
-diagnóstica. El primer nivel consistió en la construcción de una suite de 150~pruebas
+diagnóstica. El primer nivel consistió en la construcción de una suite de 178~pruebas
 unitarias desarrolladas con el framework \texttt{pytest}. Estas pruebas emplean la
 técnica de simulación (\textit{mocking}) a través de \texttt{unittest.mock} para
 interceptar las solicitudes de red de cada módulo y retornar respuestas HTTP
@@ -1451,7 +1452,7 @@ de la red. Los resultados se resumen en la Tabla~\ref{tab:tests}.
         \toprule
         \textbf{Módulo} & \textbf{Tests} & \textbf{Passed} & \textbf{Status} \\
         \midrule
-        SQL Injection       & 16 & 16 & \checkmark \\
+        SQL Injection       & 17 & 17 & \checkmark \\
         Cross-Site Scripting & 3  & 3  & \checkmark \\
         Command Injection   & 4  & 4  & \checkmark \\
         Local File Inclusion & 4  & 4  & \checkmark \\
@@ -1482,8 +1483,10 @@ de la red. Los resultados se resumen en la Tabla~\ref{tab:tests}.
         Crawler (core)      & 7  & 7  & \checkmark \\
         Fingerprinter (core) & 8 & 8  & \checkmark \\
         API Discovery (core) & 6 & 6  & \checkmark \\
+        Benchmark Scorer (tools) & 7 & 7 & \checkmark \\
+        Benchmark Runner (tools) & 6 & 6 & \checkmark \\
         \midrule
-        \textbf{TOTAL}      & \textbf{164} & \textbf{164} & \textbf{100\%} \\
+        \textbf{TOTAL}      & \textbf{178} & \textbf{178} & \textbf{100\%} \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -1659,12 +1662,15 @@ VulnSeeker. En cambio, el cálculo formal de la
 sensibilidad o \textit{recall} ($VP / (VP + FN)$) exige un conjunto de prueba
 con \textit{ground truth} exhaustivamente etiquetado ---es decir, el inventario
 completo y verificado de todas las vulnerabilidades existentes en el objetivo---,
-condición que DVWA no garantiza por sí sola. Por esta razón, el presente trabajo
-reporta la precisión observada y reserva la medición formal del recall y del
-Índice de Youden para una validación contra el OWASP Benchmark Project, planteada
-como trabajo futuro (véase la sección de Recomendaciones). Esta decisión
-metodológica evita sobreestimar la cobertura real del framework, en coherencia
-con las limitaciones reconocidas más adelante.
+condición que DVWA no garantiza por sí sola. Por esta razón, sobre los escaneos
+controlados el presente trabajo reporta la precisión observada, y aborda la
+medición formal del recall y del Índice de Youden mediante una validación dedicada
+contra el OWASP Benchmark Project ---único entorno con \textit{ground truth}
+exhaustivamente etiquetado---, cuyos resultados se presentan más adelante en este
+mismo capítulo (Tablas~\ref{tab:benchmark-atacable} y~\ref{tab:benchmark-global}).
+Esta separación metodológica
+evita sobreestimar la cobertura real del framework, en coherencia con las
+limitaciones reconocidas más adelante.
 
 \subsection{Resultados del Escaneo Externo contra Altoro Mutual (Scan~\#93)}
 
@@ -1847,6 +1853,154 @@ trabajo futuro queda la integración de un motor de renderizado \textit{headless
 para SPAs que no publiquen especificación ni expongan sus rutas de forma legible
 en el código JavaScript.
 
+\subsection{Validación Cuantitativa contra el OWASP Benchmark: Índice de Youden}
+
+A diferencia de DVWA, Altoro Mutual y Juice Shop ---donde el conteo de hallazgos
+es cualitativo porque carecen de un inventario exhaustivo y verificado de sus
+vulnerabilidades---, el \textit{OWASP Benchmark Project} (v1.2) es una aplicación
+Java deliberadamente vulnerable que acompaña cada uno de sus 2.740~casos de prueba
+con su etiqueta de \textit{ground truth}: para cada caso se conoce con certeza si
+la vulnerabilidad es real o si se trata de un \textit{sink} seguro. Esta condición
+habilita el cálculo de las métricas formales de recall ($TPR$), tasa de falsos
+positivos ($FPR$) e Índice de Youden ($J = TPR - FPR$) que el Capítulo~III definió
+como instrumento de \textit{benchmarking}, y que hasta esta sección sólo era
+posible plantear como trabajo futuro.
+
+\subsubsection{Diseño del experimento y honestidad metodológica}
+
+El Benchmark distribuye sus casos en 11~categorías. Siete de ellas
+---criptografía débil, \textit{hashing} inseguro, aleatoriedad débil,
+\textit{trust boundary}, \textit{cookies} inseguras, inyección LDAP y XPath---
+sólo son detectables mediante análisis estático del código fuente (SAST) o quedan
+fuera del repertorio de módulos del framework, por lo que evaluarlas contra un
+escáner dinámico (DAST) carecería de sentido metodológico. El experimento se
+circunscribe, en consecuencia, a las \textbf{cuatro categorías que VulnSeeker
+ataca dinámicamente}: inyección SQL (\textit{sqli}), \textit{Cross-Site Scripting}
+(\textit{xss}), inyección de comandos (\textit{cmdi}) y \textit{path traversal}
+(\textit{pathtraver}), que suman 1.478~casos.
+
+Para dirigir el escáner sobre el Benchmark se construyó un \textit{driver}
+(\texttt{tools/benchmark\_runner.py}) que \textbf{reutiliza sin modificación los
+módulos de detección reales del framework} (\texttt{SQLInjectionScanner},
+\texttt{XSSScanner}, \texttt{CommandInjectionScanner} y \texttt{LFIScanner}):
+enumera los casos a partir de los índices que publica la propia aplicación,
+descarga cada caso y determina su \textbf{vector de inyección}. El Benchmark no
+siempre transporta el dato atacable en un parámetro: según el caso lo envía por
+una cabecera HTTP, en el nombre de un parámetro, o en un cuerpo XML mediante
+peticiones AJAX. Estos vectores ---el 34\% de los casos enumerados--- escapan al
+modelo de ataque del motor (que opera sobre parámetros \texttt{GET}/\texttt{POST}
+y cuerpos JSON) y se contabilizan honestamente como no detectados, sin maquillaje.
+El cálculo de los hallazgos se realiza \textit{a ciegas}, sin que el detector
+consulte en ningún momento la etiqueta del caso. Por rigor, el resultado se
+informa en dos medidas complementarias: una \textbf{global} sobre la totalidad de
+las cuatro categorías (medida conservadora, donde los vectores inalcanzables
+penalizan como falsos negativos) y otra sobre el \textbf{subconjunto realmente
+atacable} por el motor ---918~casos cuyo vector es un parámetro---, que aísla la
+capacidad de detección del framework cuando la superficie es alcanzable.
+
+\subsubsection{Resultados}
+
+La Tabla~\ref{tab:benchmark-atacable} presenta la medida sobre el subconjunto
+atacable, que constituye la evaluación justa de la capacidad del motor, y la
+Tabla~\ref{tab:benchmark-global} la medida global conservadora.
+
+\begin{table}[H]
+    \centering
+    \caption{Efectividad sobre el subconjunto atacable del OWASP Benchmark (918~casos con vector de parámetro)}
+    \label{tab:benchmark-atacable}
+    \small
+    \begin{tabular}{l c c c c c c c}
+        \toprule
+        \textbf{Categoría} & \textbf{VP} & \textbf{FN} & \textbf{FP} & \textbf{VN} & \textbf{TPR} & \textbf{FPR} & \textbf{Youden} \\
+        \midrule
+        SQL Injection      & 156 &   0 & 17 & 133 & 1.00 & 0.11 & \textbf{0.89} \\
+        Command Injection  &  31 &  37 &  0 &  80 & 0.46 & 0.00 & 0.46 \\
+        Cross-Site Scripting &  60 &  97 &  0 & 157 & 0.38 & 0.00 & 0.38 \\
+        Path Traversal     &   0 &  72 &  0 &  78 & 0.00 & 0.00 & 0.00 \\
+        \midrule
+        \textbf{TOTAL}     & \textbf{247} & \textbf{206} & \textbf{17} & \textbf{448} & \textbf{0.55} & \textbf{0.04} & \textbf{0.51} \\
+        \bottomrule
+    \end{tabular}
+
+    \vspace{0.4em}
+    {\footnotesize Precisión: 0.94 \quad F1: 0.69}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Efectividad global sobre las cuatro categorías cubiertas (1.478~casos; medida conservadora)}
+    \label{tab:benchmark-global}
+    \small
+    \begin{tabular}{l c c c c c c c}
+        \toprule
+        \textbf{Categoría} & \textbf{VP} & \textbf{FN} & \textbf{FP} & \textbf{VN} & \textbf{TPR} & \textbf{FPR} & \textbf{Youden} \\
+        \midrule
+        SQL Injection      & 156 & 116 & 17 & 215 & 0.57 & 0.07 & 0.50 \\
+        Command Injection  &  31 &  95 &  0 & 125 & 0.25 & 0.00 & 0.25 \\
+        Cross-Site Scripting &  60 & 186 &  0 & 209 & 0.24 & 0.00 & 0.24 \\
+        Path Traversal     &   0 & 133 &  0 & 135 & 0.00 & 0.00 & 0.00 \\
+        \midrule
+        \textbf{TOTAL}     & \textbf{247} & \textbf{530} & \textbf{17} & \textbf{684} & \textbf{0.32} & \textbf{0.02} & \textbf{0.29} \\
+        \bottomrule
+    \end{tabular}
+
+    \vspace{0.4em}
+    {\footnotesize Precisión: 0.94 \quad F1: 0.47}
+\end{table}
+
+\subsubsection{Interpretación}
+
+El módulo de \textbf{inyección SQL constituye la fortaleza del framework}: alcanza
+un recall perfecto ($TPR = 1{,}00$) sobre el subconjunto atacable y un Índice de
+Youden de \textbf{0,89}, sustentado en la propagación de la excepción
+\texttt{java.sql.SQLException} que el servidor (HSQLDB sobre Tomcat) devuelve ante
+los \textit{payloads} de ruptura ---la misma estrategia basada en errores que
+demostró su validez en SQLite con Juice Shop. La \textbf{precisión global de 0,94}
+confirma el principio de diseño priorizado por VulnSeeker: el escáner casi nunca
+inventa vulnerabilidades. El Youden de 0,51 sobre el subconjunto atacable y de
+0,29 en la medida global conservadora sitúan al framework en un rango comparable
+al de los escáneres DAST de código abierto reportados en la literatura
+(Capítulo~II), un resultado creíble que no se ha sobreestimado.
+
+El análisis honesto de los límites es tan relevante como el de las fortalezas:
+
+\begin{itemize}
+    \item \textbf{Path Traversal ciego ($TPR = 0$):} el Benchmark no refleja en la
+    respuesta el contenido del archivo solicitado, de modo que la técnica de
+    VulnSeeker ---que busca firmas como \texttt{root:x:0:0} en el cuerpo--- no
+    dispone de señal observable. Su detección exigiría inferencia por diferencia
+    de comportamiento o canales fuera de banda.
+
+    \item \textbf{XSS limitado al método GET ($TPR = 0{,}38$):} el módulo verifica
+    el reflejo del \textit{payload}, que se produce en la totalidad de los casos,
+    pero sólo inyecta en parámetros \texttt{GET}; los casos servidos por
+    \texttt{POST} se pierden. Extender el módulo a cuerpos \texttt{POST} ---como ya
+    se hizo con SQL Injection--- elevaría directamente su recall.
+
+    \item \textbf{Falsos positivos en SQL Injection ($FPR = 0{,}11$):} 17~casos
+    etiquetados como seguros propagan igualmente una excepción de sintaxis SQL
+    pese a emplear una defensa que el Benchmark considera adecuada. Un detector
+    dinámico basado en errores no puede distinguirlos de los vulnerables; se trata
+    de una limitación intrínseca de la técnica DAST, compartida por las
+    herramientas comerciales, y no de un defecto de implementación.
+
+    \item \textbf{Inyección de comandos parcial ($TPR = 0{,}46$):} VulnSeeker
+    detecta los casos en que la salida del comando se refleja en la respuesta
+    (p.~ej. \texttt{cat /etc/passwd}), pero es ciego ante la ejecución que no altera
+    el cuerpo observable, escenario que requeriría detección basada en tiempo.
+
+    \item \textbf{Vectores fuera del modelo de ataque:} el 34\% de los casos inyecta
+    por cabecera, nombre de parámetro o cuerpo XML, vectores no contemplados por el
+    motor actual y que la medida global penaliza como falsos negativos.
+\end{itemize}
+
+Esta evaluación cuantitativa cumple el cuarto objetivo específico al aportar el
+Índice de Youden exacto del framework sobre un \textit{ground truth} etiquetado, y
+delimita con precisión el dominio de eficacia de VulnSeeker: sobresaliente en
+inyección SQL, sólido en precisión, y con líneas de mejora claramente
+identificadas (XSS sobre \texttt{POST}, detección ciega por tiempo y ampliación de
+vectores) que se recogen en las recomendaciones.
+
 \subsection{Evaluación del Análisis de Inteligencia Artificial}
 
 
@@ -1897,7 +2051,7 @@ ecosistema objetivo.
 La decisión de implementar una arquitectura modular basada en el patrón
 Strategy ---donde cada módulo de detección opera como una estrategia
 intercambiable según Gamma et~al. (\citeyear*{gamma1995})--- se valida
-por los resultados de la suite de pruebas unitarias: los 150~tests
+por los resultados de la suite de pruebas unitarias: los 178~tests
 pasaron con un 100\% de aprobación, demostrando que cada módulo opera
 de forma independiente sin generar regresiones en los demás. Esta
 independencia confirma experimentalmente lo que Bass et~al.
@@ -2013,19 +2167,24 @@ específicos planteados, se derivan las siguientes conclusiones:
     de la detección estática, integrando análisis asistido por inteligencia artificial
     generativa dentro de una arquitectura DAST modular.
 
-    \item \textbf{Objetivo 4 — Validación experimental:} Las 150~pruebas
+    \item \textbf{Objetivo 4 — Validación experimental:} Las 178~pruebas
     unitarias alcanzaron un 100\% de aprobación. Los escaneos controlados
     contra DVWA confirmaron la detección correcta de las distintas clases de
     vulnerabilidad (SQLi, XSS, Command Injection, LFI, RFI, File Upload y Open
     Redirect), cada una en su ubicación esperada y sin falsos positivos
-    observados en los módulos de inyección. Adicionalmente, la introducción de
+    observados en los módulos de inyección, y se complementaron con la plataforma
+    pública Altoro Mutual y la SPA OWASP~Juice~Shop. La introducción de
     la validación contra baseline depuró los falsos positivos de inyección
     (reduciendo, por ejemplo, los hallazgos de Command Injection de 449 a un
     único verdadero positivo), priorizando la precisión sobre el volumen bruto.
-    Estos resultados validan la tesis central de Abdulghaffar et~al.
-    (\citeyear*{abdulghaffar2023}): la integración de múltiples motores en una
-    arquitectura concurrente amplía la cobertura, abarcando 8~categorías del
-    OWASP Top~10.
+    Finalmente, la validación cuantitativa contra el OWASP~Benchmark ---único
+    entorno con \textit{ground truth} etiquetado--- arrojó un Índice de Youden de
+    0,51 sobre el subconjunto atacable (0,29 en la medida global conservadora) y
+    una precisión de 0,94, con la inyección SQL como fortaleza destacada
+    ($TPR = 1{,}00$; Youden 0,89). Estos resultados validan la tesis central de
+    Abdulghaffar et~al. (\citeyear*{abdulghaffar2023}): la integración de
+    múltiples motores en una arquitectura concurrente amplía la cobertura,
+    abarcando 8~categorías del OWASP Top~10.
 \end{enumerate}
 
 Se concluye que la integración de múltiples motores de detección en una
@@ -2099,9 +2258,14 @@ investigaciones:
     (especificación OpenAPI + extracción de rutas en los \textit{bundles} JS), si
     bien las SPAs que no publiquen especificación ni expongan sus rutas de forma
     legible requerirían un motor de renderizado \textit{headless}, lo que queda
-    como trabajo futuro. Del mismo modo, la cuantificación del \textit{recall} y
-    del Índice de Youden contra un conjunto con \textit{ground truth} etiquetado
-    (p.~ej. OWASP~Benchmark) permanece como línea de trabajo pendiente.
+    como trabajo futuro. La cuantificación del \textit{recall} y del Índice de
+    Youden, en cambio, se llevó a cabo contra el OWASP~Benchmark (Capítulo~IV) y
+    delimitó con precisión el dominio de eficacia del framework: reveló como
+    límites concretos la detección ciega de \textit{path traversal} (cuando la
+    respuesta no refleja el contenido del archivo), la cobertura de XSS
+    restringida al método \texttt{GET} y los vectores de inyección por cabecera o
+    cuerpo XML no contemplados por el motor; todos ellos abordables en trabajo
+    futuro sin alterar la arquitectura modular.
 \end{enumerate}
 
 \subsection{Recomendaciones}
@@ -2130,10 +2294,13 @@ para futuras investigaciones y desarrollo:
     como OWASP Juice Shop y aplicaciones web reales (con autorización) para
     ampliar la validez externa de los resultados.
 
-    \item Ejecutar una validación formal de la suite completa de detección
-    contra el estándar del OWASP Benchmark Project para obtener el Índice de
-    Youden exacto del framework, permitiendo la comparación objetiva de
-    VulnSeeker con otros motores comerciales.
+    \item A partir de los límites cuantificados contra el OWASP Benchmark
+    (Capítulo~IV), ampliar el modelo de ataque del motor para elevar el Índice de
+    Youden: extender el módulo XSS a cuerpos \texttt{POST}, incorporar detección de
+    inyección ciega basada en tiempo (\textit{path traversal} y \textit{command
+    injection} sin reflejo en la respuesta) y soportar los vectores de cabecera y
+    cuerpo XML, lo que permitiría una comparación aún más directa con los motores
+    comerciales sobre el mismo \textit{ground truth}.
 
     \item Diseñar adaptadores de integración continua que faciliten la
     incorporación automática de VulnSeeker en pipelines de desarrollo (tales
