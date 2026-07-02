@@ -1,7 +1,7 @@
 import logging
-import requests
-from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+
 from core.models import ScannerModule, Target, Vulnerability, Severity
+from modules.injection_points import collect_points
 
 logger = logging.getLogger(__name__)
 
@@ -9,7 +9,15 @@ logger = logging.getLogger(__name__)
 class XSSScanner(ScannerModule):
     """
     Módulo especializado en la detección de Reflected Cross-Site Scripting (XSS).
+
+    Inyecta un canario inofensivo (``<VulnSeekerXSS>``) en cada punto de inyección
+    del objetivo (GET query, POST form y GET form, vía :func:`collect_points`) y
+    reporta si regresa sin sanitizar en la respuesta. Se omite el vector JSON: que
+    el canario se refleje en un cuerpo ``application/json`` no implica ejecución en
+    un contexto HTML, así que reportarlo sería un falso positivo.
     """
+
+    CANARY = "<VulnSeekerXSS>"
 
     @property
     def name(self) -> str:
@@ -20,99 +28,28 @@ class XSSScanner(ScannerModule):
         return "Detecta si los parámetros de entrada se reflejan en la respuesta sin sanitización."
 
     def run(self, target: Target) -> list[Vulnerability]:
-        """
-        Inyecta un payload inofensivo (Canario) y verifica si regresa en el HTML.
-        Soporta query params en la URL y formularios tanto GET como POST.
-        """
         vulnerabilities: list[Vulnerability] = []
+        headers = target.headers or {'User-Agent': 'VulnSeeker/1.0'}
 
-        parsed_url = urlparse(target.url)
-        query_params = parse_qs(parsed_url.query)
+        for pt in collect_points(target):
+            if pt.body_type == "json":
+                continue  # reflejar el canario en JSON no es XSS (contexto no HTML)
 
-        if query_params:
-            logger.info(f"Analizando XSS en: {target.url}")
-            self._fuzz_params(parsed_url, query_params, target.headers, vulnerabilities)
-
-        # Formularios: en GET se construye la URL con la query string; en POST
-        # el canario viaja en el cuerpo de la petición.
-        for element in target.elements:
-            if not (element.is_form and element.params):
+            response = pt.send(self.CANARY, headers=headers)
+            if response is None:
                 continue
-            if element.method.upper() == "GET":
-                logger.info(f"Analizando XSS (GET form) en: {element.url}")
-                form_parsed = urlparse(element.url)
-                form_query_params = {k: [v] for k, v in element.params.items()}
-                self._fuzz_params(form_parsed, form_query_params, target.headers, vulnerabilities)
-            elif element.method.upper() == "POST":
-                logger.info(f"Analizando XSS (POST form) en: {element.url}")
-                self._fuzz_post_params(element, target.headers, vulnerabilities)
+
+            # Si sanitiza, el canario vuelve escapado (&lt;…&gt;); si regresa intacto
+            # es reflejado y explotable.
+            if self.CANARY in response.text:
+                logger.warning(f"  [!!!] XSS Reflejado detectado en parámetro '{pt.param_name}' ({pt.method})")
+                vulnerabilities.append(Vulnerability(
+                    name="Reflected Cross-Site Scripting (XSS)",
+                    severity=Severity.MEDIUM,
+                    description=(f"El parámetro '{pt.param_name}' ({pt.method}) refleja la entrada "
+                                 f"del usuario sin filtrar caracteres HTML."),
+                    target_url=pt.report_url,
+                    evidence=f"Payload inyectado: {self.CANARY} encontrado en la respuesta.",
+                ))
 
         return vulnerabilities
-
-    def _fuzz_params(self, parsed_url, query_params, headers, vulnerabilities):
-        """Inyecta el payload canario en cada parámetro y verifica si se refleja sin sanitizar."""
-        xss_payload: str = "<VulnSeekerXSS>"
-
-        for param_name in query_params.keys():
-            fuzzed_params = query_params.copy()
-            fuzzed_params[param_name] = [xss_payload]
-
-            new_query = urlencode(fuzzed_params, doseq=True)
-            malicious_url = urlunparse((
-                parsed_url.scheme,
-                parsed_url.netloc,
-                parsed_url.path,
-                parsed_url.params,
-                new_query,
-                parsed_url.fragment
-            ))
-
-            try:
-                req_headers = headers or {'User-Agent': 'VulnSeeker/1.0'}
-                response = requests.get(malicious_url, headers=req_headers, timeout=5, verify=False)
-
-                # Si sanitiza, debería volver escapado; si regresa intacto es reflejado.
-                if xss_payload in response.text:
-                    logger.warning(f"  [!!!] XSS Reflejado detectado en parámetro '{param_name}'")
-
-                    vuln = Vulnerability(
-                        name="Reflected Cross-Site Scripting (XSS)",
-                        severity=Severity.MEDIUM,
-                        description=f"El parámetro '{param_name}' refleja la entrada del usuario sin filtrar caracteres HTML.",
-                        target_url=malicious_url,
-                        evidence=f"Payload inyectado: {xss_payload} encontrado en la respuesta."
-                    )
-                    vulnerabilities.append(vuln)
-
-            except requests.RequestException as e:
-                logger.debug(f"Error de conexión probando XSS: {e}")
-
-    def _fuzz_post_params(self, element, headers, vulnerabilities):
-        """Inyecta el canario en cada campo de un formulario POST y verifica si se
-        refleja sin sanitizar. Es el equivalente de _fuzz_params para el cuerpo de
-        la petición (formularios y endpoints que reciben datos por POST)."""
-        xss_payload: str = "<VulnSeekerXSS>"
-
-        for param_name in element.params.keys():
-            fuzzed_data = dict(element.params)
-            fuzzed_data[param_name] = xss_payload
-
-            try:
-                req_headers = headers or {'User-Agent': 'VulnSeeker/1.0'}
-                response = requests.post(element.url, data=fuzzed_data,
-                                         headers=req_headers, timeout=5, verify=False)
-
-                if xss_payload in response.text:
-                    logger.warning(f"  [!!!] XSS Reflejado (POST) detectado en parámetro '{param_name}'")
-
-                    vuln = Vulnerability(
-                        name="Reflected Cross-Site Scripting (XSS)",
-                        severity=Severity.MEDIUM,
-                        description=f"El parámetro '{param_name}' (POST) refleja la entrada del usuario sin filtrar caracteres HTML.",
-                        target_url=element.url,
-                        evidence=f"Payload inyectado: {xss_payload} encontrado en la respuesta."
-                    )
-                    vulnerabilities.append(vuln)
-
-            except requests.RequestException as e:
-                logger.debug(f"Error de conexión probando XSS (POST): {e}")

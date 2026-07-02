@@ -1765,8 +1765,9 @@ de la red. Los resultados se resumen en la Tabla~\ref{tab:tests}.
         \midrule
         SQL Injection       & 17 & 17 & \checkmark \\
         Cross-Site Scripting & 5  & 5  & \checkmark \\
-        Command Injection   & 4  & 4  & \checkmark \\
-        Local File Inclusion & 4  & 4  & \checkmark \\
+        Command Injection   & 6  & 6  & \checkmark \\
+        Local File Inclusion & 7  & 7  & \checkmark \\
+        Injection Points (modules) & 9 & 9 & \checkmark \\
         Remote File Inclusion & 4  & 4  & \checkmark \\
         Open Redirect       & 4  & 4  & \checkmark \\
         CORS Scanner        & 6  & 6  & \checkmark \\
@@ -1797,7 +1798,7 @@ de la red. Los resultados se resumen en la Tabla~\ref{tab:tests}.
         Benchmark Scorer (tools) & 7 & 7 & \checkmark \\
         Benchmark Runner (tools) & 6 & 6 & \checkmark \\
         \midrule
-        \textbf{TOTAL}      & \textbf{180} & \textbf{180} & \textbf{100\%} \\
+        \textbf{TOTAL}      & \textbf{194} & \textbf{194} & \textbf{100\%} \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -2282,8 +2283,9 @@ El análisis honesto de los límites es tan relevante como el de las fortalezas:
     \item \textbf{Path Traversal ciego ($TPR = 0$):} el Benchmark no refleja en la
     respuesta el contenido del archivo solicitado, de modo que la técnica de
     VulnSeeker ---que busca firmas como \texttt{root:x:0:0} en el cuerpo--- no
-    dispone de señal observable. Su detección exigiría inferencia por diferencia
-    de comportamiento o canales fuera de banda.
+    dispone de señal observable. Para atacar este límite se incorporó una técnica
+    complementaria basada en errores; su resultado ---y la razón medida por la que
+    el Benchmark tampoco la expone--- se analiza en el apartado siguiente.
 
     \item \textbf{XSS: recall residual por contexto de inyección ($TPR = 0{,}87$):}
     tras extender el módulo a cuerpos \texttt{POST}, detecta la gran mayoría de los
@@ -2302,19 +2304,74 @@ El análisis honesto de los límites es tan relevante como el de las fortalezas:
     \item \textbf{Inyección de comandos parcial ($TPR = 0{,}46$):} VulnSeeker
     detecta los casos en que la salida del comando se refleja en la respuesta
     (p.~ej. \texttt{cat /etc/passwd}), pero es ciego ante la ejecución que no altera
-    el cuerpo observable, escenario que requeriría detección basada en tiempo.
+    el cuerpo observable. Este escenario motivó la incorporación de detección ciega
+    basada en tiempo, cuyo alcance ---acotado por el diseño del propio banco--- se
+    analiza en el apartado siguiente.
 
     \item \textbf{Vectores fuera del modelo de ataque:} el 34\% de los casos inyecta
     por cabecera, nombre de parámetro o cuerpo XML, vectores no contemplados por el
     motor actual y que la medida global penaliza como falsos negativos.
 \end{itemize}
 
+\subsubsection{Extensión del motor y límites del oráculo para la detección ciega}
+
+Los dos límites anteriores ---\textit{path traversal} y \textit{command injection}
+ciegos--- motivaron una extensión deliberada del motor cuyo resultado constituye,
+en sí mismo, un hallazgo metodológico. Se unificó la enumeración de vectores de los
+módulos de inyección en un componente compartido
+(\texttt{modules/injection\_points.py}), sobre el que se incorporaron dos técnicas
+de detección ciega: (i)~\textbf{detección basada en tiempo} para \textit{command
+injection}, que inyecta retardos controlados (\texttt{sleep}/\texttt{ping}) y
+confirma la vulnerabilidad sólo cuando la latencia escala de forma proporcional al
+duplicar el retardo ($d$ y $2d$); y (ii)~\textbf{detección basada en errores} para
+\textit{path traversal}, que reconoce el rastro de excepciones de archivo del
+servidor (\texttt{java.io.FileNotFoundException} y análogas). Ambas se respaldaron
+con pruebas unitarias específicas que verifican su lógica de forma aislada.
+
+La re-medición contra el Benchmark tras esta extensión arrojó un resultado
+revelador: \textbf{las métricas se mantuvieron idénticas} (Youden 0,68 en el
+subconjunto atacable; \textit{command injection} 0,46; \textit{path traversal}
+0,00). La ausencia de regresión confirma que el refactor preservó el comportamiento
+observable; la ausencia de mejora, sin embargo, no obedece a un defecto de las
+nuevas técnicas, sino a una propiedad del propio oráculo, que se verificó
+empíricamente sobre sus casos etiquetados:
+
+\begin{itemize}
+    \item Al inyectar un retardo de 10~segundos (\texttt{; sleep 10}) en casos de
+    \textit{command injection} etiquetados como vulnerables pero sin reflejo, la
+    respuesta HTTP siguió resolviéndose en $\sim$0,06~segundos: \textbf{el Benchmark
+    ejecuta el comando sin bloquear la respuesta}, de modo que no existe canal
+    temporal observable que la técnica basada en tiempo pueda medir.
+
+    \item En casos de \textit{path traversal} vulnerables, el cuerpo de respuesta
+    ante un \textit{payload} de recorrido de directorios resultó ser un texto breve
+    ($\sim$100~bytes) \textbf{sin rastro alguno de excepción}: el Benchmark no
+    propaga el error de archivo al cliente, por lo que la técnica basada en errores
+    carece de señal que reconocer. Cabe destacar que esta extensión \textbf{no
+    introdujo un solo falso positivo}, lo que refuta el riesgo previsto de que las
+    firmas de error inflaran la $FPR$.
+\end{itemize}
+
+Este contraste es una contribución metodológica: el OWASP~Benchmark, por su
+naturaleza de banco sintético, \textbf{no expone los canales laterales ---temporal
+y de error--- sobre los que operan las técnicas de detección ciega}, por lo que
+subestima de forma sistemática la capacidad de un escáner frente a estas variantes.
+La eficacia de las técnicas incorporadas se materializa, en cambio, en aplicaciones
+reales como DVWA ---donde la ejecución del comando sí bloquea la respuesta y las
+aplicaciones sí propagan trazas de error---, escenario en que la validación
+cualitativa de este mismo capítulo confirmó su funcionamiento. Su detección en el
+Benchmark no exigiría, por tanto, una mejor heurística, sino canales fuera de banda
+(\textit{out-of-band}) que el banco tampoco provee.
+
 Esta evaluación cuantitativa cumple el cuarto objetivo específico al aportar el
 Índice de Youden exacto del framework sobre un \textit{ground truth} etiquetado, y
 delimita con precisión el dominio de eficacia de VulnSeeker: sobresaliente en
 inyección SQL, sólido en precisión, y con líneas de mejora claramente
-identificadas (XSS sobre \texttt{POST}, detección ciega por tiempo y ampliación de
-vectores) que se recogen en las recomendaciones.
+identificadas ---la ampliación del modelo de ataque a los vectores de cabecera y
+cuerpo XML y los \textit{payloads} de XSS sensibles al contexto--- que se recogen
+en las recomendaciones. La detección ciega por tiempo y por error, incorporada al
+motor durante este trabajo, quedó acotada no por la heurística sino por los límites
+del oráculo, según se detalló arriba.
 
 \subsection{Evaluación del Análisis de Inteligencia Artificial}
 
@@ -2366,7 +2423,7 @@ ecosistema objetivo.
 La decisión de implementar una arquitectura modular basada en el patrón
 Strategy ---donde cada módulo de detección opera como una estrategia
 intercambiable según Gamma et~al. (\citeyear*{gamma1995})--- se valida
-por los resultados de la suite de pruebas unitarias: los 180~tests
+por los resultados de la suite de pruebas unitarias: los 194~tests
 pasaron con un 100\% de aprobación, demostrando que cada módulo opera
 de forma independiente sin generar regresiones en los demás. Esta
 independencia confirma experimentalmente lo que Bass et~al.
@@ -2536,9 +2593,9 @@ investigaciones:
 \begin{enumerate}
     \item \textbf{Detección heurística:} Los módulos de inyección combinan
     técnicas basadas en errores (\textit{error-based}), análisis de respuestas
-    HTTP y ---en el caso de SQL Injection--- detección ciega basada en tiempo
-    (\textit{time-based}) mediante la inyección de retardos controlados con
-    confirmación proporcional. No obstante, otras variantes avanzadas como el
+    HTTP y ---en SQL Injection y \textit{command injection}--- detección ciega
+    basada en tiempo (\textit{time-based}) mediante la inyección de retardos
+    controlados con confirmación proporcional. No obstante, otras variantes avanzadas como el
     XSS almacenado (\textit{stored}) y el DOM XSS no son detectadas en la
     versión actual, por requerir el seguimiento de estado entre peticiones o la
     ejecución de JavaScript del lado del cliente. Esta es una limitación
@@ -2576,10 +2633,12 @@ investigaciones:
     como trabajo futuro. La cuantificación del \textit{recall} y del Índice de
     Youden, en cambio, se llevó a cabo contra el OWASP~Benchmark (Capítulo~IV) y
     delimitó con precisión el dominio de eficacia del framework: reveló como
-    límites concretos la detección ciega de \textit{path traversal} (cuando la
-    respuesta no refleja el contenido del archivo) y los vectores de inyección por
-    cabecera o cuerpo XML no contemplados por el motor; ambos abordables en trabajo
-    futuro sin alterar la arquitectura modular. Una tercera carencia detectada en
+    límites concretos la detección ciega de \textit{path traversal} y \textit{command
+    injection} ---abordada mediante técnicas basadas en errores y en tiempo cuyo
+    efecto, no obstante, el banco sintético no llega a exponer al no propagar ni el
+    retardo del comando ni la traza de error--- y los vectores de inyección por
+    cabecera o cuerpo XML no contemplados por el motor, abordables en trabajo futuro
+    sin alterar la arquitectura modular. Una tercera carencia detectada en
     esa misma medición ---la cobertura de XSS limitada al método \texttt{GET}--- fue
     subsanada extendiendo el módulo a cuerpos \texttt{POST}, lo que elevó su Índice
     de Youden de 0,38 a 0,87.
@@ -2613,12 +2672,13 @@ para futuras investigaciones y desarrollo:
 
     \item A partir de los límites cuantificados contra el OWASP Benchmark
     (Capítulo~IV), continuar ampliando el modelo de ataque del motor para elevar el
-    Índice de Youden: incorporar detección de inyección ciega basada en tiempo
-    (\textit{path traversal} y \textit{command injection} sin reflejo en la
-    respuesta), soportar los vectores de cabecera y cuerpo XML, y añadir
-    \textit{payloads} de XSS sensibles al contexto (atributos HTML y bloques
-    JavaScript), lo que permitiría una comparación aún más directa con los motores
-    comerciales sobre el mismo \textit{ground truth}.
+    Índice de Youden: soportar los vectores de inyección por cabecera y cuerpo XML,
+    añadir \textit{payloads} de XSS sensibles al contexto (atributos HTML y bloques
+    JavaScript) y complementar la detección ciega ya incorporada ---basada en tiempo
+    y en errores--- con canales fuera de banda (\textit{out-of-band}), que
+    permitirían evidenciar las variantes ciegas que el banco sintético no expone y
+    una comparación aún más directa con los motores comerciales sobre el mismo
+    \textit{ground truth}.
 
     \item Diseñar adaptadores de integración continua que faciliten la
     incorporación automática de VulnSeeker en pipelines de desarrollo (tales

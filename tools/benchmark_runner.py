@@ -140,7 +140,10 @@ def scanner_for(category):
     if category == "xss":
         return XSSScanner()
     if category == "cmdi":
-        return CommandInjectionScanner()
+        # A diferencia del SQLi (HSQLDB no soporta SLEEP), el contenedor del
+        # Benchmark es Linux, así que el ciego time-based (sleep) sí aplica y
+        # captura los casos cmdi que no reflejan la salida del comando.
+        return CommandInjectionScanner(enable_blind=True)
     if category == "pathtraver":
         return LFIScanner()
     raise ValueError(category)

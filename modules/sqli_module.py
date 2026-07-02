@@ -10,10 +10,15 @@ logger = logging.getLogger(__name__)
 class SQLInjectionScanner(ScannerModule):
     """
     Módulo especializado en la detección de SQL Injection (SQLi)
-    basado en errores (Error-Based SQLi).
+    basado en errores (Error-Based SQLi) y ciego basado en tiempo.
 
-    Soporta fuzzing sobre parámetros GET (query string) y POST (form body).
-    Emplea doble estrategia de mutación: concatenación y reemplazo completo.
+    Cubre los cuatro vectores de inyección (GET query, POST form, GET form y
+    cuerpo JSON) y añade doble estrategia de mutación (concatenación y reemplazo
+    completo) más el ciego time-based. Fue el módulo que motivó el componente
+    compartido ``modules.injection_points``: cmdi, LFI y XSS se alinearon a la
+    cobertura de vectores que aquí se estableció. Este módulo conserva su propia
+    enumeración por su lógica de mutación y de ciego, ya validada, para no arriesgar
+    su tasa de detección; implementa el mismo contrato de vectores.
     """
 
     # Payloads clásicos para forzar errores de sintaxis visibles.

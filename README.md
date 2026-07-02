@@ -14,7 +14,7 @@
 **Escáner Modular de Vulnerabilidades Web**
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/Tests-180%20passing-brightgreen?logo=pytest&logoColor=white)]()
+[![Tests](https://img.shields.io/badge/Tests-194%20passing-brightgreen?logo=pytest&logoColor=white)]()
 [![Modules](https://img.shields.io/badge/Modules-25%20scanners-orange?logo=shield&logoColor=white)]()
 [![OWASP](https://img.shields.io/badge/OWASP%20Top%2010-8%2F10-red?logo=owasp&logoColor=white)]()
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
@@ -40,7 +40,7 @@ El sistema opera bajo una arquitectura modular extensible donde cada módulo her
 - **8/10 categorías del OWASP Top 10 (2021).** Las 2 restantes (A08, A09) no son evaluables externamente mediante DAST.
 - **Inteligencia Artificial integrada.** Llama 3.3 70B realiza un análisis contextual de los hallazgos técnicos y los prioriza según el riesgo de negocio.
 - **CVEs en tiempo real.** Integración con la API 2.0 del NIST NVD para consultar vulnerabilidades conocidas asociadas a las tecnologías detectadas.
-- **180 tests unitarios.** Suite completa con `pytest` y pipeline CI/CD en GitHub Actions.
+- **194 tests unitarios.** Suite completa con `pytest` y pipeline CI/CD en GitHub Actions.
 - **Validado contra el OWASP Benchmark.** Medición cuantitativa con *ground truth* etiquetado: Índice de Youden 0.68 sobre el subconjunto atacable (SQLi 0.89, XSS 0.87, Precisión 0.95), reportado con honestidad metodológica.
 - **Persistencia histórica.** Cada escaneo se almacena en SQLite, permitiendo análisis de tendencias y comparación entre auditorías.
 
@@ -172,7 +172,7 @@ VulnSeeker/
 │   ├── report_generator.py       # Exportador JSON/CSV
 │   └── pdf_generator.py          # Generador PDF (ReportLab + gráficos)
 │
-├── tests/                        # 180 tests unitarios (pytest)
+├── tests/                        # 194 tests unitarios (pytest)
 │   ├── test_sqli.py
 │   ├── test_xss.py
 │   ├── test_cmd_injection.py
@@ -260,14 +260,14 @@ VulnSeeker/
 
 ## 🧪 Tests
 
-VulnSeeker cuenta con **180 pruebas unitarias** organizadas en 33 archivos de test. Todos los módulos están cubiertos con tests que utilizan mocking de respuestas HTTP para garantizar ejecución determinista y sin dependencia de red.
+VulnSeeker cuenta con **194 pruebas unitarias** organizadas en 34 archivos de test. Todos los módulos están cubiertos con tests que utilizan mocking de respuestas HTTP para garantizar ejecución determinista y sin dependencia de red.
 
 ```bash
 # Ejecutar la suite completa
 pytest tests/ -v
 
 # Resultado esperado
-180 passed in 1.00s✅
+194 passed ✅
 ```
 
 La integración continua ejecuta la suite completa en cada push vía **GitHub Actions**.
@@ -276,13 +276,13 @@ La integración continua ejecuta la suite completa en cada push vía **GitHub Ac
 
 ## ⚠️ Limitaciones Conocidas
 
-- **Detección heurística:** Los módulos de inyección combinan técnicas *error-based*, SQLi ciega *time-based* e inyección en cuerpos JSON. No se detectan aún XSS almacenado (*stored*) ni DOM XSS, que requieren seguimiento de estado o ejecución de JavaScript del lado cliente.
+- **Detección heurística:** Los módulos de inyección combinan técnicas *error-based*, detección ciega *time-based* (SQLi y command injection), inyección en cuerpos JSON y un componente compartido de vectores (`injection_points`). No se detectan aún XSS almacenado (*stored*) ni DOM XSS, que requieren seguimiento de estado o ejecución de JavaScript del lado cliente.
 - **SSRF in-band:** Detección por análisis de respuesta HTTP; no usa callbacks OOB (Out-of-Band).
 - **Subdominios como recon:** Los subdominios descubiertos vía OSINT no se escanean automáticamente (requiere autorización explícita).
 - **IA dependiente de API:** El informe ejecutivo requiere conectividad con Groq API; el resto del framework opera offline.
 - **SPAs sin spec ni rutas legibles:** El descubrimiento API-aware cubre SPAs que publican OpenAPI/Swagger o referencian sus rutas en el JavaScript; aquellas que ofusquen por completo sus endpoints requerirían un motor de renderizado *headless* (trabajo futuro).
 - **Validación en entorno controlado:** 0 falsos positivos observados contra DVWA (low security), con validación adicional contra Altoro Mutual y la SPA OWASP Juice Shop; en producción los resultados pueden variar.
-- **Límites cuantificados contra el OWASP Benchmark:** la medición con *ground truth* reveló que VulnSeeker es ciego ante el *path traversal* sin reflejo en la respuesta y que no cubre vectores de inyección por cabecera o cuerpo XML (≈34% de los casos). La carencia de XSS por `POST` que la medición destapó fue subsanada extendiendo el módulo (Youden XSS 0.38 → 0.87). Son líneas de mejora abordables sin tocar la arquitectura modular.
+- **Límites cuantificados contra el OWASP Benchmark:** la medición con *ground truth* reveló que VulnSeeker es ciego ante el *path traversal* y el *command injection* sin reflejo, y que no cubre vectores de inyección por cabecera o cuerpo XML (≈34% de los casos). Se incorporaron técnicas ciegas *time-based* (cmdi) y *error-based* (LFI) para esos casos, pero se verificó empíricamente que el banco sintético **no las expone**: no bloquea la respuesta con el retardo del comando (`sleep 10` → ~0.06 s) ni propaga la traza de error de archivo. Su eficacia se materializa en apps reales (DVWA), no en el oráculo. La carencia de XSS por `POST` que la medición destapó sí fue subsanada extendiendo el módulo (Youden XSS 0.38 → 0.87). Son líneas de mejora abordables sin tocar la arquitectura modular.
 
 Para más detalles, consulte la sección de Limitaciones del Estudio en el [documento de tesis](tesis/main.pdf).
 

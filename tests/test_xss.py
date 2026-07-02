@@ -16,7 +16,7 @@ def test_detecta_xss_reflejado():
     # Simular que el servidor refleja el payload sin sanitizar
     mock_resp.text = "<html><body>Resultados: <VulnSeekerXSS></body></html>"
 
-    with patch("modules.xss_module.requests.get", return_value=mock_resp):
+    with patch("modules.injection_points.requests.get", return_value=mock_resp):
         vulns = scanner.run(target)
 
     assert len(vulns) >= 1
@@ -32,7 +32,7 @@ def test_no_reporta_xss_si_canario_es_sanitizado():
     mock_resp = MagicMock()
     mock_resp.text = "<html><body>Resultados: &lt;VulnSeekerXSS&gt;</body></html>"
 
-    with patch("modules.xss_module.requests.get", return_value=mock_resp):
+    with patch("modules.injection_points.requests.get", return_value=mock_resp):
         vulns = scanner.run(target)
 
     assert len(vulns) == 0
@@ -61,7 +61,7 @@ def test_detecta_xss_reflejado_en_form_post():
     mock_resp = MagicMock()
     mock_resp.text = "<html><body>Tu comentario: <VulnSeekerXSS></body></html>"
 
-    with patch("modules.xss_module.requests.post", return_value=mock_resp):
+    with patch("modules.injection_points.requests.post", return_value=mock_resp):
         vulns = scanner.run(target)
 
     assert len(vulns) >= 1
@@ -83,7 +83,7 @@ def test_no_reporta_xss_post_si_sanitizado():
     mock_resp = MagicMock()
     mock_resp.text = "<html><body>Tu comentario: &lt;VulnSeekerXSS&gt;</body></html>"
 
-    with patch("modules.xss_module.requests.post", return_value=mock_resp):
+    with patch("modules.injection_points.requests.post", return_value=mock_resp):
         vulns = scanner.run(target)
 
     assert len(vulns) == 0
