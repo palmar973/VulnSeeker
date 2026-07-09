@@ -13,14 +13,23 @@
 
 **Escáner Modular de Vulnerabilidades Web**
 
+🇪🇸 **Español** · [🇬🇧 English](README.en.md)
+
 [![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/Tests-194%20passing-brightgreen?logo=pytest&logoColor=white)]()
-[![Modules](https://img.shields.io/badge/Modules-25%20scanners-orange?logo=shield&logoColor=white)]()
-[![OWASP](https://img.shields.io/badge/OWASP%20Top%2010-8%2F10-red?logo=owasp&logoColor=white)]()
+[![Tests](https://img.shields.io/badge/Tests-194%20passing-brightgreen?logo=pytest&logoColor=white)](https://github.com/palmar973/VulnSeeker/tree/main/tests)
+[![Modules](https://img.shields.io/badge/Modules-25%20scanners-orange?logo=shield&logoColor=white)](https://github.com/palmar973/VulnSeeker/tree/main/modules)
+[![OWASP](https://img.shields.io/badge/OWASP%20Top%2010-8%2F10-red?logo=owasp&logoColor=white)](https://owasp.org/www-project-top-ten/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)]()
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
 [![AI](https://img.shields.io/badge/AI-Llama%203.3%2070B-purple?logo=meta)](https://groq.com/)
 [![NVD](https://img.shields.io/badge/NVD-API%202.0-yellow?logo=nist&logoColor=white)](https://nvd.nist.gov/)
+
+<!-- Capturas del proyecto: deja los archivos en docs/img/ y estos marcadores mostrarán las imágenes -->
+![Demostración de un escaneo en vivo de VulnSeeker](docs/img/vulnseeker-scan.gif)
+
+![Interfaz gráfica de VulnSeeker construida con CustomTkinter](docs/img/vulnseeker-gui.png)
+
+![Ejemplo de reporte PDF generado por VulnSeeker](docs/img/vulnseeker-report.png)
 
 </div>
 
@@ -53,8 +62,8 @@ El sistema opera bajo una arquitectura modular extensible donde cada módulo her
 | Módulo | Descripción | Severidad |
 |--------|-------------|-----------|
 | **SQL Injection** | SQLi basada en errores (MySQL, PostgreSQL, Oracle, MSSQL, SQLite/ORM), ciega *time-based* e inyección en cuerpos JSON de APIs REST | 🔴 CRITICAL |
-| **Cross-Site Scripting** | Identificación de XSS reflejado mediante inyección de canarios | 🟠 HIGH |
-| **Command Injection** | Detección de ejecución remota de comandos (RCE) en parámetros | 🔴 CRITICAL |
+| **Cross-Site Scripting** | XSS reflejado en parámetros GET y formularios POST mediante inyección de canarios | 🟠 HIGH |
+| **Command Injection** | Detección de ejecución remota de comandos (RCE): in-band y ciega *time-based* | 🔴 CRITICAL |
 | **Local File Inclusion** | Pruebas de traversal de directorios para lectura de archivos locales | 🔴 HIGH |
 | **Remote File Inclusion** | Detección de inclusión de archivos remotos en aplicaciones web | 🔴 HIGH |
 | **SSRF Scanner** | Detección heurística in-band de Server-Side Request Forgery | 🔴 HIGH |
@@ -76,8 +85,8 @@ El sistema opera bajo una arquitectura modular extensible donde cada módulo her
 | **Header Analyzer** | Evaluación de cabeceras de seguridad (CSP, HSTS, X-Frame-Options, etc.) | 🟡 MEDIUM |
 | **Dir Listing Detector** | Detección de listado de directorios habilitado | 🟡 MEDIUM |
 | **HTTP Method Scanner** | Identificación de métodos HTTP peligrosos habilitados (PUT, DELETE, TRACE) | 🟡 MEDIUM |
-| **Exposure Scanner** | Detección de archivos sensibles expuestos (.env, .git, backups) | 🟠 HIGH |
-| **Path Fuzzer** | Descubrimiento de rutas y archivos ocultos mediante diccionarios | 🟡 MEDIUM |
+| **Cookie Scanner** | Auditoría de banderas de seguridad en cookies de sesión (Secure, HttpOnly, SameSite) | 🟡 MEDIUM |
+| **Path Fuzzer** | Descubrimiento de archivos y rutas sensibles expuestas (.env, .git, backups SQL, paneles admin) con validación *soft-404* | 🟠 HIGH |
 
 ### Componentes Vulnerables y Criptografía (A02 + A06)
 
@@ -85,7 +94,8 @@ El sistema opera bajo una arquitectura modular extensible donde cada módulo her
 |--------|-------------|-----------|
 | **CVE Lookup** | Base de datos local + consulta en vivo a NVD API 2.0 del NIST | 🔴 CRITICAL |
 | **TLS Checker** | Validación de certificados SSL/TLS, protocolos y cifrados débiles | 🟠 HIGH |
-| **Sensitive Data Scanner** | Detección de datos sensibles expuestos (emails, tokens, API keys) | 🟠 HIGH |
+| **Sensitive Data Scanner** | Detección de secretos y datos sensibles en las respuestas (API keys, tokens, credenciales, tarjetas, cadenas de conexión) | 🟠 HIGH |
+| **CMS Auditor** | Pruebas específicas según el CMS detectado (p. ej. enumeración de usuarios en WordPress) | 🟡 MEDIUM |
 
 ### Diseño Inseguro (A04)
 
@@ -93,15 +103,27 @@ El sistema opera bajo una arquitectura modular extensible donde cada módulo her
 |--------|-------------|-----------|
 | **File Upload Detector** | Detección de formularios de subida de archivos sin validación | 🟠 HIGH |
 
-### Reconocimiento y Análisis
+### Reconocimiento e Infraestructura
 
-| Módulo | Descripción |
-|--------|-------------|
+| Módulo | Descripción | Severidad |
+|--------|-------------|-----------|
+| **Port Scanner** | Escaneo de puertos TCP abiertos con identificación de servicios | 🔵 INFO |
+| **WAF Detector** | Identifica firewalls web (Cloudflare, AWS WAF, Akamai, Imperva) por análisis pasivo de cabeceras | 🔵 INFO |
+| **Subdomain Takeover** | Detecta subdominios que apuntan a servicios de terceros no reclamados (S3, GitHub Pages, Heroku…) | 🔴 HIGH |
+| **Email Harvester** | Recolecta correos públicos para evaluar la superficie de ingeniería social | 🔵 INFO |
+
+> Los **25 módulos** anteriores son los registrados en `core/module_registry.py` (`get_default_modules()`): 6 de inyección + 5 de control de acceso/autenticación + 5 de configuración + 4 de componentes/criptografía + 1 de diseño inseguro + 4 de reconocimiento e infraestructura.
+
+### Componentes del Pipeline (núcleo)
+
+Estas etapas alimentan a los módulos y **no** se contabilizan entre los 25 escáneres:
+
+| Componente | Descripción |
+|------------|-------------|
 | **Web Crawler** | Explorador estructural que mapea URLs, formularios y puntos de entrada con soporte de autenticación |
 | **API Endpoint Discovery** | Recupera endpoints de API REST en SPAs sin navegador: parseo de OpenAPI/Swagger + extracción de rutas en *bundles* JavaScript |
 | **Tech Fingerprinter** | Identificación de servidor, lenguaje backend, CMS/Framework y versiones |
-| **Subdomain Scanner** | Descubrimiento pasivo OSINT vía crt.sh y HackerTarget con validación de subdominios live |
-| **Port Scanner** | Escaneo de puertos TCP abiertos con identificación de servicios |
+| **Subdomain OSINT** | Descubrimiento pasivo de subdominios vía crt.sh y HackerTarget con validación de hosts activos |
 
 ### Inteligencia Artificial
 
@@ -126,43 +148,44 @@ El sistema opera bajo una arquitectura modular extensible donde cada módulo her
 VulnSeeker/
 ├── core/                         # Núcleo del sistema
 │   ├── engine.py                 # Orquestador principal (multihilo)
-│   ├── scanner_types.py          # Tipos base: Target, Vulnerability, ScannerModule
-│   ├── models.py                 # Estructuras de datos compartidas
+│   ├── models.py                 # Tipos base: Target, Vulnerability, ScannerModule, Severity
+│   ├── module_registry.py        # Registro centralizado de los 25 módulos
 │   ├── config.py                 # Configuración global centralizada
 │   ├── crawler.py                # Web Crawler con autenticación por cookies
 │   ├── api_discovery.py          # Descubridor de endpoints API (SPAs, sin navegador)
 │   ├── soft404.py                # Detección de respuestas catch-all (anti-FP)
 │   ├── fingerprinter.py          # Fingerprinting tecnológico (Server/CMS/Backend)
 │   ├── subdomain_scanner.py      # OSINT de subdominios (crt.sh + HackerTarget)
-│   ├── module_registry.py        # Registro centralizado de los 25 módulos
 │   └── db_manager.py             # Persistencia SQLite (Singleton)
 │
-├── modules/                      # 25 módulos de escaneo independientes
-│   ├── sqli_module.py            # SQL Injection (Error-Based)
-│   ├── xss_module.py             # Reflected XSS
-│   ├── cmd_injection.py          # Command Injection / RCE
+├── modules/                      # 25 módulos registrados + 3 auxiliares
+│   ├── sqli_module.py            # SQL Injection (error-based + ciega time-based + JSON)
+│   ├── xss_module.py             # Reflected XSS (GET + POST)
+│   ├── cmd_injection.py          # Command Injection / RCE (in-band + time-based)
 │   ├── lfi_scanner.py            # Local File Inclusion
 │   ├── rfi_scanner.py            # Remote File Inclusion
+│   ├── ssrf_scanner.py           # Server-Side Request Forgery (SSRF)
 │   ├── open_redirect.py          # Open Redirect
 │   ├── cors_scanner.py           # CORS Misconfiguration
 │   ├── csrf_auditor.py           # Cross-Site Request Forgery
-│   ├── cve_lookup.py             # CVE Lookup (Local DB + NVD API 2.0)
-│   ├── tls_checker.py            # TLS/SSL Certificate Analyzer
+│   ├── brute_force_detector.py   # Brute Force Protection Audit
+│   ├── weak_session_auditor.py   # Session Management Audit
+│   ├── cookie_scanner.py         # Cookie Security Audit
 │   ├── header_analyzer.py        # HTTP Security Headers
 │   ├── dir_listing_detector.py   # Directory Listing Detection
 │   ├── http_method_scanner.py    # Dangerous HTTP Methods
-│   ├── cookie_scanner.py         # Cookie Security Audit
-│   ├── exposure_scanner.py       # Sensitive File Exposure
-│   ├── path_fuzzer.py            # Path Fuzzing / Discovery
-│   ├── port_scanner.py           # TCP Port Scanner
-│   ├── sensitive_data_scanner.py # Sensitive Data Exposure (PII, tokens)
-│   ├── file_upload_detector.py   # Insecure File Upload Detection
-│   ├── brute_force_detector.py   # Brute Force Protection Audit
-│   ├── weak_session_auditor.py   # Session Management Audit
-│   ├── waf_detector.py           # WAF Detection
+│   ├── path_fuzzer.py            # Path Fuzzing (.env, .git, backups, paneles)
+│   ├── sensitive_data_scanner.py # Sensitive Data Exposure (keys, tokens, PII)
+│   ├── cve_lookup.py             # CVE Lookup (base local + NVD API 2.0)
+│   ├── tls_checker.py            # TLS/SSL Certificate Analyzer
 │   ├── cms_auditor.py            # CMS-Specific Vulnerabilities
-│   ├── email_harvester.py        # Email Address Discovery
-│   ├── ssrf_scanner.py           # Server-Side Request Forgery (SSRF)
+│   ├── file_upload_detector.py   # Insecure File Upload Detection
+│   ├── port_scanner.py           # TCP Port Scanner
+│   ├── waf_detector.py           # WAF Detection
+│   ├── subdomain_takeover.py     # Subdomain Takeover
+│   ├── email_harvester.py        # Email Harvesting (OSINT)
+│   ├── injection_points.py       # Componente compartido de vectores de inyección
+│   ├── tech_visualizer.py        # Utilidad de visualización tecnológica
 │   └── ai_analyst.py             # AI Analyst (Groq / Llama 3.3 70B, servicio auxiliar)
 │
 ├── ui/                           # Interfaz gráfica
@@ -172,12 +195,12 @@ VulnSeeker/
 │   ├── report_generator.py       # Exportador JSON/CSV
 │   └── pdf_generator.py          # Generador PDF (ReportLab + gráficos)
 │
-├── tests/                        # 194 tests unitarios (pytest)
+├── tests/                        # 194 tests unitarios en 34 archivos (pytest)
 │   ├── test_sqli.py
 │   ├── test_xss.py
 │   ├── test_cmd_injection.py
 │   ├── test_cve_lookup.py
-│   ├── ...                       # 31 archivos de test
+│   ├── ...                       # 34 archivos test_*.py
 │   └── test_weak_session.py
 │
 ├── tools/                        # Utilidades de evaluación cuantitativa
@@ -247,8 +270,8 @@ VulnSeeker/
 | A02 | Cryptographic Failures | TLS Checker, Sensitive Data Scanner | ✅ |
 | A03 | Injection | SQLi, XSS, Command Injection, LFI, RFI, SSRF* | ✅ |
 | A04 | Insecure Design | File Upload Detector | ✅ |
-| A05 | Security Misconfiguration | Headers, Dir Listing, HTTP Methods, Exposure, Path Fuzzer | ✅ |
-| A06 | Vulnerable Components | CVE Lookup (NVD API), Tech Fingerprinter | ✅ |
+| A05 | Security Misconfiguration | Headers, Dir Listing, HTTP Methods, Cookie Scanner, Path Fuzzer | ✅ |
+| A06 | Vulnerable Components | CVE Lookup (NVD API), CMS Auditor, Tech Fingerprinter | ✅ |
 | A07 | Auth Failures | CSRF, Brute Force, Weak Session | ✅ |
 | A08 | Software & Data Integrity | — | ⬜ No evaluable externamente |
 | A09 | Logging & Monitoring | — | ⬜ No evaluable externamente |
@@ -271,6 +294,32 @@ pytest tests/ -v
 ```
 
 La integración continua ejecuta la suite completa en cada push vía **GitHub Actions**.
+
+---
+
+## 🎯 Benchmark: VulnSeeker vs OWASP ZAP
+
+> **Un escáner académico modular iguala a la herramienta DAST de referencia bajo una medición idéntica en el OWASP Benchmark v1.2.**
+
+El [OWASP Benchmark](https://owasp.org/www-project-benchmark/) v1.2 es un banco de 2 740 casos de prueba etiquetados (*ground truth*) que permite medir la exactitud de un escáner de forma objetiva. Se enfrentó a VulnSeeker contra **OWASP ZAP** —el escáner DAST de código abierto de referencia en la industria— sobre exactamente el mismo subconjunto de casos y con idéntico protocolo de medición. La métrica es el **Índice de Youden** (J = TPR − FPR), que penaliza por igual los falsos negativos y los falsos positivos.
+
+| Medición | Casos | VulnSeeker | OWASP ZAP |
+|----------|:-----:|:----------:|:---------:|
+| **Youden global** | 1 478 | **0.39** | 0.38 |
+| **Youden (subconjunto atacable)** | 918 | **0.68** | 0.64 |
+| SQLi *(atacable)* | — | 0.89 | **0.97** |
+| XSS *(atacable)* | — | **0.87** | **0.87** |
+| Command Injection *(atacable)* | — | **0.46** | 0.00 |
+| Path Traversal *(atacable)* | — | 0.00 | 0.00 |
+
+**Lectura honesta de los resultados:**
+
+- **Empate técnico global** (0.39 vs 0.38) y ligera ventaja de VulnSeeker en el subconjunto atacable (0.68 vs 0.64).
+- En **SQLi**, ZAP obtiene mejor Youden **no por detectar más** —ambos alcanzan una sensibilidad (TPR) de 1.00— sino por generar **menos falsos positivos**. Aun así, la precisión de VulnSeeker se mantiene alta (0.95).
+- En **Command Injection**, VulnSeeker gana por **mayor sensibilidad**: detecta casos que ZAP no reporta (0.46 vs 0.00).
+- En **XSS** hay un empate exacto (0.87) y en **Path Traversal** ambos escáneres resultan ciegos ante el oráculo sintético del banco (0.00).
+
+Metodología completa, matrices de confusión y análisis por clase en la [carpeta `tesis/`](tesis/) (documento y artículo comparativo).
 
 ---
 
